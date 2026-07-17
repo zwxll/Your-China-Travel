@@ -2543,6 +2543,8 @@
   <!-- Toast -->
   <div id="toast" class="toast"></div>
 
+<!-- 【离线部署】中国省级边界 GeoJSON 本地缓存，避免 DataV CDN 不可达时地图加载失败 -->
+<script src="china-geo.js"></script>
 <script>
 /* =========================================================
  * 我的中国旅行地图 —— 单文件应用
@@ -2849,9 +2851,15 @@
   let cityBoundaries=null; // 城市边界 GeoJSON features（用于 map 系列叠加图层，绑定省份 geo）
   async function loadGeo(){
     // 1) 全国省级边界 → 作为底图
-    const res=await fetchWithTimeout(GEO_BASE+'100000_full.json',20000);
-    if(!res.ok) throw new Error('全国地图数据请求失败');
-    const china=await res.json();
+    // 【离线部署优化】优先使用本地内联 GeoJSON（window.CHINA_GEO），CDN 不可达时仍可加载地图
+    let china=null;
+    if(window.CHINA_GEO){
+      china=window.CHINA_GEO;  // 本地缓存命中，零网络依赖
+    }else{
+      const res=await fetchWithTimeout(GEO_BASE+'100000_full.json',20000);
+      if(!res.ok) throw new Error('全国地图数据请求失败');
+      china=await res.json();
+    }
     echarts.registerMap('china', china);
 
     const provinces=china.features||[];
@@ -2865,6 +2873,7 @@
       if(MUNI.has(code)){
         return Promise.resolve(cp?[{name,value:cp,adcode:code,cityKey:code+'_'+name}]:[]);
       }
+      // 【离线部署优化】城市边界仍走 CDN（体积大，非核心），失败则用省级中心点降级
       return fetchWithTimeout(GEO_BASE+code+'_full.json',15000)
         .then(r=>{ if(!r.ok) throw new Error('fail'); return r.json(); })
         .then(j=>{
