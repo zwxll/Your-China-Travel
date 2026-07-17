@@ -2545,6 +2545,8 @@
 
 <!-- 【离线部署】中国省级边界 GeoJSON 本地缓存，避免 DataV CDN 不可达时地图加载失败 -->
 <script src="china-geo.js"></script>
+<!-- 【离线部署】34 省地级市边界 GeoJSON 本地缓存，城市点全量加载（371城），不再依赖 DataV CDN -->
+<script src="china-provinces-geo.js"></script>
 <script>
 /* =========================================================
  * 我的中国旅行地图 —— 单文件应用
@@ -2873,9 +2875,12 @@
       if(MUNI.has(code)){
         return Promise.resolve(cp?[{name,value:cp,adcode:code,cityKey:code+'_'+name}]:[]);
       }
-      // 【离线部署优化】城市边界仍走 CDN（体积大，非核心），失败则用省级中心点降级
-      return fetchWithTimeout(GEO_BASE+code+'_full.json',15000)
-        .then(r=>{ if(!r.ok) throw new Error('fail'); return r.json(); })
+      // 【离线部署优化】城市边界优先用本地缓存（window.CHINA_PROVINCES_GEO），CDN 作为兜底
+      const localProvinceGeo = (window.CHINA_PROVINCES_GEO && window.CHINA_PROVINCES_GEO[code]) || null;
+      const geoPromise = localProvinceGeo
+        ? Promise.resolve(localProvinceGeo)
+        : fetchWithTimeout(GEO_BASE+code+'_full.json',15000).then(r=>{ if(!r.ok) throw new Error('fail'); return r.json(); });
+      return geoPromise
         .then(j=>{
           const feats=j.features||[];
           // 收集城市边界（跳过省级整体边界特征）
