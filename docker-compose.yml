@@ -1,0 +1,18 @@
+# ============================================================
+# docker-compose.yml —— 一键启动 Nginx 容器
+# 启动命令： docker-compose up -d
+# 停止命令： docker-compose down
+# 访问地址： http://本机IP:8080
+# ============================================================
+version: "3.8"
+
+services:
+  china-travel:
+    build: .
+    container_name: china-travel
+    ports:
+      - "8080:80"          # 左侧端口可改，如 80:80 直接用 80 端口
+    restart: unless-stopped
+    volumes:
+      # 如需修改页面无需重新构建，挂载源文件（可选）
+      - ./index.html:/usr/share/nginx/html/index.html:ro
