@@ -24,6 +24,12 @@
       "headers": [
         { "key": "Cache-Control", "value": "public, max-age=0, must-revalidate" }
       ]
+    },
+    {
+      "source": "/(.*)\\.(js|json|css|png|jpg|jpeg|webp|svg|ico)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=604800, immutable" }
+      ]
     }
   ]
 }
