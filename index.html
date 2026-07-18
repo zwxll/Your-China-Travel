@@ -3631,22 +3631,53 @@
   const tlCloseBtn=$('tlCloseBtn');
 
   // 收集已点亮城市并按游玩年月升序排列（时间轴从早到晚）
+  // 【排序优化】同年同月多城市支持：按景点游玩具体日期(visitDate)的"日"值细分排序
   async function collectTimelineCities(){
     const items=[];
     for(const cityKey of citiesWithPhotos){
       const cp=cityPoints.find(c=>c.cityKey===cityKey);
       if(!cp) continue;
       const meta=await getCityMeta(cityKey);
+      // 【排序优化】提取该城市所有景点的游玩日期，取最早的一天作为同年同月内排序依据
+      // visitDate 格式 'YYYY-MM-DD'，无景点或无日期则 earliestDay=null（随机排放）
+      let earliestDay=null;
+      const atts=meta.attractions||[];
+      for(const att of atts){
+        if(att.visitDate){
+          // 提取"日"部分（DD），转为数值用于同年同月内比较
+          const parts=att.visitDate.split('-');
+          if(parts.length>=3){
+            const day=parseInt(parts[2],10);
+            if(!isNaN(day)){
+              if(earliestDay===null||day<earliestDay) earliestDay=day;
+            }
+          }
+        }
+      }
       items.push({
         cityKey, name:cp.name, value:cp.value, adcode:cp.adcode,
         visitMonth:meta.visitMonth||'',
         coverImage:meta.coverImage||'',
-        photoCount:photoCountByCity.get(cityKey)||0
+        photoCount:photoCountByCity.get(cityKey)||0,
+        earliestDay  // 【排序优化】同年同月内排序依据：最早游玩日(1~31)，null=无日期
       });
     }
-    // 排序：有年月的按年月升序（时间轴从早到晚），无年月的放最后
+    // 排序规则：
+    //   1. 有年月的按年月升序（时间轴从早到晚），无年月的放最后
+    //   2. 【新增】同年同月内部：按 earliestDay(景点游玩日期的日) 升序，日期早的排左侧
+    //      无 earliestDay 的城市在该月内随机排放（保持原相对顺序，Math.random 打乱）
     items.sort((a,b)=>{
-      if(a.visitMonth&&b.visitMonth) return a.visitMonth.localeCompare(b.visitMonth);
+      if(a.visitMonth&&b.visitMonth){
+        const mc=a.visitMonth.localeCompare(b.visitMonth);
+        if(mc!==0) return mc; // 不同年月：按年月升序
+        // 【同年同月】按景点游玩日期的"日"细分排序
+        if(a.earliestDay!==null&&b.earliestDay!==null){
+          return a.earliestDay-b.earliestDay; // 都有日期：按日升序
+        }
+        if(a.earliestDay!==null) return -1; // a有日期排前
+        if(b.earliestDay!==null) return 1;  // b有日期排前
+        return Math.random()-0.5; // 都无日期：随机排放
+      }
       if(a.visitMonth&&!b.visitMonth) return -1;
       if(!a.visitMonth&&b.visitMonth) return 1;
       return 0;
