@@ -703,6 +703,8 @@
     width:min(660px,100%);max-height:84vh;display:flex;flex-direction:column;
     background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
     overflow:hidden;animation:pop .22s cubic-bezier(.2,.8,.3,1.1);
+    /* 【性能优化】隔离弹窗内部重排重绘，拖拽/滚动不触发整页刷新 */
+    contain:layout style;will-change:transform;
   }
   @keyframes pop{from{transform:translateY(14px) scale(.98);opacity:0}to{transform:none;opacity:1}}
   /* 【弹窗尺寸缩小】头部内边距 20→14px，标题字号 20→17px */
@@ -978,6 +980,8 @@
     /* 【修复点】摆动过渡延长至 .4s，回弹更柔和，避免突兀位移 */
     transition:transform .4s cubic-bezier(.2,.8,.3,1),box-shadow .4s ease,border-color .4s ease;
     will-change:transform;
+    /* 【性能优化】隔离卡片内部布局/样式重排范围，hover 摆动不触发整页重排 */
+    contain:layout style;
   }
   /* hover：轻微提升阴影 + 边框高亮（摆动由 JS mousemove 驱动）*/
   .city-card{
@@ -2333,7 +2337,7 @@
 </head>
 <body>
 <!-- ===== 底层 ferrofluid 铁磁流体背景（z-index:-1，非交互，纯氛围层）===== -->
-<canvas id="ferrofluidBg" style="position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;"></canvas>
+<canvas id="ferrofluidBg" style="position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;will-change:transform;"></canvas>
   <!-- ===== Gooey 黏稠效果 SVG Filter（对标 aceternity gooey-input）===== -->
   <!-- feGaussianBlur + feColorMatrix：让图标气泡与输入框边缘融合产生流体黏稠感 -->
   <svg width="0" height="0" style="position:absolute;" aria-hidden="true">
@@ -2637,6 +2641,57 @@
  * ========================================================= */
 (function(){
   'use strict';
+
+  /* ========================================================= */
+  /* =====【性能优化核心】全局交互状态调度器（ PerfScheduler ）===== */
+  /* ========================================================= */
+  /* 作用：统一监听全局 mousemove / scroll / wheel / drag 高频事件，
+   *       在用户交互期间降低底层动态背景（ferrofluid/光束/文字动画）帧率，
+   *       交互停止后自动恢复完整动画。
+   * 各动画模块通过 window.PerfScheduler.shouldRenderBg() 查询当前是否应渲染背景，
+   * 通过 window.PerfScheduler.onInteract / offInteract 注册回调。
+   * 不改动任何业务逻辑，仅做帧率调度。
+   */
+  const PerfScheduler=(function(){
+    let interacting=false;           // 当前是否处于交互状态
+    let interactTimer=null;          // 交互停止后的延时恢复定时器
+    let interactEndCallbacks=[];     // 交互结束（恢复满帧）回调
+    let interactStartCallbacks=[];   // 交互开始（降帧）回调
+    let lastMoveTime=0;
+    const INTERACT_HOLD=180;         // 交互停止后保持降帧 180ms 再恢复，避免抖动
+    function markInteract(){
+      const was=interacting;
+      lastMoveTime=performance.now();
+      if(!interacting){
+        interacting=true;
+        if(!was) interactStartCallbacks.forEach(fn=>{try{fn();}catch(e){}});
+      }
+      if(interactTimer){clearTimeout(interactTimer);interactTimer=null;}
+      interactTimer=setTimeout(()=>{
+        // 超过 HOLD 无新交互 → 恢复满帧
+        if(performance.now()-lastMoveTime>=INTERACT_HOLD-5){
+          interacting=false;
+          interactEndCallbacks.forEach(fn=>{try{fn();}catch(e){}});
+        }
+      },INTERACT_HOLD);
+    }
+    // 全局监听高频事件（passive，不阻塞滚动）
+    ['mousemove','wheel','scroll','drag','dragover'].forEach(ev=>{
+      window.addEventListener(ev,markInteract,{passive:true,capture:true});
+    });
+    // 弹窗打开/关闭时也触发降帧（由业务模块手动调用 markInteract）
+    return {
+      markInteract,
+      isInteracting:()=>interacting,
+      // 背景动画查询：交互中返回 false（跳过本帧），非交互返回 true
+      shouldRenderBg:()=>!interacting,
+      // 背景动画在交互期间降帧比例查询（交互中返回 3 = 每 3 帧渲染 1 帧）
+      bgFrameSkip:()=>interacting?3:1,
+      onInteractStart:fn=>interactStartCallbacks.push(fn),
+      onInteractEnd:fn=>interactEndCallbacks.push(fn)
+    };
+  })();
+  window.PerfScheduler=PerfScheduler;
 
   /* ---------- DOM 引用 ---------- */
   const $ = id => document.getElementById(id);
@@ -5217,6 +5272,8 @@
     modalOverlay.classList.add('show');
     /* =====【滚动隔离核心】弹窗打开时锁定底层页面滚动，防止滚动穿透 ===== */
     document.body.classList.add('modal-open');
+    /* 【性能优化】弹窗打开期间持续标记交互态，降低底层背景动画帧率，把算力让给弹窗交互 */
+    if(window.PerfScheduler) window.PerfScheduler.markInteract();
     loadCityPhotos(city.cityKey);
     loadCityMeta(city.cityKey);
   }
@@ -5598,12 +5655,15 @@
       // 【修复点】减小旋转角度 3→2deg、降低 scale 1.01→1.008，弱化横向偏移避免左侧裁切
       const WOBBLE_CONFIG={maxRotate:2,scale:1.008};
       let cardWobbleRAF=false;
+      let cardRectCache=null; // 【性能优化】缓存 rect，避免 mousemove 高频调用 getBoundingClientRect 强制布局
+      card.addEventListener('mouseenter',()=>{cardRectCache=card.getBoundingClientRect();});
       card.addEventListener('mousemove',e=>{
         if(cardWobbleRAF) return;
         cardWobbleRAF=true;
         requestAnimationFrame(()=>{
           cardWobbleRAF=false;
-          const rect=card.getBoundingClientRect();
+          const rect=cardRectCache||card.getBoundingClientRect();
+          if(!cardRectCache) cardRectCache=rect;
           // 鼠标相对卡片中心的偏移比例 (-0.5 ~ 0.5)
           const px=(e.clientX-rect.left)/rect.width-0.5;
           const py=(e.clientY-rect.top)/rect.height-0.5;
@@ -5626,6 +5686,7 @@
       card.addEventListener('mouseleave',()=>{
         card.style.transform='rotateX(0) rotateY(0) scale(1)';
         card.style.setProperty('--bglow-a','0');
+        cardRectCache=null; // 清除 rect 缓存
       });
       // 点击卡片：聚焦地图到该城市 + 打开编辑弹窗
       card.addEventListener('click',()=>{
@@ -5791,12 +5852,15 @@
       // 【强化浮空】仅「全部」网格卡片：上浮 8px + scale 1.03 + 基础 3D 倾斜(rotateX2/rotateY-1)，叠加鼠标动态摆动
       const WOBBLE_CONFIG={maxRotate:2,scale:1.03,lift:8,tiltX:2,tiltY:-1};
       let gridCardWobbleRAF=false;
+      let gridCardRectCache=null; // 【性能优化】缓存 rect，避免 mousemove 高频调用 getBoundingClientRect
+      card.addEventListener('mouseenter',()=>{gridCardRectCache=card.getBoundingClientRect();});
       card.addEventListener('mousemove',e=>{
         if(gridCardWobbleRAF) return;
         gridCardWobbleRAF=true;
         requestAnimationFrame(()=>{
           gridCardWobbleRAF=false;
-          const rect=card.getBoundingClientRect();
+          const rect=gridCardRectCache||card.getBoundingClientRect();
+          if(!gridCardRectCache) gridCardRectCache=rect;
           const px=(e.clientX-rect.left)/rect.width-0.5;
           const py=(e.clientY-rect.top)/rect.height-0.5;
           // rotate：轻微立体倾斜（最大 ±2deg），叠加基础倾斜 tiltX/tiltY 增强 3D 浮空感
@@ -5809,6 +5873,7 @@
       // 鼠标移出：平滑回弹复位
       card.addEventListener('mouseleave',()=>{
         card.style.transform='translateY(0) rotateX(0) rotateY(0) scale(1)';
+        gridCardRectCache=null; // 清除 rect 缓存
       });
       // 点击卡片：全屏模式下打开景点详情页（不再弹旧的上传照片弹窗）
       card.addEventListener('click',()=>{
@@ -6527,8 +6592,15 @@
       ctx.restore();
 
       offset+=speed;
+      // 【交互调度】交互期间跳帧：非交互满帧，交互期间每2帧绘1帧，释放主线程给拖拽/滚动
+      const _ps=window.PerfScheduler;
+      if(_ps&&_ps.isInteracting()&&(_drawSkip=(_drawSkip+1)%2)!==0){
+        rafId=requestAnimationFrame(draw);
+        return;
+      }
       rafId=requestAnimationFrame(draw);
     }
+    let _drawSkip=0;
 
     function start(){
       resize();
@@ -7066,13 +7138,18 @@
     }
     let t=0;
     // 【性能优化】背景层降帧至 ~30fps：每两帧绘制一次，释放 GPU 给地图交互，避免拖拽卡顿
-    let bgFrameSkip=true;
+    // 【交互调度】交互期间进一步降帧（每3帧渲染1帧），由 PerfScheduler 统一调度
+    let bgFrameSkipCnt=0;
     function draw(){
-      bgFrameSkip=!bgFrameSkip;
-      if(!bgFrameSkip){
+      // 交互期间跳帧：非交互每2帧绘1帧，交互期间每3帧绘1帧
+      const skip=window.PerfScheduler?window.PerfScheduler.bgFrameSkip():1;
+      bgFrameSkipCnt+=1;
+      const threshold=window.PerfScheduler&&window.PerfScheduler.isInteracting()?3:2;
+      if(bgFrameSkipCnt<threshold){
         requestAnimationFrame(draw);
         return;
       }
+      bgFrameSkipCnt=0;
       t+=0.006;
       ctx.clearRect(0,0,W,H); // 透明底，让 body 的 #020202 透出
       ctx.globalCompositeOperation='lighter';
