@@ -2586,6 +2586,8 @@
           上传照片
           <input id="fileInput" type="file" accept="image/*" multiple hidden />
         </label>
+        <!-- 【取消点亮】清空当前城市所有上传编辑内容（照片/景点/标签/封面/星级/年月） -->
+        <button class="btn" id="unlightBtn" style="background:#2a1414;color:#ff6b6b;border:1px solid #5a2424;">取消点亮</button>
         <span class="hint">支持多张同时上传 · 拖拽照片可交换位置 · 本地永久保存</span>
       </div>
     </div>
@@ -5545,6 +5547,54 @@
     /* =====【滚动隔离核心】弹窗关闭时恢复底层页面滚动 ===== */
     document.body.classList.remove('modal-open');
   }
+
+  /* =====【取消点亮】清空当前城市所有上传编辑内容 =====
+   * 删除范围：该城市全部照片 + 城市元数据（封面/星级/年月/标签/景点）
+   * 删除后：从 citiesWithPhotos 移除、刷新卡片/地图/统计、关闭弹窗
+   * 业务逻辑：仅清空当前城市数据，不影响其他城市
+   */
+  async function unlightCity(){
+    if(!currentCity) return;
+    const cityKey=currentCity.cityKey;
+    const cityName=currentCity.name;
+    // 二次确认，避免误删
+    if(!confirm('确定要取消点亮「'+cityName+'」吗？\n\n将清空该城市的：\n• 所有照片（'+(photoCountByCity.get(cityKey)||0)+' 张）\n• 城市封面\n• 推荐指数\n• 游玩年月\n• 标签\n• 景点\n\n此操作不可撤销。')) return;
+    try{
+      // 1. 删除该城市所有照片（用 cityKey 索引批量删除）
+      const db=await openDB();
+      await withTimeout(new Promise((resolve,reject)=>{
+        const tx=db.transaction(STORE,'readwrite');
+        const idx=tx.objectStore(STORE).index('cityKey');
+        const req=idx.openCursor(IDBKeyRange.only(cityKey));
+        req.onsuccess=e=>{
+          const cur=e.target.result;
+          if(cur){ cur.delete(); cur.continue(); }
+        };
+        tx.oncomplete=()=>resolve();
+        tx.onerror=()=>reject(tx.error);
+      }),15000,'删除城市照片超时');
+      // 2. 删除该城市元数据
+      await withTimeout(new Promise((resolve,reject)=>{
+        const r=db.transaction(META_STORE,'readwrite').objectStore(META_STORE).delete(cityKey);
+        r.onsuccess=()=>resolve();
+        r.onerror=()=>reject(r.error);
+      }),8000,'删除城市元数据超时');
+      // 3. 清除内存缓存
+      cityMetaCache.delete(cityKey);
+      thumbCacheByCity.delete(cityKey);
+      photoCountByCity.delete(cityKey);
+      // 4. 关闭弹窗
+      closeModal();
+      // 5. 刷新全局状态（统计/卡片/地图/时间轴）
+      await refreshState();
+      toast('已取消点亮「'+cityName+'」，相关内容已清空');
+    }catch(e){
+      console.error(e);
+      toast('取消点亮失败：'+(e.message||e),true);
+    }
+  }
+  // 绑定取消点亮按钮
+  $('unlightBtn').addEventListener('click',unlightCity);
 
   /* ---------- 已点亮城市卡片展示区 ---------- */
   // 渲染城市卡片列表（按游玩年月倒序，无年月的按照片最新排后）
