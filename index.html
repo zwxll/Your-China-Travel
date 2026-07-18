@@ -1129,7 +1129,13 @@
   /* 标签管理区 —— 放大间距与字号 */
   /* 【弹窗尺寸优化】标签区上间距 20→24px，上内边距 18→22px */
   .tag-section{margin-top:24px;padding-top:22px;border-top:1px dashed var(--line);}
-  .tag-section .ts-title{font-size:15px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin-bottom:12px;}
+  /* ===== 弹窗分区标题统一样式（照片管理/标签管理/景点管理 三标题字号、字重、颜色、对齐完全一致）===== */
+  .section-title{
+    font-size:15px;color:var(--muted);font-weight:700;letter-spacing:.5px;
+    margin:18px 0 12px 0;  /* 上 18px 下 12px，三个标题间距统一 */
+  }
+  /* 兼容旧的 .ts-title（保留，避免其他地方引用断掉） */
+  .tag-section .ts-title{font-size:15px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin:18px 0 12px 0;}
   .tag-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;min-height:30px;}
   .tag-list:empty::after{content:'还没有添加标签';font-size:14px;color:#aab3bf;}
 
@@ -1850,8 +1856,8 @@
   .rating-row{display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
   .rating-row label{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap;}
   /* 景点管理 */
-  /* 【弹窗尺寸优化】景点区内边距放大 18→24px */
-  .attraction-section{padding:0 24px 18px;}
+  /* 【弹窗尺寸优化】景点区内边距放大 18→24px；左右 padding 改 0，让标题与照片管理/标签管理左对齐 */
+  .attraction-section{padding:0 0 18px;}
   .attraction-item{
     background:#080808;border:1px solid var(--line);border-radius:10px;
     padding:14px 16px;margin-bottom:12px;
@@ -2524,7 +2530,7 @@
       </div>
       <div class="modal-body">
         <!-- 照片管理区标题（与标签管理/景点管理样式统一） -->
-        <div class="ts-title" style="margin-bottom:12px;">照片管理</div>
+        <div class="section-title">照片管理</div>
         <div id="thumbsGrid" class="thumbs"></div>
         <div id="modalEmpty" class="empty" style="display:none;">
           <span class="big">还没有照片</span>
@@ -2532,7 +2538,7 @@
         </div>
         <!-- 标签管理区 -->
         <div class="tag-section">
-          <div class="ts-title">标签管理</div>
+          <div class="section-title">标签管理</div>
           <div class="tag-list" id="tagList"></div>
           <div class="tag-add-row">
             <input type="text" id="tagInput" placeholder="输入标签，如：故宫、火锅" maxlength="12" />
@@ -2546,7 +2552,7 @@
         </div>
         <!-- 景点管理区 -->
         <div class="attraction-section">
-          <div class="ts-title" style="margin-top:14px;">景点管理</div>
+          <div class="section-title">景点管理</div>
           <div id="attractionList"></div>
           <button class="attraction-add-btn" id="attractionAddBtn">+ 添加景点</button>
         </div>
