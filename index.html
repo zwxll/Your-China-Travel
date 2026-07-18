@@ -684,35 +684,65 @@
   }
   .modal-overlay.show{display:flex;animation:fade .2s ease;}
   @keyframes fade{from{opacity:0}to{opacity:1}}
+  /* =====【滚动隔离核心】弹窗打开时锁定底层所有可滚动容器，仅弹窗内部可滚动 ===== */
+  body.modal-open .left-panel,
+  body.modal-open .dash-panel,
+  body.modal-open .modal-body{
+    overscroll-behavior:contain;  /* 阻止滚动链传播到底层 */
+  }
+  body.modal-open .left-panel > *,
+  body.modal-open .dash-panel > *{
+    pointer-events:none;  /* 弹窗遮罩期间，底层内容不响应交互 */
+  }
+  body.modal-open .modal-overlay,
+  body.modal-open .modal-overlay *{
+    pointer-events:auto;  /* 弹窗自身恢复正常交互 */
+  }
+  /* =====【弹窗尺寸优化】等比放大：640→760px，高度 86vh→88vh，内部控件不拥挤 ===== */
   .modal{
-    width:min(640px,100%);max-height:86vh;display:flex;flex-direction:column;
+    width:min(760px,100%);max-height:88vh;display:flex;flex-direction:column;
     background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
     overflow:hidden;animation:pop .22s cubic-bezier(.2,.8,.3,1.1);
   }
   @keyframes pop{from{transform:translateY(14px) scale(.98);opacity:0}to{transform:none;opacity:1}}
+  /* =====【弹窗尺寸优化】头部内边距放大 16→20px，标题字号 18→20px ===== */
   .modal-head{
     display:flex;align-items:center;justify-content:space-between;gap:12px;
-    padding:16px 18px;border-bottom:1px solid var(--line);
+    padding:20px 24px;border-bottom:1px solid var(--line);
     background:linear-gradient(135deg,#080808,#080808);
+    flex:0 0 auto;
   }
   .modal-title{display:flex;align-items:center;gap:10px;min-width:0;}
   .modal-title .pin-sm{color:var(--accent);flex:0 0 auto;}
-  .modal-title h2{margin:0;font-size:18px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .modal-count{font-size:12px;color:var(--muted);font-weight:500;margin-left:6px;white-space:nowrap;}
+  /* 【弹窗尺寸优化】标题字号放大 18→20px */
+  .modal-title h2{margin:0;font-size:20px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .modal-count{font-size:13px;color:var(--muted);font-weight:500;margin-left:6px;white-space:nowrap;}
+  /* 【弹窗尺寸优化】关闭按钮放大 32→38px */
   .icon-btn{
-    flex:0 0 auto;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);
-    background:#080808;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;
+    flex:0 0 auto;width:38px;height:38px;border-radius:10px;border:1px solid var(--line);
+    background:#080808;color:var(--muted);font-size:22px;line-height:1;cursor:pointer;
     display:grid;place-items:center;transition:.15s;
   }
   .icon-btn:hover{background:#0f0f0f;color:var(--ink);}
+  /* 【弹窗尺寸优化】地标栏内边距放大 18→24px */
   .modal-landmark{
-    padding:8px 18px;font-size:12px;color:#7a8694;font-weight:500;
+    padding:10px 24px;font-size:13px;color:#7a8694;font-weight:500;
     background:linear-gradient(90deg,#080808,rgba(8,8,8,0));
     border-bottom:1px solid var(--line);
+    flex:0 0 auto;
   }
-  .modal-body{flex:1 1 auto;overflow-y:auto;padding:16px 18px;}
+  /* =====【滚动隔离核心】弹窗 body 独立滚动容器，flex:1 + min-height:0 确保不撑破父容器 ===== */
+  .modal-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:20px 24px;
+    /* 自定义滚动条适配深色主题 */
+    scrollbar-width:thin;scrollbar-color:rgba(125,211,252,.4) transparent;
+  }
+  .modal-body::-webkit-scrollbar{width:8px;}
+  .modal-body::-webkit-scrollbar-track{background:transparent;}
+  .modal-body::-webkit-scrollbar-thumb{background:rgba(125,211,252,.35);border-radius:4px;}
+  .modal-body::-webkit-scrollbar-thumb:hover{background:rgba(125,211,252,.6);}
+  /* 【弹窗尺寸优化】照片网格放大：minmax 108→124px，gap 12→14px */
   .thumbs{
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:12px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(124px,1fr));gap:14px;
   }
   /* ===== 弹窗顶部城市大图缩略图：3D 浮空透视效果（全站统一）===== */
   .thumb{
@@ -733,37 +763,42 @@
     transform:perspective(600px) rotateX(-5deg) rotateY(5deg) translateZ(22px) scale(1.06);
     box-shadow:0 12px 28px rgba(0,0,0,.16);
   }
+  /* 【弹窗尺寸优化】删除图标放大 24→28px，居中适配大图 */
   .thumb-del{
-    position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;
-    border:none;cursor:pointer;color:#fff;font-size:15px;line-height:1;
+    position:absolute;top:8px;right:8px;width:28px;height:28px;border-radius:50%;
+    border:none;cursor:pointer;color:#fff;font-size:17px;line-height:1;
     background:rgba(20,28,38,.6);backdrop-filter:blur(2px);
     display:grid;place-items:center;transition:.15s;
   }
   .thumb-del:hover{background:#e53e3e;}
   .thumb.dragging{opacity:.4;transform:scale(.92);}
   .thumb.drag-over{outline:3px dashed var(--accent);outline-offset:2px;}
+  /* 【弹窗尺寸优化】序号标放大 20→24px */
   .thumb-order{
-    position:absolute;top:6px;left:6px;min-width:20px;height:20px;border-radius:50%;
-    background:rgba(20,28,38,.55);backdrop-filter:blur(2px);color:#fff;font-size:11px;
-    font-weight:700;display:grid;place-items:center;padding:0 4px;pointer-events:none;
+    position:absolute;top:8px;left:8px;min-width:24px;height:24px;border-radius:50%;
+    background:rgba(20,28,38,.55);backdrop-filter:blur(2px);color:#fff;font-size:12px;
+    font-weight:700;display:grid;place-items:center;padding:0 5px;pointer-events:none;
   }
   .thumb-name{
-    position:absolute;left:0;right:0;bottom:0;padding:4px 6px;font-size:10px;color:#fff;
+    position:absolute;left:0;right:0;bottom:0;padding:5px 7px;font-size:11px;color:#fff;
     background:linear-gradient(transparent,rgba(0,0,0,.6));
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   }
   .empty{
     text-align:center;color:var(--muted);font-size:14px;line-height:1.8;
-    padding:38px 12px;border:1px dashed var(--line);border-radius:12px;background:#080808;
+    padding:44px 14px;border:1px dashed var(--line);border-radius:12px;background:#080808;
   }
-  .empty .big{display:block;font-size:15px;color:#4a5563;margin-bottom:4px;font-weight:600;}
+  .empty .big{display:block;font-size:16px;color:#4a5563;margin-bottom:4px;font-weight:600;}
+  /* 【弹窗尺寸优化】底部通栏按钮上下内边距加大 14→18px */
   .modal-foot{
     display:flex;align-items:center;gap:12px;flex-wrap:wrap;
-    padding:14px 18px;border-top:1px solid var(--line);background:rgba(0,0,0,.6);
+    padding:18px 24px;border-top:1px solid var(--line);background:rgba(0,0,0,.6);
+    flex:0 0 auto;
   }
+  /* 【弹窗尺寸优化】按钮放大：padding 9→11px，字号 14→15px */
   .btn{
     display:inline-flex;align-items:center;gap:7px;cursor:pointer;
-    padding:9px 16px;border-radius:var(--radius-xs);font-size:14px;font-weight:600;
+    padding:11px 20px;border-radius:var(--radius-xs);font-size:15px;font-weight:600;
     border:none;transition:.2s ease;user-select:none;
   }
   .btn.primary{
@@ -771,7 +806,7 @@
     box-shadow:0 6px 14px rgba(232,148,60,.35);
   }
   .btn.primary:hover{filter:brightness(1.05);transform:translateY(-1px);}
-  .hint{font-size:12px;color:var(--muted);}
+  .hint{font-size:13px;color:var(--muted);}
 
   /* 灯箱 */
   .lightbox{
@@ -1081,20 +1116,22 @@
   .tag-pill.food{background:rgba(232,148,60,.12);color:var(--accent-d);}
   .tag-pill.other{background:rgba(61,127,184,.1);color:var(--blue-d);}
   /* 年月选择器行 */
+  /* 【弹窗尺寸优化】年月行内边距放大 10→14px，与弹窗宽度匹配 */
   .month-picker{
-    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-    padding:10px 18px;border-bottom:1px solid var(--line);background:#080808;
+    display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:14px 24px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;
   }
-  .month-picker label{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;}
+  .month-picker label{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap;}
   .month-picker input[type=month]{
-    border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:13px;color:var(--ink);background:#080808;
+    border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:14px;color:var(--ink);background:#080808;
   }
-  .month-picker .btn{padding:6px 12px;font-size:12.5px;}
+  .month-picker .btn{padding:8px 16px;font-size:13px;}
   /* 标签管理区 —— 放大间距与字号 */
-  .tag-section{margin-top:20px;padding-top:18px;border-top:1px dashed var(--line);}  /* mt 16→20, pt 14→18 */
-  .tag-section .ts-title{font-size:14px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin-bottom:10px;}  /* 12px→14px, mb 8→10 */
-  .tag-list{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;min-height:28px;}  /* gap 6→7, mb 10→12, mh 24→28 */
-  .tag-list:empty::after{content:'还没有添加标签';font-size:13px;color:#aab3bf;}  /* 12px→13px */
+  /* 【弹窗尺寸优化】标签区上间距 20→24px，上内边距 18→22px */
+  .tag-section{margin-top:24px;padding-top:22px;border-top:1px dashed var(--line);}
+  .tag-section .ts-title{font-size:15px;color:var(--muted);font-weight:700;letter-spacing:.5px;margin-bottom:12px;}
+  .tag-list{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px;min-height:30px;}
+  .tag-list:empty::after{content:'还没有添加标签';font-size:14px;color:#aab3bf;}
 
   /* ===== 弹窗标签管理区 3D 漂浮透视效果（复用城市卡片同款动画）===== */
   /* 仅作用于弹窗内 .tag-section .tag-list 中的标签，不影响卡片标签 */
@@ -1123,15 +1160,16 @@
     font-size:12px;line-height:1;cursor:pointer;border:none;color:inherit;padding:0;flex:0 0 auto;  /* 11px→12px */
   }
   .tag-pill .tag-del:hover{background:rgba(0,0,0,.22);}
-  .tag-add-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+  .tag-add-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  /* 【弹窗尺寸优化】标签输入框放大 */
   .tag-add-row input[type=text]{
-    flex:1 1 120px;min-width:0;border:1px solid var(--line);border-radius:8px;
-    padding:6px 10px;font-size:13px;color:var(--ink);
+    flex:1 1 140px;min-width:0;border:1px solid var(--line);border-radius:8px;
+    padding:8px 12px;font-size:14px;color:var(--ink);
   }
   .tag-add-row select{
-    border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:12.5px;color:var(--ink);background:#080808;
+    border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--ink);background:#080808;
   }
-  .tag-add-row .btn{padding:6px 12px;font-size:12.5px;background:#080808;color:var(--blue-d);}
+  .tag-add-row .btn{padding:8px 16px;font-size:13px;background:#080808;color:var(--blue-d);}
 
   /* ===== 弯曲时间曲线时间轴样式 ===== */
   /* 迷你时间轴容器（右侧面板内） */
@@ -1786,9 +1824,9 @@
   .grid-card-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
   .grid-card-tags .tag-pill{font-size:9.5px;padding:1px 6px;max-width:60px;}
   /* ===== 星级评分 ===== */
-  .star-rating{display:inline-flex;gap:2px;}
+  .star-rating{display:inline-flex;gap:3px;}
   .star-rating .star{
-    font-size:18px;color:#ddd;cursor:pointer;transition:.15s;line-height:1;user-select:none;
+    font-size:22px;color:#ddd;cursor:pointer;transition:.15s;line-height:1;user-select:none;
   }
   .star-rating .star.active{color:#38bdf8;}
   .star-rating .star:hover{color:#f5c46a;}
@@ -1796,38 +1834,45 @@
   .star-display .star{font-size:13px;color:#38bdf8;line-height:1;}
   .star-display .star.empty{color:#ddd;}
   /* ===== 弹窗增强：封面图 + 景点 ===== */
-  .cover-section{padding:10px 18px;border-bottom:1px solid var(--line);background:#080808;}
-  .cover-section label{font-size:12.5px;color:var(--muted);font-weight:600;margin-right:10px;}
+  /* 【弹窗尺寸优化】封面区内边距放大 10→14px，与弹窗宽度匹配 */
+  .cover-section{padding:14px 24px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
+  .cover-section label{font-size:13px;color:var(--muted);font-weight:600;margin-right:12px;}
   .cover-preview{
-    width:100%;max-height:140px;object-fit:cover;border-radius:8px;margin-top:8px;
+    width:100%;max-height:160px;object-fit:cover;border-radius:10px;margin-top:10px;
     border:1px solid var(--line);cursor:pointer;
   }
+  /* 【弹窗尺寸优化】封面上传按钮放大 */
   .cover-upload-btn{
-    display:inline-block;padding:5px 12px;font-size:12px;font-weight:600;
-    background:var(--accent);color:#fff;border:none;border-radius:7px;cursor:pointer;
+    display:inline-block;padding:7px 16px;font-size:13px;font-weight:600;
+    background:var(--accent);color:#fff;border:none;border-radius:8px;cursor:pointer;
   }
-  .rating-row{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line);background:#080808;}
-  .rating-row label{font-size:12.5px;color:var(--muted);font-weight:600;white-space:nowrap;}
+  /* 【弹窗尺寸优化】推荐指数行内边距放大 10→14px，星级间距 2→3px */
+  .rating-row{display:flex;align-items:center;gap:12px;padding:14px 24px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
+  .rating-row label{font-size:13px;color:var(--muted);font-weight:600;white-space:nowrap;}
   /* 景点管理 */
-  .attraction-section{padding:0 18px 16px;}
+  /* 【弹窗尺寸优化】景点区内边距放大 18→24px */
+  .attraction-section{padding:0 24px 18px;}
   .attraction-item{
     background:#080808;border:1px solid var(--line);border-radius:10px;
-    padding:10px 12px;margin-bottom:10px;
+    padding:14px 16px;margin-bottom:12px;
   }
-  .attraction-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .attraction-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  /* 【弹窗尺寸优化】景点名称输入框放大 */
   .attraction-name-input{
-    flex:1;border:1px solid var(--line);border-radius:6px;padding:4px 8px;
-    font-size:13px;color:var(--ink);background:#080808;
+    flex:1;border:1px solid var(--line);border-radius:7px;padding:7px 10px;
+    font-size:14px;color:var(--ink);background:#080808;
   }
   .attraction-date-input{
-    flex:0 0 auto;border:1px solid var(--line);border-radius:6px;padding:4px 8px;
-    font-size:12px;color:var(--muted);background:#080808;cursor:pointer;
+    flex:0 0 auto;border:1px solid var(--line);border-radius:7px;padding:7px 10px;
+    font-size:13px;color:var(--muted);background:#080808;cursor:pointer;
   }
+  /* 【弹窗尺寸优化】景点删除按钮放大 24→28px */
   .attraction-del{
-    border:none;background:#fee;color:#c53030;width:24px;height:24px;border-radius:6px;
-    cursor:pointer;font-size:14px;display:grid;place-items:center;flex:0 0 auto;
+    border:none;background:#fee;color:#c53030;width:28px;height:28px;border-radius:7px;
+    cursor:pointer;font-size:16px;display:grid;place-items:center;flex:0 0 auto;
   }
-  .attraction-thumbs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:6px;}
+  /* 【弹窗尺寸优化】景点缩略图区间距放大 5→7px */
+  .attraction-thumbs{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:8px;}
   /* ===== 景点照片 3D 浮空透视效果（全站统一标准）===== */
   /* 透视容器：给内部照片缩略图提供 3D 空间 */
   .attraction-thumbs{perspective:600px;}
@@ -1836,9 +1881,10 @@
     outline:2px dashed rgba(125,211,252,.8);outline-offset:3px;
     background:rgba(125,211,252,.08);border-radius:8px;
   }
+  /* 【弹窗尺寸优化】景点缩略图放大 54→64px */
   .attraction-thumb{
     /* overflow 改为 visible：允许 3D 浮起后照片溢出容器不被裁剪 */
-    position:relative;width:54px;height:54px;border-radius:7px;overflow:visible;
+    position:relative;width:64px;height:64px;border-radius:8px;overflow:visible;
     border:1px solid var(--line);cursor:pointer;
     /* preserve-3d 让照片在 3D 空间中变换 */
     transform-style:preserve-3d;
@@ -1853,21 +1899,24 @@
   }
   /* 图片本体圆角裁剪，防止 overflow:visible 后图片溢出圆角 */
   .attraction-thumb img{
-    width:100%;height:100%;object-fit:cover;display:block;border-radius:7px;
+    width:100%;height:100%;object-fit:cover;display:block;border-radius:8px;
   }
+  /* 【弹窗尺寸优化】景点照片删除按钮放大 18→22px */
   .attraction-thumb .del{
-    position:absolute;top:0;right:0;width:18px;height:18px;background:rgba(0,0,0,.55);
-    color:#fff;border:none;border-radius:0 0 0 6px;cursor:pointer;font-size:10px;
+    position:absolute;top:0;right:0;width:22px;height:22px;background:rgba(0,0,0,.55);
+    color:#fff;border:none;border-radius:0 0 0 8px;cursor:pointer;font-size:12px;
     display:grid;place-items:center;
   }
+  /* 【弹窗尺寸优化】景点备注输入框放大 */
   .attraction-notes{
-    width:100%;border:1px solid var(--line);border-radius:6px;padding:4px 8px;
-    font-size:12px;color:var(--ink);resize:vertical;min-height:28px;background:#080808;
+    width:100%;border:1px solid var(--line);border-radius:7px;padding:7px 10px;
+    font-size:13px;color:var(--ink);resize:vertical;min-height:32px;background:#080808;
   }
+  /* 【弹窗尺寸优化】添加景点按钮放大 padding 10→14px，字号 13→14px */
   .attraction-add-btn{
-    display:block;width:100%;padding:10px;border:1px dashed var(--line);border-radius:var(--radius-xs);
+    display:block;width:100%;padding:14px;border:1px dashed var(--line);border-radius:var(--radius-xs);
     background:linear-gradient(135deg,rgba(232,148,60,.04),rgba(232,148,60,.08));
-    color:var(--accent-d);font-size:13px;font-weight:600;cursor:pointer;
+    color:var(--accent-d);font-size:14px;font-weight:600;cursor:pointer;
     transition:background .25s ease,border-color .25s ease,transform .2s ease;
   }
   .attraction-add-btn:hover{
@@ -1875,9 +1924,10 @@
     background:linear-gradient(135deg,rgba(232,148,60,.1),rgba(232,148,60,.16));
     transform:translateY(-1px);
   }
+  /* 【弹窗尺寸优化】景点上传按钮放大 */
   .attraction-upload-btn{
-    display:inline-block;padding:3px 8px;font-size:11px;font-weight:600;
-    background:#080808;color:#38bdf8;border:1px solid #2a3340;border-radius:5px;cursor:pointer;
+    display:inline-block;padding:5px 11px;font-size:12px;font-weight:600;
+    background:#080808;color:#38bdf8;border:1px solid #2a3340;border-radius:6px;cursor:pointer;
   }
   /* ===== 全屏总览模式 ===== */
   body.fullscreen-grid header{display:none;}
@@ -5138,6 +5188,8 @@
     setStarRating(0);
     attractionListEl.innerHTML='';
     modalOverlay.classList.add('show');
+    /* =====【滚动隔离核心】弹窗打开时锁定底层页面滚动，防止滚动穿透 ===== */
+    document.body.classList.add('modal-open');
     loadCityPhotos(city.cityKey);
     loadCityMeta(city.cityKey);
   }
@@ -5406,6 +5458,8 @@
   function closeModal(){
     modalOverlay.classList.remove('show');
     currentCity=null;
+    /* =====【滚动隔离核心】弹窗关闭时恢复底层页面滚动 ===== */
+    document.body.classList.remove('modal-open');
   }
 
   /* ---------- 已点亮城市卡片展示区 ---------- */
