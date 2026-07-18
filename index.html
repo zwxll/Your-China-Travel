@@ -1845,11 +1845,10 @@
   /* =====【弹窗尺寸缩小】封面区内边距 14→10px，字号 13→12px ===== */
   .cover-section{padding:10px 18px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
   .cover-section label{font-size:12px;color:var(--muted);font-weight:600;margin-right:10px;}
-  /* =====【封面预览修复】固定宽高比容器，杜绝拉伸变形 ===== */
-  /* 容器：小型预览框，固定高度 120px，最大宽度 280px，居中显示 */
+  /* =====【封面预览修复】固定高度 + 水平居中，杜绝拉伸变形 ===== */
+  /* 容器：高度固定 250px，宽度 80%，margin 左右 auto 实现水平居中（左右空余宽度相同） */
   .cover-preview-wrap{
-    position:relative;width:100%;max-width:280px;margin-top:8px;
-    aspect-ratio:16/7;            /* 固定宽高比，容器不会无限拉长 */
+    position:relative;width:80%;height:250px;margin:8px auto 0;
     border-radius:8px;           /* 圆角，和整体UI统一 */
     border:1px solid var(--line); /* 细微边框，明确展示边界 */
     overflow:hidden;              /* 超出容器部分裁剪 */
