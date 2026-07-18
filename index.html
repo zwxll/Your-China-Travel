@@ -1843,9 +1843,23 @@
   /* 【弹窗尺寸优化】封面区内边距放大 10→14px，与弹窗宽度匹配 */
   .cover-section{padding:14px 24px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
   .cover-section label{font-size:13px;color:var(--muted);font-weight:600;margin-right:12px;}
-  .cover-preview{
-    width:100%;max-height:160px;object-fit:cover;border-radius:10px;margin-top:10px;
-    border:1px solid var(--line);cursor:pointer;
+  /* =====【封面预览修复】固定宽高比容器，杜绝拉伸变形 ===== */
+  /* 容器：固定 16:7 横版比例（适配卡片封面），居中、圆角、边框，深色玻璃UI统一 */
+  .cover-preview-wrap{
+    position:relative;width:100%;margin-top:10px;
+    aspect-ratio:16/7;            /* 固定宽高比，容器不会无限拉长 */
+    border-radius:10px;           /* 圆角，和整体UI统一 */
+    border:1px solid var(--line); /* 细微边框，明确展示边界 */
+    overflow:hidden;              /* 超出容器部分裁剪 */
+    background:#080808;           /* 空状态背景 */
+    display:none;                 /* 默认隐藏，有图才显示 */
+  }
+  /* 图片：绝对定位铺满容器，object-fit:cover 保持原图比例，居中裁剪，不变形 */
+  .cover-preview-wrap .cover-preview{
+    position:absolute;inset:0;width:100%;height:100%;
+    object-fit:cover;             /* 填充容器，保持比例，超出居中裁剪 */
+    object-position:center center;/* 水平+垂直居中，适配竖图/横图/方形 */
+    display:block;cursor:pointer;border:none;border-radius:10px;
   }
   /* 【弹窗尺寸优化】封面上传按钮放大 */
   .cover-upload-btn{
@@ -2509,7 +2523,10 @@
         <label>城市封面</label>
         <button class="cover-upload-btn" id="coverUploadBtn">上传封面</button>
         <input type="file" id="coverFileInput" accept="image/*" hidden />
-        <img id="coverPreview" class="cover-preview" style="display:none;" alt="封面" />
+        <!-- 封面预览容器：固定 16:7 宽高比，杜绝拉伸变形 -->
+        <div class="cover-preview-wrap" id="coverPreviewWrap">
+          <img id="coverPreview" class="cover-preview" alt="封面" />
+        </div>
       </div>
       <!-- 推荐指数 -->
       <div class="rating-row">
@@ -2746,7 +2763,7 @@
         tagAddBtn=$('tagAddBtn');
   // 封面图 + 星级 + 景点
   const coverUploadBtn=$('coverUploadBtn'), coverFileInput=$('coverFileInput'),
-        coverPreview=$('coverPreview'), starRatingEl=$('starRating'),
+        coverPreview=$('coverPreview'), coverPreviewWrap=$('coverPreviewWrap'), starRatingEl=$('starRating'),
         attractionListEl=$('attractionList'), attractionAddBtn=$('attractionAddBtn');
   // 景点详情页元素
   const attDetailOverlay=$('attDetailOverlay'), attDetailCityName=$('attDetailCityName'),
@@ -5191,7 +5208,7 @@
     monthInput.value='';
     tagList.innerHTML='';
     tagInput.value='';
-    coverPreview.style.display='none';
+    coverPreviewWrap.style.display='none';
     coverPreview.src='';
     setStarRating(0);
     attractionListEl.innerHTML='';
@@ -5210,7 +5227,7 @@
       // 封面图
       if(meta.coverImage){
         coverPreview.src=meta.coverImage;
-        coverPreview.style.display='block';
+        coverPreviewWrap.style.display='block';
       }
       // 星级
       setStarRating(meta.rating||0);
@@ -5390,7 +5407,7 @@
     meta.coverImage=dataUrl;
     await saveCityMeta(meta);
     coverPreview.src=dataUrl;
-    coverPreview.style.display='block';
+    coverPreviewWrap.style.display='block';
     renderCityCards();
   }
   // 渲染标签列表到弹窗
