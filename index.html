@@ -1831,6 +1831,11 @@
   /* ===== 景点照片 3D 浮空透视效果（全站统一标准）===== */
   /* 透视容器：给内部照片缩略图提供 3D 空间 */
   .attraction-thumbs{perspective:600px;}
+  /* 拖拽上传高亮：虚线边框 + 柔和底色，提示当前可投放区（不改动原有视觉） */
+  .attraction-thumbs.attraction-thumbs-dragover{
+    outline:2px dashed rgba(125,211,252,.8);outline-offset:3px;
+    background:rgba(125,211,252,.08);border-radius:8px;
+  }
   .attraction-thumb{
     /* overflow 改为 visible：允许 3D 浮起后照片溢出容器不被裁剪 */
     position:relative;width:54px;height:54px;border-radius:7px;overflow:visible;
@@ -5216,6 +5221,24 @@
         input.click();
       });
       thumbs.appendChild(uploadBtn);
+      // ===== 拖拽上传：把图片文件拖到该景点缩略图区，自动上传到本景点 + 城市主相册 =====
+      thumbs.addEventListener('dragover',e=>{
+        e.preventDefault();
+        e.dataTransfer.dropEffect='copy';
+        thumbs.classList.add('attraction-thumbs-dragover');
+      });
+      thumbs.addEventListener('dragleave',e=>{
+        // 仅当真正离开容器（relatedTarget 不在 thumbs 内）才移除高亮
+        if(!thumbs.contains(e.relatedTarget)) thumbs.classList.remove('attraction-thumbs-dragover');
+      });
+      thumbs.addEventListener('drop',e=>{
+        e.preventDefault();
+        thumbs.classList.remove('attraction-thumbs-dragover');
+        const dt=e.dataTransfer;
+        if(!dt||!dt.files||!dt.files.length) return;
+        const files=Array.from(dt.files).filter(f=>f.type.startsWith('image/'));
+        if(files.length) uploadAttractionPhotos(idx,files);
+      });
       // 备注
       const notes=document.createElement('textarea');
       notes.className='attraction-notes';
@@ -5259,13 +5282,35 @@
     if(!currentCity||!files.length) return;
     const meta=await getCityMeta(currentCity.cityKey);
     if(!meta.attractions||!meta.attractions[idx]) return;
+    // 同步写入城市主相册，order 接在当前城市已有照片之后
+    const existing=await getPhotosByCity(currentCity.cityKey);
+    let baseOrder=existing.length?Math.max(...existing.map(p=>p.order||0)):0;
+    let ok=0,fail=0;
     for(const f of files){
-      const dataUrl=await compressImage(f,1200,0.82);
-      meta.attractions[idx].photos.push({id:Date.now()+Math.random(),dataUrl});
+      try{
+        const dataUrl=await compressImage(f,1200,0.82);
+        meta.attractions[idx].photos.push({id:Date.now()+Math.random(),dataUrl});
+        // 同步存入顶部城市主相册（IndexedDB photos 表）
+        baseOrder+=1;
+        await addPhoto({
+          cityKey:currentCity.cityKey,
+          cityName:currentCity.name,
+          adcode:currentCity.adcode,
+          name:f.name,
+          dataUrl:dataUrl,
+          timestamp:Date.now(),
+          order:baseOrder
+        });
+        ok++;
+      }catch(err){ console.error(err); fail++; }
     }
     await saveCityMeta(meta);
     renderAttractions(meta.attractions);
+    await loadCityPhotos(currentCity.cityKey);
     renderCityCards();
+    await refreshState();
+    if(ok) toast('景点照片已上传 '+ok+' 张到相册'+(fail?('，'+fail+' 张失败'):''));
+    else if(fail) toast('上传失败：'+fail+' 张',true);
   }
   // 删除景点照片
   async function deleteAttractionPhoto(idx,pi){
