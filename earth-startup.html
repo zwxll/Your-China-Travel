@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chinese footprint - 启动页</title>
+<style>
+  /* ===== 全局重置与全屏 ===== */
+  *{ margin:0; padding:0; box-sizing:border-box; }
+  html,body{ width:100%; height:100%; }
+  body{
+    overflow:hidden;                                  /* 全屏无滚动 */
+    /* 深空背景：径向渐变营造宇宙深邃感 */
+    background:radial-gradient(ellipse at center, #0a0e1a 0%, #000000 70%);
+    font-family:'PingFang SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  }
+
+  /* ===== 底层：3D 地球容器（z-index:1，可交互拖拽缩放） ===== */
+  #globeViz{
+    position:fixed;
+    inset:0;
+    width:100vw;
+    height:100vh;
+    z-index:1;
+    pointer-events:auto;                              /* 允许鼠标拖拽旋转与滚轮缩放 */
+  }
+  #globeViz canvas{width:100%!important;height:100%!important;display:block;}
+
+  /* ===== 上层：标题 + 按钮悬浮层（z-index:10，整体穿透） ===== */
+  .launch-overlay{
+    position:fixed;
+    inset:0;
+    z-index:10;
+    pointer-events:none;                              /* 整体穿透，让鼠标事件落到地球 */
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    padding-top:14vh;                                 /* 标题距顶部约 18% 位置 */
+  }
+
+  /* ===== 标题双层结构 ===== */
+  /* 外层包裹：relative 定位，内含发光层与扫光层 */
+  .launch-title-wrap{
+    position:relative;
+    display:inline-block;
+    line-height:1.1;
+  }
+  /* 标题通用字体属性（两层共用，确保完全对齐） */
+  .launch-title,
+  .launch-title-glow{
+    font-size:clamp(2.5rem, 6vw, 5rem);              /* 全屏自适应 */
+    font-weight:800;
+    letter-spacing:0.08em;
+    margin:0;
+    white-space:nowrap;
+  }
+  /* 发光层（绝对定位，位于底层）：白色文字 + 微光 text-shadow */
+  .launch-title-glow{
+    position:absolute;
+    inset:0;
+    color:#ffffff;
+    text-shadow:0 0 20px rgba(186,230,253,0.6),
+               0 0 40px rgba(56,189,248,0.3);
+    pointer-events:none;
+  }
+  /* 扫光层（位于上层）：background-clip:text 实现 shiny 扫光 */
+  .launch-title{
+    position:relative;
+    background:linear-gradient(135deg,
+      #ffffff 0%,
+      #ffffff 42%,
+      #bae6fd 50%,
+      #ffffff 58%,
+      #ffffff 100%);
+    background-size:250% 100%;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;                                /* 文字透明，仅显示渐变扫光 */
+    animation:shinySweep 6s ease-in-out infinite;
+  }
+  /* shiny 扫光动画：渐变位置循环移动 */
+  @keyframes shinySweep{
+    0%   { background-position:150% 0; }
+    26.7%{ background-position:-50% 0; }
+    50%  { background-position:-50% 0; }
+    76.7%{ background-position:150% 0; }
+    100% { background-position:150% 0; }
+  }
+
+  /* ===== 副标题 ===== */
+  .launch-subtitle{
+    font-size:clamp(0.9rem, 1.8vw, 1.3rem);
+    color:rgba(186,230,253,0.7);
+    letter-spacing:0.3em;
+    margin-top:12px;
+    font-weight:400;
+    text-align:center;
+  }
+
+  /* ===== 按钮：specular 镜面玻璃质感 ===== */
+  .launch-btn{
+    pointer-events:auto;                              /* 按钮单独捕获点击（穿透层中唯一可交互元素） */
+    position:relative;
+    overflow:hidden;
+    margin-top:48px;                                  /* 距副标题约 40px+ */
+    padding:14px 48px;
+    border-radius:12px;
+    font-size:15px;
+    font-weight:700;
+    cursor:pointer;
+    text-align:center;
+    letter-spacing:2px;
+    /* 玻璃质感背景 */
+    background:rgba(8,8,8,0.55);
+    backdrop-filter:blur(8px) saturate(140%);
+    -webkit-backdrop-filter:blur(8px) saturate(140%);
+    color:#38bdf8;
+    border:1.5px solid rgba(56,189,248,.7);
+    box-shadow:0 3px 12px rgba(56,189,248,.25),
+               inset 0 0 12px rgba(56,189,248,.12);
+    transition:transform .25s cubic-bezier(.4,0,.2,1),
+               box-shadow .25s ease,
+               border-color .25s ease;
+  }
+  /* 底部径向高光（增强镜面感） */
+  .launch-btn::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    border-radius:inherit;
+    background:radial-gradient(120% 80% at 50% 120%,
+      rgba(56,189,248,0.20),
+      transparent 60%);
+    opacity:.6;
+    pointer-events:none;
+    transition:opacity .3s ease;
+  }
+  /* 镜面扫光条：斜向移动的高光带 */
+  .launch-btn::after{
+    content:'';
+    position:absolute;
+    top:0;
+    left:-60%;
+    width:50%;
+    height:100%;
+    background:linear-gradient(105deg,
+      transparent 0%,
+      rgba(186,230,253,0) 30%,
+      rgba(186,230,253,0.5) 50%,
+      rgba(186,230,253,0) 70%,
+      transparent 100%);
+    transform:skewX(-18deg);
+    pointer-events:none;
+    animation:btnSweep 3.5s ease-in-out infinite;
+  }
+  @keyframes btnSweep{
+    0%  { left:-60%; }
+    55% { left:120%; }
+    100%{ left:120%; }
+  }
+  /* hover：上浮 + 加强发光 */
+  .launch-btn:hover{
+    transform:translateY(-2px) scale(1.02);
+    box-shadow:0 8px 24px rgba(56,189,248,.4),
+               inset 0 0 16px rgba(56,189,248,.2);
+    border-color:rgba(56,189,248,.95);
+  }
+  .launch-btn:hover::before{ opacity:1; }
+  .launch-btn:active{ transform:translateY(0) scale(0.98); }
+</style>
+</head>
+<body>
+
+  <!-- ========== 底层：globe.gl 3D 云层地球（z-index:1，全屏铺满，可交互） ========== -->
+  <div id="globeViz"></div>
+
+  <!-- ========== 上层：标题 + 按钮（z-index:10，整体穿透，按钮单独可点） ========== -->
+  <div class="launch-overlay">
+    <!-- 标题双层：发光层 + 扫光层 -->
+    <div class="launch-title-wrap">
+      <h1 class="launch-title-glow">Chinese footprint</h1>
+      <h1 class="launch-title">Chinese footprint</h1>
+    </div>
+    <!-- 副标题 -->
+    <p class="launch-subtitle">点亮你走过的每一座城市</p>
+    <!-- 启动按钮 -->
+    <button class="launch-btn" id="startBtn">开始记录</button>
+  </div>
+
+  <!-- ========== globe.gl 依赖（UMD，暴露全局 Globe） ========== -->
+  <script src="//cdn.jsdelivr.net/npm/globe.gl"></script>
+
+  <!-- ========== 主逻辑：地球 / 云层 / 光照 / 自转 / 跳转 ========== -->
+  <script type="module">
+    import * as THREE from 'https://esm.sh/three';
+
+    /* ---------- 地球初始化（纹理 + 凹凸贴图） ---------- */
+    const world = new Globe(document.getElementById('globeViz'), { animateIn: false })
+      .globeImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg')
+      .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png');
+
+    /* ---------- 全屏尺寸适配 ---------- */
+    world.width(window.innerWidth).height(window.innerHeight);
+
+    /* ---------- 地球自动缓慢自转 ---------- */
+    world.controls().autoRotate = true;
+    world.controls().autoRotateSpeed = 0.35;           // 慢速自转
+
+    /* ---------- 初始视角：定位到中国上空，地球占视口约 60-70% ---------- */
+    world.pointOfView({ lat: 20, lng: 105, altitude: 2.5 });
+
+    /* ---------- 补充光照：环境光 + 方向光，让地球与云层有立体感 ---------- */
+    /* 注：globe.gl 默认已带光源，此处补充以增强云层可见度与昼夜分界 */
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    world.scene().add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(1, 1, 1);
+    world.scene().add(dirLight);
+
+    /* ---------- 云层：独立球体包裹地球，独立旋转 ---------- */
+    const CLOUDS_URLS = [
+      // 主用 CDN（jsdelivr 对 gh 仓库有稳定 CORS 支持）
+      'https://cdn.jsdelivr.net/gh/turban/webgl-earth@master/media/fair_clouds_4k.png',
+      // 备用：raw.githubusercontent 原始来源
+      'https://raw.githubusercontent.com/turban/webgl-earth/master/media/fair_clouds_4k.png'
+    ];
+    const CLOUDS_ALT = 0.004;                          // 云层高度（相对地球半径）
+    const CLOUDS_ROTATION_SPEED = -0.006;              // 云层旋转速度（度/帧）
+
+    function loadClouds(urlIndex = 0) {
+      if (urlIndex >= CLOUDS_URLS.length) return;      // 全部失败则放弃
+      new THREE.TextureLoader().load(
+        CLOUDS_URLS[urlIndex],
+        cloudsTexture => {
+          // 创建云层球体（略大于地球）
+          const clouds = new THREE.Mesh(
+            new THREE.SphereGeometry(world.getGlobeRadius() * (1 + CLOUDS_ALT), 75, 75),
+            new THREE.MeshPhongMaterial({ map: cloudsTexture, transparent: true })
+          );
+          world.scene().add(clouds);
+          // 云层独立旋转动画（与地球自转方向/速度不同）
+          (function rotateClouds() {
+            clouds.rotation.y += CLOUDS_ROTATION_SPEED * Math.PI / 180;
+            requestAnimationFrame(rotateClouds);
+          })();
+        },
+        undefined,
+        () => loadClouds(urlIndex + 1)                 // 加载失败则尝试备用地址
+      );
+    }
+    loadClouds();
+
+    /* ---------- 窗口尺寸变化时同步更新地球画布 ---------- */
+    window.addEventListener('resize', () => {
+      world.width(window.innerWidth).height(window.innerHeight);
+    });
+
+    /* ---------- 按钮点击：跳转主旅游地图页面 ---------- */
+    // 如仅作演示，可将下方跳转注释掉
+    document.getElementById('startBtn').addEventListener('click', () => {
+      window.location.href = './index.html';           // 同目录主页面
+    });
+  </script>
+</body>
+</html>
