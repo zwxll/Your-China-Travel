@@ -3,17 +3,48 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-<!-- Inter 可变字体（Variable Proximity 效果需要 wght 轴） -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Inter 可变字体（self-host，Variable Proximity 效果需要 wght 轴；原 Google Fonts <link> 改为本地 @font-face） -->
 <!-- 【部署优化】预解析外部 CDN 域名，减少 ECharts/地图数据首屏连接耗时 -->
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 <link rel="dns-prefetch" href="https://fastly.jsdelivr.net">
 <link rel="dns-prefetch" href="https://unpkg.com">
 <link rel="dns-prefetch" href="https://geo.datav.aliyun.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
 <title>记录我的中国行</title>
 <style>
+  /* ===== Inter 可变字体 self-host（替代 Google Fonts <link>，规避外域依赖与隐私问题）===== */
+  @font-face{
+    font-family:'Inter';
+    src:url('assets/fonts/InterVariable.woff2') format('woff2-variations');
+    font-weight:100 900;
+    font-display:swap;
+    font-style:normal;
+  }
+  @font-face{
+    font-family:'Inter';
+    src:url('assets/fonts/InterVariable-Italic.woff2') format('woff2-variations');
+    font-weight:100 900;
+    font-display:swap;
+    font-style:italic;
+  }
+  /* Figtree 可变字体（self-host，仅用于 Chinese Footprint 标题 display 字体，reactbits variable-proximity 同款） */
+  @font-face{
+    font-family:'Figtree';
+    src:url('assets/fonts/Figtree-Variable.ttf') format('truetype-variations');
+    font-weight:100 900;
+    font-display:swap;
+    font-style:normal;
+  }
+  /* Playfair Display 可变字体（self-host，艺术风格衬线 display 字体，支持 wght 轴）
+   * 【SKILL.md 4.1 SERIF DISCIPLINE】Fraunces 被 SPECIFICALLY BANNED，替换为允许池中的 Playfair Display。
+   * 论证：旅行记录 = 旅行日记 = editorial / manuscript 美学，Playfair Display 经典衬线气质契合"记录足迹"编辑感。
+   * VP 鼠标交互仍通过 wght 轴驱动（Playfair Display 仅有 wght 轴，无 opsz） */
+  @font-face{
+    font-family:'Playfair Display';
+    src:url('assets/fonts/PlayfairDisplay-Variable.ttf') format('truetype-variations');
+    font-weight:400 900;
+    font-display:swap;
+    font-style:normal;
+  }
   :root{
     /* ===== 全局配色：纯黑科技基底 + 青蓝主色（原为米白+橙）===== */
     --ink:#f8fafc;          /* 主标题文字：冷亮白（原 #1f2a37）*/
@@ -33,18 +64,54 @@
     --shadow:0 8px 28px rgba(0,0,0,.50);      /* 深色柔和阴影（原 rgba(31,42,55,.10)）*/
     --shadow-sm:0 3px 12px rgba(0,0,0,.40);   /* 浅阴影（原 .06）*/
     --shadow-hover:0 14px 36px rgba(0,0,0,.60); /* hover 加深（原 .14）*/
-    --radius:16px;
-    --radius-sm:12px;
-    --radius-xs:8px;
+    /* ===== 圆角系统（Shape Consistency Lock，skill 4.4）=====
+     * 规则：卡片/面板 16px · 数据单元/输入 12px · 紧凑元素 8px · 按钮/胶囊 999px · 进度条/细条 6px
+     * 全站统一使用这些变量，禁止散落硬编码值。滚动条 thumb 3px 属系统微件例外。 */
+    --radius:16px;          /* 卡片/大面板（dash-card、star-border 容器） */
+    --radius-sm:12px;       /* 数据单元（stat-cell）、小卡片、输入框、按钮组容器 */
+    --radius-xs:8px;        /* 紧凑元素（icon 容器、小按钮） */
+    --radius-pill:999px;    /* 按钮/胶囊（launch-btn、view-tab active、tag） */
+    --radius-bar:6px;       /* 进度条/细条（prog-bar、prog-fill） */
+    /* ===== Z-Index 层级系统（SKILL.md 6.F Z-INDEX RESTRAINT）=====
+     * 文档化全站 z-index scale，禁止散落任意值。分层语义如下：
+     *   0   基础内容层（卡片内文、默认流）
+     *   1   卡片内提升（内容压过流星/背景层）
+     *   2   粒子星空背景（启动页）
+     *   3   射线/流体背景层
+     *   5   云层旋转、装饰光带
+     *   6   光线背景层
+     *   8   底层动画背景
+     *   10  启动页标题+按钮悬浮层
+     *   20  背景噪声/纹理覆盖
+     *   50  启动屏全屏遮罩 / 弹窗遮罩
+     *   60  全局颗粒/噪声固定层
+     *   80  顶部导航/固定栏
+     *   100 页面过渡黑屏遮罩
+     *   999 最高优先级（tooltip / 极端覆盖）
+     * 使用时引用语义注释，禁止 z-50/z-10 散落堆砌 */
+    --z-base:0; --z-raised:1; --z-bg-particle:2; --z-bg-ray:3; --z-bg-cloud:5;
+    --z-bg-light:6; --z-bg-anim:8; --z-overlay-launch:10; --z-noise:20;
+    --z-modal:50; --z-grain:60; --z-nav:80; --z-transition:100; --z-top:999;
     --pad:22px;
   }
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
+  /* 【SKILL.md 6.B REDUCED MOTION】全局覆盖：禁用所有无限循环动画（流星、边缘光辉、粒子、自转等），
+   * MOTION_INTENSITY=6 > 3，必须完整支持 prefers-reduced-motion。
+   * 已有 .vp-char 和 .launch-subtitle 局部覆盖，此块补充流星/光辉/其他 CSS 无限动画 */
+  @media (prefers-reduced-motion: reduce){
+    .meteor,.city-card-bglow,.shiny-text,.meteor::before{
+      animation:none !important;
+    }
+    .meteor{opacity:0 !important;}
+    .city-card-bglow{opacity:0 !important;}
+  }
   body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
     color:var(--ink);
     background:linear-gradient(160deg,var(--bg1) 0%,var(--bg2) 100%);  /* 【修复】恢复原始 body 渐变背景，射线改用高层 screen 叠加不再需要 body 透明 */
-    display:flex;flex-direction:column;height:100vh;overflow:hidden;
+    display:flex;flex-direction:column;height:100dvh;overflow:hidden;
+    /* 【SKILL.md 3.E VIEWPORT STABILITY】100vh→100dvh，避免 iOS Safari 地址栏导致布局跳动 */
     -webkit-font-smoothing:antialiased;
     text-rendering:optimizeLegibility;
   }
@@ -190,9 +257,7 @@
   .dash-panel #cityCardsPanel #gridView::-webkit-scrollbar-track{background:transparent;}
   /* 统一卡片样式：统一圆角、柔和阴影、标准化内边距 */
   .dash-card{
-    background:var(--card);
-    backdrop-filter:blur(14px) saturate(180%);
-    -webkit-backdrop-filter:blur(14px) saturate(180%);
+    background:rgba(8,8,8,0.92);                      /* 实色半透明（原 var(--card) + backdrop-filter，skill 9.A/5 dashboard 不宜毛玻璃，改实色降低 GPU 重绘） */
     border:1px solid var(--line-2);
     border-radius:var(--radius);
     box-shadow:var(--shadow-sm);
@@ -721,7 +786,8 @@
   .modal-count{font-size:12px;color:var(--muted);font-weight:500;margin-left:6px;white-space:nowrap;}
   /* 【弹窗尺寸缩小】关闭按钮 38→32px */
   .icon-btn{
-    flex:0 0 auto;width:32px;height:32px;border-radius:9px;border:1px solid var(--line);
+    flex:0 0 auto;width:32px;height:32px;border-radius:var(--radius-xs);border:1px solid var(--line);
+    /* 【SKILL.md 4.4 SHAPE CONSISTENCY LOCK】原 9px 硬编码改为圆角变量系统 --radius-xs:8px */
     background:#080808;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;
     display:grid;place-items:center;transition:.15s;
   }
@@ -892,36 +958,41 @@
     position:relative;margin-bottom:6px;line-height:1.4;height:44px;
     display:flex;align-items:center;
   }
-  /* 标题：Inter 可变字体，青蓝亮渐变文字（增强对比凸显 Chinese Footprint），字号与原 canvas 一致（26px） */
+  /* ===== Variable Proximity 可变字体效果：Chinese Footprint（reactbits variable-proximity）===== */
+  /* 容器：主地图面板内标题，水平居中展示，与下方统计文字视觉对齐 */
+  .vp-title-wrap{
+    position:relative;margin-bottom:6px;line-height:1.4;height:44px;
+    display:flex;align-items:center;justify-content:center;
+  }
+  /* 标题：Playfair Display 艺术衬线可变字体（Fraunces 被禁后的合规替代），青蓝基色，字号 26px */
+  /* 颜色与发光由 JS 按 influence 动态设置（鼠标越近越亮越发光），CSS 仅设 transition 保证平滑 */
+  /* 【SKILL.md 4.1】Playfair Display 仅有 wght 轴，无 opsz，VP JS 仅驱动 wght */
   .vp-title{
     margin:0;font-size:26px;letter-spacing:.5px;line-height:1.4;
-    font-family:'Inter',-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+    font-family:'Playfair Display','Figtree','Inter',-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",serif;
     font-variation-settings:'wght' 400;font-weight:400;
-    color:#7dd3fc; /* 降级纯色：不支持 background-clip:text 时仍可见（亮青蓝） */
-    filter:drop-shadow(0 0 8px rgba(125,211,252,.35)); /* 轻微发光，凸显字样 */
+    color:#38bdf8; /* 基色：青蓝主色（降级，JS 会覆盖） */
+    user-select:none;
   }
-  @supports((-webkit-background-clip:text) or (background-clip:text)){
-    .vp-title{
-      background:linear-gradient(90deg,#7dd3fc 0%,#38bdf8 25%,#e0f7ff 50%,#38bdf8 75%,#7dd3fc 100%);
-      background-size:200% 100%;
-      -webkit-background-clip:text;background-clip:text;
-      color:transparent;-webkit-text-fill-color:transparent;
-      animation:vpGradShift 6s linear infinite; /* 渐变缓慢流动，增强动态凸显 */
-    }
+  /* 词间距：Chinese 与 Footprint 两单词间适当空位（主地图 + 启动页标题通用） */
+  .vp-char.vp-space{
+    width:0.5em;
   }
-  @keyframes vpGradShift{
-    0%{background-position:0% 0;}
-    100%{background-position:-200% 0;}
-  }
-  /* 每个字符 span：inline 以便父级 background-clip:text 连续裁剪整段渐变 */
+  /* 每个字符 span：inline-block 以便 getBoundingClientRect 准确测量中心坐标供 VP 计算 */
   /* 【text-rewind 入场动画】字符从下方滑入回卷，逐字延迟，参考 kokonut text-rewind */
   /* 默认隐藏（opacity:0 + 翻转），等待 .rewind-play 类触发后才播放，确保用户能看见入场画面 */
-  .vp-title .vp-char{
-    display:inline;
-    transition:font-variation-settings .12s ease-out,font-weight .12s ease-out;
+  .vp-char{
+    display:inline-block;
+    transition:font-variation-settings .12s ease-out,font-weight .12s ease-out,color .15s ease-out,filter .15s ease-out;
     opacity:0;
     transform:translateY(1em) rotateX(-90deg);
     transform-origin:bottom;
+    will-change:font-variation-settings,color,filter;
+  }
+  /* 启动页大标题字符默认可见（GSAP autoAlpha 处理 .launch-title-wrap 淡入入场，无需 rewind 动画） */
+  .launch-title .vp-char{
+    opacity:1;
+    transform:none;
   }
   /* JS 在页面完全加载后给标题添加 .rewind-play，触发逐字回卷入场 */
   .vp-title.rewind-play .vp-char{
@@ -931,6 +1002,11 @@
     0%{opacity:0;transform:translateY(1em) rotateX(-90deg);}
     55%{opacity:1;transform:translateY(-0.12em) rotateX(15deg);}
     100%{opacity:1;transform:translateY(0) rotateX(0);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .vp-char{
+      opacity:1;transform:none;animation:none;transition:none;
+    }
   }
   /* 二级内容（景点名、年月、统计数字）：常规字重中度灰 */
   .dash-card .csub{font-size:15px;color:var(--ink);font-weight:400;line-height:1.7;margin-bottom:18px;
@@ -945,14 +1021,14 @@
   .prog-head .label{font-size:14px;color:var(--muted);font-weight:500;}
   .prog-head .val{font-size:14px;color:var(--muted);font-weight:600;}
   .prog-head .val b{color:var(--blue-d);font-size:16px;font-weight:800;}
-  .prog-bar{height:10px;border-radius:6px;background:#161616;overflow:hidden;}
-  .prog-fill{height:100%;border-radius:6px;transition:width .6s cubic-bezier(.2,.8,.3,1);}
+  .prog-bar{height:10px;border-radius:var(--radius-bar);background:#161616;overflow:hidden;}
+  .prog-fill{height:100%;border-radius:var(--radius-bar);transition:width .6s cubic-bezier(.2,.8,.3,1);}
   .prog-fill.blue{background:linear-gradient(90deg,#7dd3fc,var(--blue-d));}
   .prog-fill.gold{background:linear-gradient(90deg,var(--accent-l),var(--accent-d));}
   /* 统计三宫格 —— 加宽间距，放大数字方框 */
   .stat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:6px;}  /* gap 8px→12px, mt 4→6 */
   .stat-cell{
-    text-align:center;padding:18px 8px;border-radius:12px;background:#0f0f0f;border:1px solid var(--line);  /* padding 12px 6px→18px 8px, radius 10→12 */
+    text-align:center;padding:18px 8px;border-radius:var(--radius-sm);background:#0f0f0f;border:1px solid var(--line);  /* padding 12px 6px→18px 8px, radius 10→12 */
   }
   .stat-cell .num{font-size:30px;font-weight:800;line-height:1.1;}   /* 22px→30px */
   .stat-cell .num.blue{color:var(--blue-d);}
@@ -971,7 +1047,8 @@
   /* 卡片外层：白色圆角容器 + 柔和底层阴影，悬浮浮空基底 */
   /* ===== Wobble Card 摆动卡牌效果（全站统一）===== */
   .city-card{
-    background:var(--card);border:1px solid var(--line);border-radius:23px;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    /* 【SKILL.md 4.4 SHAPE CONSISTENCY LOCK】原 23px 硬编码改为圆角变量系统 --radius:16px */
     padding:14px 16px;cursor:pointer;position:relative;
     box-shadow:var(--shadow-sm);
     /* 透视容器 + 3D 空间保留：让卡片整体可做立体摆动 */
@@ -1017,7 +1094,8 @@
   }
   .city-card:hover{
     box-shadow:var(--shadow-hover);
-    border-color:rgba(232,148,60,.4);
+    /* 【SKILL.md 4.2 COLOR CONSISTENCY LOCK】原 rgba(232,148,60,.4) 橙色违反单一 accent 规范，改为青蓝家族 */
+    border-color:rgba(125,211,252,.45);
   }
   /* ===== Border Glow 边缘光辉效果（参考 reactbits border-glow）=====
      参数：edgeSensitivity=34, glowIntensity=1.3, borderRadius=23, animated=true
@@ -2402,7 +2480,9 @@
   .launch-title,
   .launch-title-glow{
     font-size:clamp(2.5rem, 6vw, 5rem);              /* 全屏自适应 */
-    font-weight:800;
+    font-family:'Playfair Display','Figtree','Inter',-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",serif;
+    font-weight:400;
+    font-variation-settings:'wght' 400;             /* 【SKILL.md 4.1】Playfair Display 可变字体基重，VP JS 动态覆盖 wght */
     letter-spacing:0.08em;
     margin:0;
     white-space:nowrap;
@@ -2411,25 +2491,16 @@
   .launch-title-glow{
     position:absolute;
     inset:0;
-    color:#ffffff;
-    text-shadow:0 0 20px rgba(186,230,253,0.6),
+    color:transparent;                                /* 仅显示光晕，不显示实色文字（避免与 VP 字符叠加发虚）*/
+    text-shadow:0 0 20px rgba(56,189,248,0.55),
                0 0 40px rgba(56,189,248,0.3);
     pointer-events:none;
   }
   /* 扫光层（上层）：background-clip:text 实现 shiny 扫光 */
   .launch-title{
     position:relative;
-    background:linear-gradient(135deg,
-      #ffffff 0%,
-      #ffffff 42%,
-      #bae6fd 50%,
-      #ffffff 58%,
-      #ffffff 100%);
-    background-size:250% 100%;
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;                                /* 文字透明，仅显示渐变扫光 */
-    animation:shinySweep 6s ease-in-out infinite;
+    color:#38bdf8;                                    /* VP 基色：青蓝（JS 按 influence 动态覆盖）*/
+    user-select:none;
   }
   /* shiny 扫光动画：渐变位置循环移动 */
   @keyframes shinySweep{
@@ -2440,18 +2511,44 @@
     100% { background-position:150% 0; }
   }
 
-  /* 副标题 */
+  /* 副标题：Shiny Text 效果（reactbits.dev，光带横扫文字，呼应"点亮"主题） */
   .launch-subtitle{
     font-size:clamp(0.9rem, 1.8vw, 1.3rem);
-    color:rgba(186,230,253,0.7);
-    letter-spacing:0.3em;
+    letter-spacing:0.05em;                            /* 中文副标题字距收紧 */
     margin-top:12px;
     font-weight:400;
-    will-change:transform,opacity;
     text-align:center;
+    /* Shiny Text：120° 线性渐变（中段高亮色）+ background-clip:text，光带从右扫到左 */
+    /* 基色 0.75 保证可读性（reactbits 原版基色不透明，高光靠亮度差而非透明度差） */
+    background-image:linear-gradient(120deg,
+      rgba(186,230,253,0.75) 0%,
+      rgba(186,230,253,0.75) 35%,
+      #e0f7ff 50%,
+      rgba(186,230,253,0.75) 65%,
+      rgba(186,230,253,0.75) 100%);
+    background-size:200% auto;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;                                /* Firefox：color 透明显示渐变 */
+    -webkit-text-fill-color:transparent;              /* WebKit/Blink：fill 透明显示渐变 */
+    animation:shinySweepSub 2.5s linear infinite;     /* reactbits 默认 2s，这里 2.5s 稍慢呼应宇宙主题 */
+    will-change:transform,opacity,background-position;
+  }
+  /* Shiny Text 扫光：150%（光带在右外侧）→ -50%（光带在左外侧），200% 行程，linear 无缝循环 */
+  @keyframes shinySweepSub{
+    0%  { background-position:150% center; }
+    100%{ background-position:-50% center; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .launch-subtitle{
+      animation:none;
+      background-image:none;
+      color:rgba(186,230,253,0.75);
+      -webkit-text-fill-color:rgba(186,230,253,0.75);
+    }
   }
 
-  /* 启动按钮：深色玻璃底 + 暖金白文字 + 闪光图标 + 箭头 */
+  /* 启动按钮：深色玻璃底 + 亮青白文字 + 闪光图标 + 箭头 */
   .launch-btn{
     pointer-events:auto;                              /* 穿透层中唯一可交互元素 */
     position:relative;
@@ -2459,7 +2556,7 @@
     margin-top:56px;                                  /* 距副标题留白 */
     padding:16px 52px;
     will-change:transform,opacity;
-    border-radius:30px;                               /* 大圆角胶囊形 */
+    border-radius:var(--radius-pill);               /* 大圆角胶囊形（圆角系统统一） */
     font-size:16px;
     font-weight:600;
     cursor:pointer;
@@ -2469,21 +2566,21 @@
     align-items:center;
     gap:8px;
     /* 深色玻璃质感背景 */
-    background:rgba(10,12,20,0.62);
+    background:rgba(8,15,28,0.62);
     backdrop-filter:blur(10px) saturate(150%);
     -webkit-backdrop-filter:blur(10px) saturate(150%);
-    color:#fff6e0;                                    /* 暖金白色文字 */
-    border:1px solid rgba(255,225,160,0.45);          /* 暖金边框 */
+    color:#e0f7ff;                                    /* 亮青白文字（青蓝家族） */
+    border:1px solid rgba(125,211,252,0.45);          /* 青蓝边框（#7dd3fc） */
     box-shadow:0 4px 18px rgba(0,0,0,0.5),
-               0 0 14px rgba(255,210,120,0.15),
-               inset 0 0 14px rgba(255,210,120,0.08);
+               0 0 14px rgba(125,211,252,0.20),
+               inset 0 0 14px rgba(56,189,248,0.10);
     /* hover/点击动画由 GSAP 驱动（更流畅），CSS 不设 transition 避免冲突 */
   }
   /* 闪光图标 */
   .launch-btn .sparkle{
     font-size:18px;
     line-height:1;
-    filter:drop-shadow(0 0 4px rgba(255,225,160,0.7));
+    filter:drop-shadow(0 0 4px rgba(125,211,252,0.7));
   }
   /* 箭头 */
   .launch-btn .arrow{
@@ -2497,7 +2594,7 @@
     inset:0;
     border-radius:inherit;
     background:radial-gradient(120% 80% at 50% 120%,
-      rgba(255,210,120,0.18),
+      rgba(125,211,252,0.18),
       transparent 60%);
     opacity:.7;
     pointer-events:none;
@@ -2513,9 +2610,9 @@
     height:100%;
     background:linear-gradient(105deg,
       transparent 0%,
-      rgba(255,235,190,0) 30%,
-      rgba(255,235,190,0.55) 50%,
-      rgba(255,235,190,0) 70%,
+      rgba(224,247,255,0) 30%,
+      rgba(224,247,255,0.55) 50%,
+      rgba(224,247,255,0) 70%,
       transparent 100%);
     transform:skewX(-18deg);
     pointer-events:none;
@@ -2548,8 +2645,8 @@
   <div class="launch-overlay">
     <!-- 标题双层：发光层 + 扫光层 -->
     <div class="launch-title-wrap">
-      <h1 class="launch-title-glow">Chinese footprint</h1>
-      <h1 class="launch-title">Chinese footprint</h1>
+      <h1 class="launch-title-glow">Chinese Footprint</h1>
+      <h1 class="launch-title" id="launchTitleVP">Chinese Footprint</h1>
     </div>
     <!-- 副标题 -->
     <p class="launch-subtitle">点亮你走过的每一座城市</p>
@@ -2607,7 +2704,7 @@
           <button class="view-tab active" data-view="city">城市视图</button>
           <button class="view-tab" data-view="province">省份视图</button>
         </div>
-        <!-- ===== Variable Proximity 可变字体效果：Chinese Footprint ===== -->
+        <!-- ===== Variable Proximity 可变字体效果：Chinese Footprint（reactbits variable-proximity）===== -->
         <div class="vp-title-wrap">
           <h2 class="vp-title" id="footprintTitle">Chinese Footprint</h2>
         </div>
@@ -3130,8 +3227,8 @@
       const btn = document.getElementById('startBtn');
       const btnHover = gsap.to(btn, {
         scale: 1.06,
-        boxShadow: '0 6px 28px rgba(0,0,0,0.6), 0 0 28px rgba(255,210,120,0.45), inset 0 0 20px rgba(255,210,120,0.15)',
-        borderColor: 'rgba(255,225,160,0.75)',
+        boxShadow: '0 6px 28px rgba(0,0,0,0.6), 0 0 28px rgba(125,211,252,0.50), inset 0 0 20px rgba(56,189,248,0.18)',
+        borderColor: 'rgba(125,211,252,0.80)',
         duration: 0.3,
         ease: 'power2.out',
         paused: true                                /* 默认暂停，hover 时 play */
@@ -3146,26 +3243,60 @@
        * 核心修改：onComplete 隐藏 #launch-screen（非原 earth-startup 的 window.location.href 跳转） */
       let isAnimating = false;
 
-      /* 镜头代理对象：GSAP tween 代理数值，onUpdate 回调驱动 globe.gl pointOfView，
-       * 实现 GSAP 缓动控制地球镜头（globe.gl 原生 pointOfView 不支持 GSAP 直接 tween） */
-      const camProxy = { lat: 20, lng: 105, altitude: 1.5 };
+      /* ===== 中国版图目标镜头参数 =====
+       * lat:36 lng:105 为中国版图地理中心，altitude:1.3 完整展示中国全境 */
+      const CHINA_TARGET = { lat: 36, lng: 105, altitude: 1.3 };
 
+      /* ========== ② 「开始记录」点击镜头时间线（GSAP timeline 串联） ==========
+       * 整套连贯时间线：按压反馈 → 停自转 → 当前视角并行旋转+缩放
+       * → UI淡出 → 黑屏过渡 → 隐藏地球层 → 黑屏淡出露主地图 → 触发 resize
+       *
+       * ★ 核心修复（vs 旧逻辑）：
+       * 1. 旋转起点：旧逻辑 camProxy 硬编码 {lat:20,lng:105,altitude:1.5} 会导致瞬间跳转；
+       *    新逻辑点击瞬间调用 world.pointOfView() 读取地球当前实时相机视角作为起点，
+       *    从当前视角平滑插值，全程无跳转、无画面割裂。
+       * 2. 缩放自适应：根据当前 altitude 与目标 altitude 的差值自动放大/缩小，
+       *    旋转与缩放在同一 GSAP tween 中并行执行，不拆分先后。
+       * 3. 经度最短路径：处理 ±180° 环绕，始终走最短弧，避免反向旋转 360°。
+       * 4. 自适应时长：基于角度距离动态计算 1.2~1.8s，距离近则快、远则柔和。
+       *
+       * 防重复点击：isAnimating 标志锁
+       * onComplete 隐藏 #launch-screen（非原 earth-startup 的 window.location.href 跳转） */
       btn.addEventListener('click', () => {
         if(isAnimating) return;
         isAnimating = true;
 
-        /* 停止地球自转 */
+        /* ① 暂停地球自转，保留鼠标临时可操作权限（不 disable controls） */
         world.controls().autoRotate = false;
+
+        /* ② 读取点击瞬间地球当前实时视角作为动画起点（关键修复：不跳转固定全局视角） */
+        const currentPOV = world.pointOfView();
+        const camProxy = {
+          lat: currentPOV.lat,
+          lng: currentPOV.lng,
+          altitude: currentPOV.altitude
+        };
+
+        /* ③ 经度最短路径插值：处理 ±180° 环绕，避免反向旋转 360° */
+        let lngDelta = CHINA_TARGET.lng - camProxy.lng;
+        if(lngDelta > 180) lngDelta -= 360;
+        else if(lngDelta < -180) lngDelta += 360;
+        const targetLng = camProxy.lng + lngDelta;
+
+        /* ④ 自适应时长：基于角度距离 1.2~1.8s
+         * angularDist = |latDelta| + |lngDelta| + |altDelta|*60（altitude 差值放大权重）
+         * 距离越大时长越长，上限 1.8s，下限 1.2s */
+        const latDelta = Math.abs(CHINA_TARGET.lat - camProxy.lat);
+        const altDelta = Math.abs(CHINA_TARGET.altitude - camProxy.altitude);
+        const angularDist = latDelta + Math.abs(lngDelta) + altDelta * 60;
+        const camDuration = Math.min(1.8, Math.max(1.2, 1.2 + angularDist / 180));
 
         /* === GSAP 时间线：整套点击流程串联 === */
         const tl = gsap.timeline({
           defaults: { ease: 'power3.inOut' },
-          /* 核心修改：onComplete 隐藏地球启动层，露出主地图内容（非跳转） */
           onComplete: () => {
-            /* GSAP 隐藏地球启动层 */
             gsap.set('#launch-screen', { display: 'none' });
             gsap.set('#page-transition', { autoAlpha: 0 });
-            /* 触发主地图 resize（ECharts 需要在显示后重新计算尺寸） */
             window.dispatchEvent(new Event('resize'));
           }
         });
@@ -3174,12 +3305,15 @@
         tl.to(btn, { scale: 0.94, duration: 0.12, ease: 'power2.in' })
           .to(btn, { scale: 1.0, duration: 0.2, ease: 'back.out(2)' });
 
-        /* 步骤2：镜头缓动拉近中国全境（1.6s）
-         * GSAP tween camProxy，onUpdate 实时驱动 globe.gl pointOfView
-         * 中国中心 lat:36 lng:105，altitude 1.3 完整展示版图 */
+        /* 步骤2：镜头同步并行缓动（旋转 + 缩放，1.2~1.8s）
+         * ★ 关键：从当前实时视角 camProxy 平滑插值到中国目标
+         * onUpdate 实时驱动 globe.gl pointOfView，旋转(lat,lng)与缩放(altitude)并行不拆分
+         * 缓动 power2.inOut 柔和顺滑，无卡顿跳帧 */
         tl.to(camProxy, {
-          lat: 36, lng: 105, altitude: 1.3,
-          duration: 1.6,
+          lat: CHINA_TARGET.lat,
+          lng: targetLng,
+          altitude: CHINA_TARGET.altitude,
+          duration: camDuration,
           ease: 'power2.inOut',
           onUpdate: () => world.pointOfView(
             { lat: camProxy.lat, lng: camProxy.lng, altitude: camProxy.altitude },
@@ -3187,12 +3321,13 @@
           )
         }, '<0.05');                                  /* 与按钮回弹略微重叠 */
 
-        /* 步骤3：停留欣赏中国版图（0.8s 间隙，仅镜头聚焦，无国界高光特效） */
+        /* 步骤3：停留欣赏中国版图（0.8s 间隙，仅镜头聚焦） */
+        tl.to({}, { duration: 0.8 });
 
         /* 步骤4：UI 元素淡出（标题 + 副标题 + 按钮，0.6s） */
         tl.to(['.launch-title-wrap', '.launch-subtitle', '.launch-btn'], {
           autoAlpha: 0, y: -20, duration: 0.6, ease: 'power2.in'
-        }, '+=0.8');
+        });
 
         /* 步骤5：黑屏遮罩淡入过渡（0.5s） */
         tl.to('#page-transition', { autoAlpha: 1, duration: 0.5, ease: 'power2.inOut' }, '-=0.2')
@@ -3359,18 +3494,28 @@
         provProgFillEl=$('provProgFill');
 
   /* ===== Variable Proximity 可变字体效果（参考 reactbits variable-proximity）===== */
-  // 鼠标靠近时字符变粗（wght 400→800），gaussian 衰减，radius=110px
+  // 鼠标靠近时字符变粗（wght 400→800）+ 变亮（color #38bdf8→#e0f7ff）+ 发光（drop-shadow 随 influence 增强）
+  // gaussian 衰减，radius=110px。颜色 RGB 插值形成"光斑跟随鼠标"效果。
   (function(){
     const VP_RADIUS=110, VP_FROM=400, VP_TO=800;
+    // 颜色插值：基色 #38bdf8 (56,189,248) → 高光色 #e0f7ff (224,247,255)
+    const VP_BASE=[56,189,248], VP_GLOW=[224,247,255];
     let mx=-9999, my=-9999;
     let vpMouseDirty=false;        // 【性能优化】鼠标移动才标记 dirty，未移动时跳过全部计算
     let vpCharCache=[];            // 【性能优化】缓存字符中心坐标，避免每帧 getBoundingClientRect 强制重排
     let vpCacheValid=false;
     // Gaussian 衰减：距离越近影响越大
     function gauss(d,r){return Math.exp(-(d*d)/(2*r*r));}
+    // RGB 颜色插值：t=0 返回基色，t=1 返回高光色
+    function lerpColor(t){
+      const r=Math.round(VP_BASE[0]+(VP_GLOW[0]-VP_BASE[0])*t);
+      const g=Math.round(VP_BASE[1]+(VP_GLOW[1]-VP_BASE[1])*t);
+      const b=Math.round(VP_BASE[2]+(VP_GLOW[2]-VP_BASE[2])*t);
+      return 'rgb('+r+','+g+','+b+')';
+    }
     // 【性能优化】仅在 resize 时重算字符中心坐标（标题在固定面板内，地图拖拽时位置不变）
     function vpRecalcCache(){
-      const chars=document.querySelectorAll('#footprintTitle .vp-char');
+      const chars=document.querySelectorAll('.vp-char');
       vpCharCache=[];
       chars.forEach(c=>{
         const r=c.getBoundingClientRect();
@@ -3389,7 +3534,8 @@
         let charIdx=0; // 跨文本节点连续计数，保证逐字递增延迟
         for(let i=0;i<text.length;i++){
           const s=document.createElement('span');
-          s.className='vp-char';
+          // 空格字符加 vp-space 类，便于 CSS 增加词间距（两单词间适当空位）
+          s.className = (text[i]===' ') ? 'vp-char vp-space' : 'vp-char';
           s.textContent=text[i];
           // 【text-rewind】逐字递增延迟，字符依次回卷入场
           s.style.animationDelay=(charIdx*0.08)+'s';
@@ -3406,7 +3552,7 @@
       el.textContent=text; // 清除旧 span，还原纯文本
       splitEl(el);
     };
-    // 【性能优化】每帧更新字符字重：仅鼠标移动时才计算，用缓存坐标避免 getBoundingClientRect 强制重排
+    // 【性能优化】每帧更新字符字重+颜色+发光：仅鼠标移动时才计算，用缓存坐标避免 getBoundingClientRect 强制重排
     function tick(){
       if(vpMouseDirty){
         vpMouseDirty=false;
@@ -3418,8 +3564,19 @@
             const dist=Math.sqrt(dx*dx+dy*dy);
             const inf=gauss(dist,VP_RADIUS);
             const w=VP_FROM+(VP_TO-VP_FROM)*inf;
+            /* 【SKILL.md 4.1】Playfair Display 仅有 wght 轴，移除 opsz 设置 */
             item.el.style.fontVariationSettings="'wght' "+w;
             item.el.style.fontWeight=w;
+            // 动态颜色：influence 越高越接近高光色（#e0f7ff），形成光斑效果
+            item.el.style.color=lerpColor(inf);
+            // 动态发光：influence>0.15 时加 drop-shadow，强度随 influence 线性增长（max 8px）
+            const glowAlpha=0.25+inf*0.55;
+            const glowR=Math.round(125+inf*99);   // 125→224
+            const glowG=Math.round(211+inf*36);   // 211→247
+            const glowB=Math.round(252+inf*3);    // 252→255
+            item.el.style.filter=inf>0.15
+              ? 'drop-shadow(0 0 '+(2+inf*6).toFixed(1)+'px rgba('+glowR+','+glowG+','+glowB+','+glowAlpha.toFixed(2)+'))'
+              : 'none';
           });
         }
       }
@@ -3431,24 +3588,32 @@
     window.addEventListener('resize',()=>{vpCacheValid=false;});
     // 初始化：等待 DOM 就绪后拆分
     function init(){
-      // 仅标题使用 Variable Proximity 可变字体效果；副标题不再拆分
+      // 两个标题都使用 Variable Proximity 可变字体效果：
+      //   #launchTitleVP  —— 启动页大标题（地球上方，首屏可见）
+      //   #footprintTitle —— 仪表盘小标题（左面板，点击"开始记录"后可见）
       const titleEl=document.getElementById('footprintTitle');
-      if(!titleEl){setTimeout(init,300);return;}
+      const launchEl=document.getElementById('launchTitleVP');
+      if(!titleEl||!launchEl){setTimeout(init,300);return;}
       splitEl(titleEl);
+      splitEl(launchEl);
       tick();
       // 【text-rewind】页面完全加载后延迟触发入场动画，确保用户能看见字符回卷入场画面
       function triggerRewind(){
         titleEl.classList.add('rewind-play');
+        // 启动页大标题不使用 rewind 动画：GSAP autoAlpha 已处理 .launch-title-wrap 淡入入场，
+        // 且 GSAP 在父级留下的 inline visibility 样式会阻止子元素 CSS 动画启动。
+        // 启动页字符默认 opacity:1（见 .launch-title .vp-char 规则），VP 鼠标交互直接生效。
       }
       if(document.readyState==='complete'){
         setTimeout(triggerRewind,400);
       }else{
         window.addEventListener('load',()=>setTimeout(triggerRewind,400));
       }
-      // 【性能优化】text-rewind 动画完成后(约3s)失效坐标缓存，确保动画结束后的最终位置被正确缓存
+      // 【性能优化】text-rewind 动画完成后失效坐标缓存，确保动画结束后的最终位置被正确缓存
+      // 仅仪表盘标题使用 rewind（0.4s 后开始、约 2.6s 完成），取 3.5s 覆盖
       setTimeout(()=>{vpCacheValid=false;},3500);
     }
-    init();
+    init(); // 启用 Variable Proximity 可变字体效果（Figtree + 动态颜色 + 发光）
   })();
   // 弹窗新增元素
   const monthInput=$('monthInput'), monthSaveBtn=$('monthSaveBtn'),
@@ -7196,11 +7361,11 @@
     const ctx=canvas.getContext('2d');
     const fallback=canvas.parentElement.querySelector('.canvas-text-fallback');
 
-    // 配色：网站橙蓝体系（暖橙→蓝渐变，与时间轴曲线渐变一致）
+    // 配色：网站青蓝体系（暗色卡片底，亮青蓝曲线填充字形，呼应原 .vp-title 渐变）
     const colors=[
-      '#38bdf8','#7dd3fc','#0ea5e9',  // 青蓝系
       '#7dd3fc','#38bdf8','#0ea5e9',  // 青蓝系
-      '#bae6fd','#7dd3fc'              // 过渡色
+      '#e0f7ff','#7dd3fc','#38bdf8',  // 亮高光过渡
+      '#bae6fd','#0ea5e9'             // 收尾色
     ];
 
     const text='Chinese Footprint';
@@ -7228,7 +7393,7 @@
     function draw(){
       ctx.clearRect(0,0,cssW,cssH);
       // 设置文字字体（与网站一致）
-      const fontFamily='-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif';
+      const fontFamily='"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif';
       ctx.font='700 '+fontSize+'px '+fontFamily;
       ctx.textBaseline='middle';
       ctx.textAlign='left';
@@ -7256,9 +7421,8 @@
       ctx.rect(textX-2,0,metrics.width+4,cssH);
       ctx.clip();
 
-      // 1.5 填充文字区域底层背景色（避免白色卡片底透出，与页面浅蓝底色统一）
-      ctx.fillStyle='rgba(238,241,245,0.6)';  // 浅蓝灰底色（var(--bg2) 半透明）
-      ctx.fillRect(textX-2,0,metrics.width+4,cssH);
+      // 1.5 暗色卡片底：不再填充浅色背景，保持透明，让卡片深黑底透出字形外围；
+      //     字形内部由下方彩色曲线填充（destination-in 裁剪到字形），形成 Aceternity 风格。
 
       // 2. 绘制多条贝塞尔曲线
       const numLines=Math.ceil(cssH/lineGap)+2;
@@ -7335,7 +7499,8 @@
   }
 
   start();
-  // Chinese Footprint 已改为 Variable Proximity 可变字体效果，Canvas 动画不再启用
+  // Canvas Text 效果已停用，改用 Variable Proximity 可变字体效果（Figtree + 动态颜色 + 发光）
+  // initFootprintCanvas();
 })();
 
 /* ===== 分层堆叠相册预览器（独立 IIFE） =====
