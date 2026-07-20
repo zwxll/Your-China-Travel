@@ -10,13 +10,13 @@
   html,body{ width:100%; height:100%; }
   body{
     overflow:hidden;                                  /* 全屏无滚动 */
-    /* 深空背景：径向渐变营造宇宙深邃感 */
-    background:radial-gradient(ellipse at center, #0a0e1a 0%, #000000 70%);
+    /* 纯黑深空背景：强化深色科技氛围 */
+    background:#000;
     font-family:'PingFang SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   }
 
-  /* ===== 棱镜光流动态背景（z-index:2，Canvas 2D 流动光线粒子，file://下也能显示） ===== */
-  /* 放在地球之上才能让光效明显可见（地球canvas会遮挡下方图层） */
+  /* ===== Particles 粒子星空背景（z-index:2，基于 ogl 的 WebGL 粒子，canvas 由脚本自动创建并 append） ===== */
+  /* 放在地球之上才能让粒子明显可见（地球canvas会遮挡下方图层） */
   #prism-bg{
     position:fixed;
     inset:0;
@@ -27,7 +27,7 @@
     overflow:hidden;
     background:transparent;
   }
-  #prism-bg canvas{display:block;width:100%;height:100%;mix-blend-mode:screen;}
+  #prism-bg canvas{display:block;width:100%;height:100%;}
 
   /* ===== 中层：3D 地球容器（z-index:1，可交互拖拽缩放） ===== */
   #globeViz{
@@ -201,10 +201,8 @@
 </head>
 <body>
 
-  <!-- ========== 棱镜光流动态背景（z-index:2，Canvas 2D 流动光线粒子） ========== -->
-  <div id="prism-bg">
-    <canvas id="prism-canvas"></canvas>
-  </div>
+  <!-- ========== Particles 粒子星空背景（z-index:2，WebGL 粒子，canvas 由 ogl 自动创建并 append） ========== -->
+  <div id="prism-bg"></div>
 
   <!-- ========== 中层：globe.gl 3D 云层地球（z-index:1，全屏铺满，可交互） ========== -->
   <div id="globeViz"></div>
@@ -229,143 +227,192 @@
   <!-- ========== globe.gl 依赖（UMD，内部已打包 three.js，暴露全局 Globe） ========== -->
   <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
 
-  <!-- ========== 棱镜光流背景说明 ==========
-       用 Canvas 2D 实现流动光线 + 粒子 + 极光波动效果：
-       - 多条流动光带沿屏幕缓慢移动，模拟棱镜折射光线
-       - 漂浮粒子缓慢上升，增加空间纵深感
-       - 底部极光波动，营造科技氛围
-       Canvas 2D 性能好，file:// 下可用，不占用 WebGL 资源，地球拖拽流畅。 -->
+  <!-- ========== Particles 粒子星空背景说明 ==========
+       使用 reactbits Particles 组件（基于 ogl 的 WebGL 粒子）改造成原生 JS：
+       - 球体分布的粒子点云，缓慢旋转
+       - 蓝白冷色调粒子配色（白/浅蓝/天蓝），适配地球科技风格
+       - 圆形透明粒子（alphaParticles=true），柔和发光
+       - 通过 esm.sh 动态 import ogl@1.0.11，加载失败时 console.warn 但不影响地球
+       与 globe.gl 共存：各自独立 WebGL 上下文，互不干扰。地球是独立非 module 脚本，
+       即使本模块加载失败，地球 / 标题 / 按钮跳转逻辑仍正常工作。 -->
+  <script type="module">
+    /* 动态 import ogl，try-catch 包裹：失败时仅 warn，不抛出阻断后续逻辑 */
+    import('https://esm.sh/ogl@1.0.11')
+      .then(({ Renderer, Camera, Geometry, Program, Mesh }) => {
+        try {
+          const container = document.getElementById('prism-bg');
+          if(!container) throw new Error('#prism-bg 容器未找到');
 
-  <!-- ========== 棱镜光流 Canvas 2D 动画 ========== -->
-  <script>
-    (function(){
-      const canvas = document.getElementById('prism-canvas');
-      if(!canvas) return;
-      const ctx = canvas.getContext('2d');
-      let W = 0, H = 0;
+          /* ---------- 参数（蓝白冷色调 + 性能优化） ---------- */
+          const particleCount   = 150;                            /* 粒子数（比默认 200 略少，避免和 globe.gl 两个 WebGL 抢资源） */
+          const particleSpread  = 10;                              /* 粒子分布半径 */
+          const speed           = 0.1;                            /* 动画速度 */
+          const particleColors  = ['#ffffff', '#a5d8ff', '#74c0fc']; /* 蓝白冷色调：白、浅蓝、天蓝 */
+          const moveParticlesOnHover = false;                    /* 不开启鼠标交互（容器 pointer-events:none） */
+          const alphaParticles  = true;                           /* 圆形透明粒子，比方块更柔和 */
+          const particleBaseSize = 80;                            /* 基础粒子大小 */
+          const sizeRandomness  = 1;                             /* 大小随机性 */
+          const cameraDistance  = 20;                            /* 相机距离 */
+          const disableRotation = false;                          /* 启用缓慢旋转 */
+          const pixelRatio      = 1;                             /* 像素比（性能优先） */
 
-      /* ---------- 尺寸适配 ---------- */
-      function resize(){
-        W = canvas.width = window.innerWidth;
-        H = canvas.height = window.innerHeight;
-      }
-      window.addEventListener('resize', resize);
-      resize();
+          /* ---------- hex 转 rgb（归一化 0~1） ---------- */
+          const hexToRgb = hex => {
+            hex = hex.replace(/^#/, '');
+            if(hex.length === 3){ hex = hex.split('').map(c => c + c).join(''); }
+            const int = parseInt(hex, 16);
+            return [((int >> 16) & 255) / 255, ((int >> 8) & 255) / 255, (int & 255) / 255];
+          };
 
-      /* ---------- 流动光带：多条曲线沿屏幕移动 ---------- */
-      const beams = [];
-      for(let i = 0; i < 6; i++){
-        beams.push({
-          y: Math.random() * H,                        /* 基准 y 位置 */
-          amp: 60 + Math.random() * 120,               /* 波动幅度 */
-          freq: 0.003 + Math.random() * 0.004,         /* 波动频率 */
-          speed: 0.15 + Math.random() * 0.35,          /* 移动速度 */
-          phase: Math.random() * Math.PI * 2,          /* 相位偏移 */
-          hue: 190 + Math.random() * 40,               /* 色相：青蓝~天蓝 */
-          alpha: 0.08 + Math.random() * 0.12,          /* 透明度 */
-          thick: 1.5 + Math.random() * 2.5             /* 线宽 */
-        });
-      }
+          /* ---------- 顶点着色器 ---------- */
+          const vertex = `
+            attribute vec3 position;
+            attribute vec4 random;
+            attribute vec3 color;
+            uniform mat4 modelMatrix;
+            uniform mat4 viewMatrix;
+            uniform mat4 projectionMatrix;
+            uniform float uTime;
+            uniform float uSpread;
+            uniform float uBaseSize;
+            uniform float uSizeRandomness;
+            varying vec4 vRandom;
+            varying vec3 vColor;
+            void main() {
+              vRandom = random;
+              vColor = color;
+              vec3 pos = position * uSpread;
+              pos.z *= 10.0;
+              vec4 mPos = modelMatrix * vec4(pos, 1.0);
+              float t = uTime;
+              mPos.x += sin(t * random.z + 6.28 * random.w) * mix(0.1, 1.5, random.x);
+              mPos.y += sin(t * random.y + 6.28 * random.x) * mix(0.1, 1.5, random.w);
+              mPos.z += sin(t * random.w + 6.28 * random.y) * mix(0.1, 1.5, random.z);
+              vec4 mvPos = viewMatrix * mPos;
+              if (uSizeRandomness == 0.0) { gl_PointSize = uBaseSize; }
+              else { gl_PointSize = (uBaseSize * (1.0 + uSizeRandomness * (random.x - 0.5))) / length(mvPos.xyz); }
+              gl_Position = projectionMatrix * mvPos;
+            }
+          `;
 
-      /* ---------- 漂浮粒子：缓慢上升的光点 ---------- */
-      const particles = [];
-      for(let i = 0; i < 50; i++){
-        particles.push({
-          x: Math.random() * W,
-          y: Math.random() * H,
-          r: 0.5 + Math.random() * 1.8,               /* 半径 */
-          vy: 0.15 + Math.random() * 0.4,             /* 上升速度 */
-          vx: (Math.random() - 0.5) * 0.2,            /* 水平漂移 */
-          alpha: 0.3 + Math.random() * 0.5,           /* 透明度 */
-          hue: 190 + Math.random() * 50,              /* 色相 */
-          twinkle: Math.random() * Math.PI * 2         /* 闪烁相位 */
-        });
-      }
+          /* ---------- 片元着色器 ---------- */
+          const fragment = `
+            precision highp float;
+            uniform float uTime;
+            uniform float uAlphaParticles;
+            varying vec4 vRandom;
+            varying vec3 vColor;
+            void main() {
+              vec2 uv = gl_PointCoord.xy;
+              float d = length(uv - vec2(0.5));
+              if(uAlphaParticles < 0.5) {
+                if(d > 0.5) { discard; }
+                gl_FragColor = vec4(vColor + 0.2 * sin(uv.yxx + uTime + vRandom.y * 6.28), 1.0);
+              } else {
+                float circle = smoothstep(0.5, 0.4, d) * 0.8;
+                gl_FragColor = vec4(vColor + 0.2 * sin(uv.yxx + uTime + vRandom.y * 6.28), circle);
+              }
+            }
+          `;
 
-      /* ---------- 底部极光波动 ---------- */
-      const auroras = [];
-      for(let i = 0; i < 3; i++){
-        auroras.push({
-          baseY: H * (0.7 + i * 0.08),                /* 基准位置 */
-          amp: 40 + Math.random() * 60,
-          freq: 0.002 + Math.random() * 0.003,
-          speed: 0.2 + Math.random() * 0.3,
-          phase: Math.random() * Math.PI * 2,
-          hue: 180 + i * 15,
-          alpha: 0.06 + i * 0.02
-        });
-      }
+          /* ---------- 渲染器（透明背景、无深度测试） ---------- */
+          const renderer = new Renderer({ alpha: true, depth: false, dpr: pixelRatio });
+          const gl = renderer.gl;
+          container.appendChild(gl.canvas);
+          gl.canvas.style.cssText = 'display:block;width:100%;height:100%;';
 
-      let t = 0;
+          /* ---------- 相机（ fov 15°，z 距离 20） ---------- */
+          const camera = new Camera(gl, { fov: 15 });
+          camera.position.z = cameraDistance;
 
-      /* ---------- 渲染循环 ---------- */
-      function render(){
-        t += 0.016;
-        ctx.clearRect(0, 0, W, H);
-
-        /* 1. 底部极光波动（多层正弦波填充） */
-        auroras.forEach(a => {
-          ctx.beginPath();
-          ctx.moveTo(0, H);
-          for(let x = 0; x <= W; x += 8){
-            const y = a.baseY
-              + Math.sin(x * a.freq + t * a.speed + a.phase) * a.amp
-              + Math.sin(x * a.freq * 2.3 + t * a.speed * 1.5) * a.amp * 0.4;
-            ctx.lineTo(x, y);
+          /* ---------- 尺寸适配 ---------- */
+          function resize(){
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.perspective({ aspect: window.innerWidth / window.innerHeight });
           }
-          ctx.lineTo(W, H);
-          ctx.closePath();
-          const grad = ctx.createLinearGradient(0, a.baseY - a.amp, 0, H);
-          grad.addColorStop(0, `hsla(${a.hue},80%,60%,${a.alpha})`);
-          grad.addColorStop(1, `hsla(${a.hue},80%,40%,0)`);
-          ctx.fillStyle = grad;
-          ctx.fill();
-        });
+          window.addEventListener('resize', resize);
+          resize();
 
-        /* 2. 流动光带（贝塞尔曲线，带辉光） */
-        beams.forEach(b => {
-          ctx.beginPath();
-          for(let x = 0; x <= W; x += 6){
-            const y = b.y
-              + Math.sin(x * b.freq + t * b.speed + b.phase) * b.amp
-              + Math.sin(x * b.freq * 1.7 + t * b.speed * 0.8) * b.amp * 0.35;
-            if(x === 0) ctx.moveTo(x, y);
-            else ctx.lineTo(x, y);
+          /* ---------- 球体分布生成粒子数据 ---------- */
+          const positions = new Float32Array(particleCount * 3);
+          const randoms   = new Float32Array(particleCount * 4);
+          const colors    = new Float32Array(particleCount * 3);
+          const rgbColors = particleColors.map(hexToRgb);
+          for(let i = 0; i < particleCount; i++){
+            const theta = Math.random() * Math.PI * 2;            /* 方位角 */
+            const phi   = Math.acos(2 * Math.random() - 1);       /* 极角（球内均匀） */
+            const r     = Math.random();                          /* 球内随机半径 */
+            positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+            positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+            positions[i * 3 + 2] = r * Math.cos(phi);
+            randoms[i * 4]     = Math.random();
+            randoms[i * 4 + 1] = Math.random();
+            randoms[i * 4 + 2] = Math.random();
+            randoms[i * 4 + 3] = Math.random();
+            const c = rgbColors[i % rgbColors.length];
+            colors[i * 3]     = c[0];
+            colors[i * 3 + 1] = c[1];
+            colors[i * 3 + 2] = c[2];
           }
-          /* 辉光层（粗线低透明度） */
-          ctx.strokeStyle = `hsla(${b.hue},85%,65%,${b.alpha * 0.4})`;
-          ctx.lineWidth = b.thick * 4;
-          ctx.lineCap = 'round';
-          ctx.stroke();
-          /* 主线（细线高透明度） */
-          ctx.strokeStyle = `hsla(${b.hue},90%,72%,${b.alpha})`;
-          ctx.lineWidth = b.thick;
-          ctx.stroke();
-        });
 
-        /* 3. 漂浮粒子（带闪烁） */
-        particles.forEach(p => {
-          p.y -= p.vy;                                 /* 上升 */
-          p.x += p.vx;                                 /* 水平漂移 */
-          if(p.y < -10){ p.y = H + 10; p.x = Math.random() * W; }
-          if(p.x < -10) p.x = W + 10;
-          if(p.x > W + 10) p.x = -10;
-          const flicker = 0.5 + Math.sin(t * 2 + p.twinkle) * 0.5;
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${p.hue},85%,70%,${p.alpha * flicker})`;
-          ctx.fill();
-          /* 粒子辉光 */
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
-          ctx.fillStyle = `hsla(${p.hue},85%,70%,${p.alpha * flicker * 0.15})`;
-          ctx.fill();
-        });
+          /* ---------- 几何体（position / random / color 三组属性） ---------- */
+          const geometry = new Geometry(gl, {
+            position: { size: 3, data: positions },
+            random:   { size: 4, data: randoms },
+            color:    { size: 3, data: colors },
+          });
 
-        requestAnimationFrame(render);
-      }
-      render();
-    })();
+          /* ---------- 程序（含 uniform） ---------- */
+          const program = new Program(gl, {
+            vertex,
+            fragment,
+            uniforms: {
+              uTime:           { value: 0 },
+              uSpread:         { value: particleSpread },
+              uBaseSize:       { value: particleBaseSize },
+              uSizeRandomness: { value: sizeRandomness },
+              uAlphaParticles: { value: alphaParticles ? 1.0 : 0.0 },
+            },
+            transparent: true,
+            depthTest: false,
+          });
+
+          /* ---------- 点云 Mesh（gl.POINTS 模式） ---------- */
+          const particles = new Mesh(gl, { mode: gl.POINTS, geometry, program });
+
+          /* ---------- 鼠标交互（未启用，预留） ---------- */
+          let mouseX = 0, mouseY = 0;
+          if(moveParticlesOnHover){
+            window.addEventListener('mousemove', e => {
+              mouseX = e.clientX / window.innerWidth;
+              mouseY = e.clientY / window.innerHeight;
+            });
+          }
+
+          /* ---------- 渲染循环 ---------- */
+          const startTime = performance.now();
+          function render(){
+            const elapsed = (performance.now() - startTime) * 0.001;
+            program.uniforms.uTime.value = elapsed * speed;
+            if(!disableRotation){
+              particles.rotation.x = Math.sin(elapsed * 0.1) * 0.1;
+              particles.rotation.y = Math.cos(elapsed * 0.1) * 0.1;
+            }
+            if(moveParticlesOnHover){
+              particles.rotation.x += -mouseY * 0.1;
+              particles.rotation.y +=  mouseX * 0.1;
+            }
+            renderer.render({ scene: particles, camera });
+            requestAnimationFrame(render);
+          }
+          render();
+        } catch(err){
+          console.warn('[Particles] 粒子背景初始化失败，不影响地球与跳转逻辑:', err);
+        }
+      })
+      .catch(err => {
+        console.warn('[Particles] ogl 模块加载失败，粒子背景不显示，不影响地球:', err);
+      });
   </script>
 
   <!-- ========== 主逻辑：地球 / 云层 / 光照 / 自转 / 跳转 ==========
