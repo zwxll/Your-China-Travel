@@ -2911,7 +2911,7 @@
         if(!container) throw new Error('#prism-bg 容器未找到');
 
         /* ---------- 参数（蓝白冷色调 + 高密度 + 鼠标交互）---------- */
-        const particleCount   = 800;                            /* 粒子数 800，星空密集 */
+        const particleCount   = 500;                            /* 粒子数500，平衡密度与性能（避免和globe.gl抢GPU） */
         const particleSpread  = 10;                              /* 粒子分布半径 */
         const speed           = 0.1;                            /* 动画速度 */
         const particleColors  = ['#ffffff', '#a5d8ff', '#a5d8ff', '#74c0fc', '#74c0fc']; /* 蓝白冷色调 */
@@ -3073,8 +3073,6 @@
           if(moveParticlesOnHover){
             particles.position.x = -mouseX * particleHoverFactor;
             particles.position.y =  mouseY * particleHoverFactor;
-            particles.rotation.x += -mouseY * 0.15;
-            particles.rotation.y +=  mouseX * 0.15;
           }
           renderer.render({ scene: particles, camera });
           requestAnimationFrame(render);
