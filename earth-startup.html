@@ -15,7 +15,7 @@
     font-family:'PingFang SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   }
 
-  /* ===== 最底层：Prism 棱镜动态背景（z-index:0，全屏铺满，不拦截鼠标） ===== */
+  /* ===== 最底层：棱镜光流动态背景（z-index:0，CSS实现，file://下也能显示，性能好） ===== */
   #prism-bg{
     position:fixed;
     inset:0;
@@ -24,8 +24,38 @@
     z-index:0;                                        /* 地球(z-index:1)之下、body深空之上 */
     pointer-events:none;                              /* 不拦截鼠标，让地球可拖拽 */
     overflow:hidden;
+    background:transparent;
   }
-  #prism-bg canvas{display:block;}
+  /* 棱镜光流层：多个径向渐变光斑缓慢漂移，模拟棱镜折射光效 */
+  .prism-layer{
+    position:absolute;
+    inset:-50%;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(56,189,248,0.18) 0%, transparent 25%),
+      radial-gradient(circle at 80% 70%, rgba(186,230,253,0.14) 0%, transparent 30%),
+      radial-gradient(circle at 50% 50%, rgba(14,165,233,0.10) 0%, transparent 35%),
+      radial-gradient(circle at 70% 20%, rgba(125,211,252,0.12) 0%, transparent 28%),
+      radial-gradient(circle at 30% 80%, rgba(56,189,248,0.10) 0%, transparent 30%);
+    filter:blur(40px);
+    animation:prismDrift 24s ease-in-out infinite;
+    will-change:transform;
+  }
+  .prism-layer-2{
+    background:
+      radial-gradient(circle at 60% 40%, rgba(14,165,233,0.15) 0%, transparent 30%),
+      radial-gradient(circle at 25% 75%, rgba(186,230,253,0.12) 0%, transparent 28%),
+      radial-gradient(circle at 85% 15%, rgba(56,189,248,0.13) 0%, transparent 25%);
+    animation:prismDrift2 32s ease-in-out infinite reverse;
+  }
+  @keyframes prismDrift{
+    0%,100%{ transform:translate(0,0) rotate(0deg) scale(1); }
+    33%    { transform:translate(8%,-6%) rotate(120deg) scale(1.15); }
+    66%    { transform:translate(-6%,8%) rotate(240deg) scale(0.95); }
+  }
+  @keyframes prismDrift2{
+    0%,100%{ transform:translate(0,0) rotate(0deg) scale(1.1); }
+    50%    { transform:translate(-10%,6%) rotate(180deg) scale(0.9); }
+  }
 
   /* ===== 中层：3D 地球容器（z-index:1，可交互拖拽缩放） ===== */
   #globeViz{
@@ -199,8 +229,11 @@
 </head>
 <body>
 
-  <!-- ========== 最底层：Prism 棱镜动态背景（z-index:0，透明 canvas，光效叠加在深空上） ========== -->
-  <div id="prism-bg"></div>
+  <!-- ========== 最底层：棱镜光流动态背景（z-index:0，CSS渐变光斑漂移，性能好） ========== -->
+  <div id="prism-bg">
+    <div class="prism-layer"></div>
+    <div class="prism-layer prism-layer-2"></div>
+  </div>
 
   <!-- ========== 中层：globe.gl 3D 云层地球（z-index:1，全屏铺满，可交互） ========== -->
   <div id="globeViz"></div>
@@ -225,212 +258,13 @@
   <!-- ========== globe.gl 依赖（UMD，内部已打包 three.js，暴露全局 Globe） ========== -->
   <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
 
-  <!-- ========== Prism 棱镜动态背景 ==========
-       基于 reactbits Prism 组件改造，用 ogl ES module 实现 GLSL fragment shader 棱镜光线追踪。
-       rotate 模式：shader 内部 wobble 矩阵做动画，无需鼠标交互。
-       canvas 透明，让 body 深空色透出，棱镜光效叠加在深空上（z-index:0）。
-       注：ogl 为纯 ES module 包，需用 type="module" + import 加载。
-       http/https 下正常工作；file:// 下 prism 不显示但地球仍正常（优雅降级）。 -->
-  <script type="module">
-    /* 动态 import ogl ESM（esm.sh 提供稳定 CDN ESM 转发） */
-    let Renderer, Triangle, Program, Mesh;
-    try {
-      const ogl = await import('https://esm.sh/ogl@1.0.11');
-      Renderer = ogl.Renderer; Triangle = ogl.Triangle;
-      Program = ogl.Program; Mesh = ogl.Mesh;
-    } catch(e) {
-      console.warn('Prism 背景：ogl 加载失败，背景将不显示（地球不受影响）', e);
-    }
-
-    function initPrism(){
-      if(!Renderer){ return; }  /* ogl 未加载则跳过 */
-
-      const container = document.getElementById('prism-bg');
-      if(!container) return;
-
-      /* ---------- 参数（与 React 组件默认值一致） ---------- */
-      const height = 3.5, baseWidth = 5.5, glow = 1, noise = 0.5;
-      const transparent = true, scale = 3.6, hueShift = 0;
-      const colorFrequency = 1, bloom = 1, timeScale = 0.5;
-      const offset = { x: 0, y: 0 };
-
-      const H = Math.max(0.001, height);
-      const BW = Math.max(0.001, baseWidth);
-      const BASE_HALF = BW * 0.5;
-      const GLOW = Math.max(0.0, glow);
-      const NOISE = Math.max(0.0, noise);
-      const offX = offset.x, offY = offset.y;
-      const SAT = transparent ? 1.5 : 1;
-      const SCALE = Math.max(0.001, scale);
-      const HUE = hueShift || 0;
-      const CFREQ = Math.max(0.0, colorFrequency || 1);
-      const BLOOM = Math.max(0.0, bloom || 1);
-      const TS = Math.max(0, timeScale || 1);
-
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      const renderer = new Renderer({ dpr, alpha: transparent, antialias: false });
-      const gl = renderer.gl;
-      gl.disable(gl.DEPTH_TEST);
-      gl.disable(gl.CULL_FACE);
-      gl.disable(gl.BLEND);
-      Object.assign(gl.canvas.style, {
-        position: 'absolute', inset: '0', width: '100%', height: '100%', display: 'block'
-      });
-      container.appendChild(gl.canvas);
-
-      /* ---------- 顶点着色器：全屏三角形位置直传 ---------- */
-      const vertex = `
-        attribute vec2 position;
-        void main(){ gl_Position = vec4(position, 0.0, 1.0); }
-      `;
-      /* ---------- 片段着色器：3D 棱镜光线追踪（raymarching） ---------- */
-      const fragment = `
-        precision highp float;
-        uniform vec2  iResolution;
-        uniform float iTime;
-        uniform float uHeight;
-        uniform float uBaseHalf;
-        uniform mat3  uRot;
-        uniform int   uUseBaseWobble;
-        uniform float uGlow;
-        uniform vec2  uOffsetPx;
-        uniform float uNoise;
-        uniform float uSaturation;
-        uniform float uScale;
-        uniform float uHueShift;
-        uniform float uColorFreq;
-        uniform float uBloom;
-        uniform float uCenterShift;
-        uniform float uInvBaseHalf;
-        uniform float uInvHeight;
-        uniform float uMinAxis;
-        uniform float uPxScale;
-        uniform float uTimeScale;
-        vec4 tanh4(vec4 x){ vec4 e2x = exp(2.0*x); return (e2x - 1.0) / (e2x + 1.0); }
-        float rand(vec2 co){ return fract(sin(dot(co, vec2(12.9898, 78.233))) * 43758.5453123); }
-        float sdOctaAnisoInv(vec3 p){
-          vec3 q = vec3(abs(p.x) * uInvBaseHalf, abs(p.y) * uInvHeight, abs(p.z) * uInvBaseHalf);
-          float m = q.x + q.y + q.z - 1.0;
-          return m * uMinAxis * 0.5773502691896258;
-        }
-        float sdPyramidUpInv(vec3 p){
-          float oct = sdOctaAnisoInv(p);
-          float halfSpace = -p.y;
-          return max(oct, halfSpace);
-        }
-        mat3 hueRotation(float a){
-          float c = cos(a), s = sin(a);
-          mat3 W = mat3(0.299, 0.587, 0.114, 0.299, 0.587, 0.114, 0.299, 0.587, 0.114);
-          mat3 U = mat3(0.701, -0.587, -0.114, -0.299, 0.413, -0.114, -0.300, -0.588, 0.886);
-          mat3 V = mat3(0.168, -0.331, 0.500, 0.328, 0.035, -0.500, -0.497, 0.296, 0.201);
-          return W + U * c + V * s;
-        }
-        void main(){
-          vec2 f = (gl_FragCoord.xy - 0.5 * iResolution.xy - uOffsetPx) * uPxScale;
-          float z = 5.0;
-          float d = 0.0;
-          vec3 p;
-          vec4 o = vec4(0.0);
-          float centerShift = uCenterShift;
-          float cf = uColorFreq;
-          mat2 wob = mat2(1.0);
-          if (uUseBaseWobble == 1) {
-            float t = iTime * uTimeScale;
-            float c0 = cos(t + 0.0);
-            float c1 = cos(t + 33.0);
-            float c2 = cos(t + 11.0);
-            wob = mat2(c0, c1, c2, c0);
-          }
-          const int STEPS = 100;
-          for (int i = 0; i < STEPS; i++) {
-            p = vec3(f, z);
-            p.xz = p.xz * wob;
-            p = uRot * p;
-            vec3 q = p;
-            q.y += centerShift;
-            d = 0.1 + 0.2 * abs(sdPyramidUpInv(q));
-            z -= d;
-            o += (sin((p.y + z) * cf + vec4(0.0, 1.0, 2.0, 3.0)) + 1.0) / d;
-          }
-          o = tanh4(o * o * (uGlow * uBloom) / 1e5);
-          vec3 col = o.rgb;
-          float n = rand(gl_FragCoord.xy + vec2(iTime));
-          col += (n - 0.5) * uNoise;
-          col = clamp(col, 0.0, 1.0);
-          float L = dot(col, vec3(0.2126, 0.7152, 0.0722));
-          col = clamp(mix(vec3(L), col, uSaturation), 0.0, 1.0);
-          if(abs(uHueShift) > 0.0001){ col = clamp(hueRotation(uHueShift) * col, 0.0, 1.0); }
-          gl_FragColor = vec4(col, o.a);
-        }
-      `;
-
-      const geometry = new Triangle(gl);
-      const iResBuf = new Float32Array(2);
-      const offsetPxBuf = new Float32Array(2);
-      const program = new Program(gl, {
-        vertex, fragment,
-        uniforms: {
-          iResolution: { value: iResBuf },
-          iTime: { value: 0 },
-          uHeight: { value: H },
-          uBaseHalf: { value: BASE_HALF },
-          uUseBaseWobble: { value: 1 },
-          uRot: { value: new Float32Array([1,0,0, 0,1,0, 0,0,1]) },
-          uGlow: { value: GLOW },
-          uOffsetPx: { value: offsetPxBuf },
-          uNoise: { value: NOISE },
-          uSaturation: { value: SAT },
-          uScale: { value: SCALE },
-          uHueShift: { value: HUE },
-          uColorFreq: { value: CFREQ },
-          uBloom: { value: BLOOM },
-          uCenterShift: { value: H * 0.25 },
-          uInvBaseHalf: { value: 1 / BASE_HALF },
-          uInvHeight: { value: 1 / H },
-          uMinAxis: { value: Math.min(BASE_HALF, H) },
-          uPxScale: { value: 1 / ((gl.drawingBufferHeight || 1) * 0.1 * SCALE) },
-          uTimeScale: { value: TS }
-        }
-      });
-      const mesh = new Mesh(gl, { geometry, program });
-
-      /* ---------- 尺寸适配（容器全屏 fixed，用 window resize） ---------- */
-      const resize = () => {
-        const w = container.clientWidth || window.innerWidth || 1;
-        const h = container.clientHeight || window.innerHeight || 1;
-        renderer.setSize(w, h);
-        iResBuf[0] = gl.drawingBufferWidth;
-        iResBuf[1] = gl.drawingBufferHeight;
-        offsetPxBuf[0] = offX * dpr;
-        offsetPxBuf[1] = offY * dpr;
-        program.uniforms.uPxScale.value = 1 / ((gl.drawingBufferHeight || 1) * 0.1 * SCALE);
-      };
-      window.addEventListener('resize', resize);
-      resize();
-
-      /* ---------- 渲染循环（rotate 模式：uRot 单位矩阵，wobble 做动画） ---------- */
-      const rotBuf = new Float32Array(9);
-      const t0 = performance.now();
-      const render = (t) => {
-        const time = (t - t0) * 0.001;
-        program.uniforms.iTime.value = time;
-        rotBuf[0]=1; rotBuf[1]=0; rotBuf[2]=0;
-        rotBuf[3]=0; rotBuf[4]=1; rotBuf[5]=0;
-        rotBuf[6]=0; rotBuf[7]=0; rotBuf[8]=1;
-        program.uniforms.uRot.value = rotBuf;
-        renderer.render({ scene: mesh });
-        requestAnimationFrame(render);
-      };
-      requestAnimationFrame(render);
-    }
-
-    /* DOM 就绪后启动 Prism 背景 */
-    if(document.readyState === 'loading'){
-      document.addEventListener('DOMContentLoaded', initPrism);
-    }else{
-      initPrism();
-    }
-  </script>
+  <!-- ========== 棱镜光流背景说明 ==========
+       原方案用 ogl WebGL 实现 reactbits Prism 效果，存在两个问题：
+       1. ogl 是纯 ES module 包，file:// 协议下无法加载（用户看不到背景）
+       2. 100 步 raymarching shader 性能开销大，与 globe.gl 同屏两个 WebGL context
+          导致地球拖拽卡顿
+       现改为纯 CSS 渐变光斑漂移实现棱镜光流效果（见 head 中 .prism-layer 样式），
+       file:// 下也能显示，性能好，不占用 WebGL 资源。 -->
 
   <!-- ========== 主逻辑：地球 / 云层 / 光照 / 自转 / 跳转 ==========
        用普通 <script>（非 type=module），file:// 双击打开也能正常加载。
