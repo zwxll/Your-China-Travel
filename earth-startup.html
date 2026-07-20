@@ -234,20 +234,37 @@
       world.controls().autoRotate = true;
       world.controls().autoRotateSpeed = 0.35;
 
-      /* ---------- 初始视角：定位到中国上空 ----------
-       * altitude 越大地球越小（相机离地球越远）。
-       * 调整为 1.3 让地球大幅放大、接近全屏铺满页面，
-       * 地平线弧度明显可见，文字和按钮悬浮在地球上方，与参考图效果一致。 */
-      world.pointOfView({ lat: 20, lng: 105, altitude: 1.3 });
+      /* ---------- 初始视角：完整全球视角 ----------
+       * altitude 2.5 让地球完整显示在视口中，可看到整个地球。
+       * 初始状态无任何区域高亮，地球缓慢自转。 */
+      world.pointOfView({ lat: 20, lng: 105, altitude: 2.5 });
 
       /* ---------- 窗口尺寸变化时同步更新地球画布 ---------- */
       window.addEventListener('resize', () => {
         world.width(window.innerWidth).height(window.innerHeight);
       });
 
-      /* ---------- 按钮点击：跳转主旅游地图页面 ---------- */
+      /* ========== 「开始记录」按钮点击动画流程 ==========
+       * 流程：停转 → 镜头过渡到中国(1.5s) → 跳转
+       * 防重复点击：isAnimating 标志锁 */
+      let isAnimating = false;
+
       document.getElementById('startBtn').addEventListener('click', () => {
-        window.location.href = './index.html';
+        if(isAnimating) return;                        /* 动画进行中，忽略重复点击 */
+        isAnimating = true;
+
+        /* ① 停止地球默认自转 */
+        world.controls().autoRotate = false;
+
+        /* ② 镜头平滑过渡到中国全境（1.5秒缓动）
+         * 中国经度 73~135，纬度 18~54，中心约 lat:36 lng:105
+         * altitude 1.3 可完整展示中国版图，不裁切不偏移 */
+        world.pointOfView({ lat: 36, lng: 105, altitude: 1.3 }, 1500);
+
+        /* ③ 镜头过渡完成(1.5s)后，停留片刻让用户看清中国版图，再跳转 */
+        setTimeout(() => {
+          window.location.href = './index.html';
+        }, 2800);  /* 1.5s 过渡 + 1.3s 停留 */
       });
 
       /* ---------- 动态加载 three.js UMD 供云层使用 ----------
