@@ -15,7 +15,7 @@
     font-family:'PingFang SC','Microsoft YaHei',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
   }
 
-  /* ===== 棱镜光流动态背景（z-index:2，在地球上方/文字下方，CSS实现，file://下也能显示） ===== */
+  /* ===== 棱镜光流动态背景（z-index:2，Canvas 2D 流动光线粒子，file://下也能显示） ===== */
   /* 放在地球之上才能让光效明显可见（地球canvas会遮挡下方图层） */
   #prism-bg{
     position:fixed;
@@ -27,38 +27,7 @@
     overflow:hidden;
     background:transparent;
   }
-  /* 棱镜光流层：多个径向渐变光斑缓慢漂移，模拟棱镜折射光效 */
-  /* 透明度适中：既能明显看到光效，又不完全遮挡地球纹理 */
-  .prism-layer{
-    position:absolute;
-    inset:-50%;
-    background:
-      radial-gradient(circle at 20% 30%, rgba(56,189,248,0.35) 0%, transparent 28%),
-      radial-gradient(circle at 80% 70%, rgba(186,230,253,0.28) 0%, transparent 32%),
-      radial-gradient(circle at 50% 50%, rgba(14,165,233,0.22) 0%, transparent 38%),
-      radial-gradient(circle at 70% 20%, rgba(125,211,252,0.25) 0%, transparent 30%),
-      radial-gradient(circle at 30% 80%, rgba(56,189,248,0.22) 0%, transparent 32%);
-    filter:blur(32px);
-    mix-blend-mode:screen;                            /* 屏幕混合模式：光效叠加更明亮，不遮挡下层 */
-    animation:prismDrift 24s ease-in-out infinite;
-    will-change:transform;
-  }
-  .prism-layer-2{
-    background:
-      radial-gradient(circle at 60% 40%, rgba(14,165,233,0.28) 0%, transparent 32%),
-      radial-gradient(circle at 25% 75%, rgba(186,230,253,0.25) 0%, transparent 30%),
-      radial-gradient(circle at 85% 15%, rgba(56,189,248,0.27) 0%, transparent 28%);
-    animation:prismDrift2 32s ease-in-out infinite reverse;
-  }
-  @keyframes prismDrift{
-    0%,100%{ transform:translate(0,0) rotate(0deg) scale(1); }
-    33%    { transform:translate(8%,-6%) rotate(120deg) scale(1.15); }
-    66%    { transform:translate(-6%,8%) rotate(240deg) scale(0.95); }
-  }
-  @keyframes prismDrift2{
-    0%,100%{ transform:translate(0,0) rotate(0deg) scale(1.1); }
-    50%    { transform:translate(-10%,6%) rotate(180deg) scale(0.9); }
-  }
+  #prism-bg canvas{display:block;width:100%;height:100%;mix-blend-mode:screen;}
 
   /* ===== 中层：3D 地球容器（z-index:1，可交互拖拽缩放） ===== */
   #globeViz{
@@ -232,10 +201,9 @@
 </head>
 <body>
 
-  <!-- ========== 最底层：棱镜光流动态背景（z-index:0，CSS渐变光斑漂移，性能好） ========== -->
+  <!-- ========== 棱镜光流动态背景（z-index:2，Canvas 2D 流动光线粒子） ========== -->
   <div id="prism-bg">
-    <div class="prism-layer"></div>
-    <div class="prism-layer prism-layer-2"></div>
+    <canvas id="prism-canvas"></canvas>
   </div>
 
   <!-- ========== 中层：globe.gl 3D 云层地球（z-index:1，全屏铺满，可交互） ========== -->
@@ -262,12 +230,143 @@
   <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
 
   <!-- ========== 棱镜光流背景说明 ==========
-       原方案用 ogl WebGL 实现 reactbits Prism 效果，存在两个问题：
-       1. ogl 是纯 ES module 包，file:// 协议下无法加载（用户看不到背景）
-       2. 100 步 raymarching shader 性能开销大，与 globe.gl 同屏两个 WebGL context
-          导致地球拖拽卡顿
-       现改为纯 CSS 渐变光斑漂移实现棱镜光流效果（见 head 中 .prism-layer 样式），
-       file:// 下也能显示，性能好，不占用 WebGL 资源。 -->
+       用 Canvas 2D 实现流动光线 + 粒子 + 极光波动效果：
+       - 多条流动光带沿屏幕缓慢移动，模拟棱镜折射光线
+       - 漂浮粒子缓慢上升，增加空间纵深感
+       - 底部极光波动，营造科技氛围
+       Canvas 2D 性能好，file:// 下可用，不占用 WebGL 资源，地球拖拽流畅。 -->
+
+  <!-- ========== 棱镜光流 Canvas 2D 动画 ========== -->
+  <script>
+    (function(){
+      const canvas = document.getElementById('prism-canvas');
+      if(!canvas) return;
+      const ctx = canvas.getContext('2d');
+      let W = 0, H = 0;
+
+      /* ---------- 尺寸适配 ---------- */
+      function resize(){
+        W = canvas.width = window.innerWidth;
+        H = canvas.height = window.innerHeight;
+      }
+      window.addEventListener('resize', resize);
+      resize();
+
+      /* ---------- 流动光带：多条曲线沿屏幕移动 ---------- */
+      const beams = [];
+      for(let i = 0; i < 6; i++){
+        beams.push({
+          y: Math.random() * H,                        /* 基准 y 位置 */
+          amp: 60 + Math.random() * 120,               /* 波动幅度 */
+          freq: 0.003 + Math.random() * 0.004,         /* 波动频率 */
+          speed: 0.15 + Math.random() * 0.35,          /* 移动速度 */
+          phase: Math.random() * Math.PI * 2,          /* 相位偏移 */
+          hue: 190 + Math.random() * 40,               /* 色相：青蓝~天蓝 */
+          alpha: 0.08 + Math.random() * 0.12,          /* 透明度 */
+          thick: 1.5 + Math.random() * 2.5             /* 线宽 */
+        });
+      }
+
+      /* ---------- 漂浮粒子：缓慢上升的光点 ---------- */
+      const particles = [];
+      for(let i = 0; i < 50; i++){
+        particles.push({
+          x: Math.random() * W,
+          y: Math.random() * H,
+          r: 0.5 + Math.random() * 1.8,               /* 半径 */
+          vy: 0.15 + Math.random() * 0.4,             /* 上升速度 */
+          vx: (Math.random() - 0.5) * 0.2,            /* 水平漂移 */
+          alpha: 0.3 + Math.random() * 0.5,           /* 透明度 */
+          hue: 190 + Math.random() * 50,              /* 色相 */
+          twinkle: Math.random() * Math.PI * 2         /* 闪烁相位 */
+        });
+      }
+
+      /* ---------- 底部极光波动 ---------- */
+      const auroras = [];
+      for(let i = 0; i < 3; i++){
+        auroras.push({
+          baseY: H * (0.7 + i * 0.08),                /* 基准位置 */
+          amp: 40 + Math.random() * 60,
+          freq: 0.002 + Math.random() * 0.003,
+          speed: 0.2 + Math.random() * 0.3,
+          phase: Math.random() * Math.PI * 2,
+          hue: 180 + i * 15,
+          alpha: 0.06 + i * 0.02
+        });
+      }
+
+      let t = 0;
+
+      /* ---------- 渲染循环 ---------- */
+      function render(){
+        t += 0.016;
+        ctx.clearRect(0, 0, W, H);
+
+        /* 1. 底部极光波动（多层正弦波填充） */
+        auroras.forEach(a => {
+          ctx.beginPath();
+          ctx.moveTo(0, H);
+          for(let x = 0; x <= W; x += 8){
+            const y = a.baseY
+              + Math.sin(x * a.freq + t * a.speed + a.phase) * a.amp
+              + Math.sin(x * a.freq * 2.3 + t * a.speed * 1.5) * a.amp * 0.4;
+            ctx.lineTo(x, y);
+          }
+          ctx.lineTo(W, H);
+          ctx.closePath();
+          const grad = ctx.createLinearGradient(0, a.baseY - a.amp, 0, H);
+          grad.addColorStop(0, `hsla(${a.hue},80%,60%,${a.alpha})`);
+          grad.addColorStop(1, `hsla(${a.hue},80%,40%,0)`);
+          ctx.fillStyle = grad;
+          ctx.fill();
+        });
+
+        /* 2. 流动光带（贝塞尔曲线，带辉光） */
+        beams.forEach(b => {
+          ctx.beginPath();
+          for(let x = 0; x <= W; x += 6){
+            const y = b.y
+              + Math.sin(x * b.freq + t * b.speed + b.phase) * b.amp
+              + Math.sin(x * b.freq * 1.7 + t * b.speed * 0.8) * b.amp * 0.35;
+            if(x === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          /* 辉光层（粗线低透明度） */
+          ctx.strokeStyle = `hsla(${b.hue},85%,65%,${b.alpha * 0.4})`;
+          ctx.lineWidth = b.thick * 4;
+          ctx.lineCap = 'round';
+          ctx.stroke();
+          /* 主线（细线高透明度） */
+          ctx.strokeStyle = `hsla(${b.hue},90%,72%,${b.alpha})`;
+          ctx.lineWidth = b.thick;
+          ctx.stroke();
+        });
+
+        /* 3. 漂浮粒子（带闪烁） */
+        particles.forEach(p => {
+          p.y -= p.vy;                                 /* 上升 */
+          p.x += p.vx;                                 /* 水平漂移 */
+          if(p.y < -10){ p.y = H + 10; p.x = Math.random() * W; }
+          if(p.x < -10) p.x = W + 10;
+          if(p.x > W + 10) p.x = -10;
+          const flicker = 0.5 + Math.sin(t * 2 + p.twinkle) * 0.5;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue},85%,70%,${p.alpha * flicker})`;
+          ctx.fill();
+          /* 粒子辉光 */
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.r * 3, 0, Math.PI * 2);
+          ctx.fillStyle = `hsla(${p.hue},85%,70%,${p.alpha * flicker * 0.15})`;
+          ctx.fill();
+        });
+
+        requestAnimationFrame(render);
+      }
+      render();
+    })();
+  </script>
 
   <!-- ========== 主逻辑：地球 / 云层 / 光照 / 自转 / 跳转 ==========
        用普通 <script>（非 type=module），file:// 双击打开也能正常加载。
