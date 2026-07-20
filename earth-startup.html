@@ -215,8 +215,11 @@
       world.controls().autoRotate = true;
       world.controls().autoRotateSpeed = 0.35;
 
-      /* ---------- 初始视角：定位到中国上空 ---------- */
-      world.pointOfView({ lat: 20, lng: 105, altitude: 2.5 });
+      /* ---------- 初始视角：定位到中国上空 ----------
+       * altitude 越大地球越小（相机离地球越远）。
+       * 调整为 3.6 让地球约占视口宽度 45%，四周保留充足深空留白，
+       * 视觉比例与参考图一致，标题/副标题/按钮悬浮在地球上方居中。 */
+      world.pointOfView({ lat: 20, lng: 105, altitude: 3.6 });
 
       /* ---------- 窗口尺寸变化时同步更新地球画布 ---------- */
       window.addEventListener('resize', () => {
