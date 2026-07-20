@@ -2335,11 +2335,235 @@
     position:absolute;bottom:90px;right:28px;
     color:rgba(255,255,255,.3);font-size:11px;z-index:20;
   }
+
+  /* ============================================================
+   * ===== 地球启动层 CSS（HyperFrames / GSAP 动画目标元素）=====
+   * 全屏覆盖主内容的地球启动页：#launch-screen 容器 z-index:50，
+   * 内部粒子背景 z-index:2、地球 z-index:1、标题按钮 z-index:10。
+   * 点击「开始记录」后由 GSAP timeline 淡出隐藏，露出主地图内容。
+   * 注意：body 背景保持主项目原有渐变，纯黑深空背景仅作用于 #launch-screen。
+   * ============================================================ */
+
+  /* 启动层容器：fixed 全屏，纯黑深空背景，覆盖主内容 */
+  #launch-screen{
+    position:fixed;
+    inset:0;
+    z-index:50;                                       /* 高于主内容（header/地图/卡片），低于模态框(默认隐藏) */
+    background:#000;                                  /* 纯黑深空背景，强化地球科技氛围 */
+    overflow:hidden;
+  }
+
+  /* 粒子星空背景（position:absolute 相对 #launch-screen，z-index:2）
+   * 基于 ogl 的 WebGL 粒子，canvas 由脚本自动创建并 append。
+   * 放在地球之上才能让粒子明显可见（地球canvas会遮挡下方图层） */
+  #prism-bg{
+    position:absolute;                                /* 改为 absolute（容器内定位，原 earth-startup 为 fixed） */
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:2;                                        /* 地球(z-index:1)之上、标题按钮(z-index:10)之下 */
+    pointer-events:none;                              /* 不拦截鼠标，让地球可拖拽 */
+    overflow:hidden;
+    background:transparent;
+  }
+  #prism-bg canvas{display:block;width:100%;height:100%;}
+
+  /* 3D 地球容器（position:absolute 相对 #launch-screen，z-index:1，可交互拖拽缩放） */
+  #globeViz{
+    position:absolute;                                /* 改为 absolute（容器内定位，原 earth-startup 为 fixed） */
+    inset:0;
+    width:100%;
+    height:100%;
+    z-index:1;
+    pointer-events:auto;                              /* 允许鼠标拖拽旋转与滚轮缩放 */
+  }
+  #globeViz canvas{width:100%!important;height:100%!important;display:block;}
+
+  /* 标题 + 按钮悬浮层（position:absolute 相对 #launch-screen，z-index:10，整体穿透） */
+  .launch-overlay{
+    position:absolute;                                /* 改为 absolute（容器内定位，原 earth-startup 为 fixed） */
+    inset:0;
+    z-index:10;
+    pointer-events:none;                              /* 整体穿透，让鼠标事件落到地球 */
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;                           /* 垂直居中：标题与按钮位于页面正中 */
+  }
+
+  /* 标题双层结构：外层包裹，内含发光层与扫光层 */
+  .launch-title-wrap{
+    position:relative;
+    display:inline-block;
+    line-height:1.1;
+    will-change:transform,opacity;                    /* GPU 加速，GSAP tween 友好 */
+  }
+  /* 标题通用字体属性（两层共用，确保完全对齐） */
+  .launch-title,
+  .launch-title-glow{
+    font-size:clamp(2.5rem, 6vw, 5rem);              /* 全屏自适应 */
+    font-weight:800;
+    letter-spacing:0.08em;
+    margin:0;
+    white-space:nowrap;
+  }
+  /* 发光层（绝对定位，底层）：白色文字 + 微光 text-shadow */
+  .launch-title-glow{
+    position:absolute;
+    inset:0;
+    color:#ffffff;
+    text-shadow:0 0 20px rgba(186,230,253,0.6),
+               0 0 40px rgba(56,189,248,0.3);
+    pointer-events:none;
+  }
+  /* 扫光层（上层）：background-clip:text 实现 shiny 扫光 */
+  .launch-title{
+    position:relative;
+    background:linear-gradient(135deg,
+      #ffffff 0%,
+      #ffffff 42%,
+      #bae6fd 50%,
+      #ffffff 58%,
+      #ffffff 100%);
+    background-size:250% 100%;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;                                /* 文字透明，仅显示渐变扫光 */
+    animation:shinySweep 6s ease-in-out infinite;
+  }
+  /* shiny 扫光动画：渐变位置循环移动 */
+  @keyframes shinySweep{
+    0%   { background-position:150% 0; }
+    26.7%{ background-position:-50% 0; }
+    50%  { background-position:-50% 0; }
+    76.7%{ background-position:150% 0; }
+    100% { background-position:150% 0; }
+  }
+
+  /* 副标题 */
+  .launch-subtitle{
+    font-size:clamp(0.9rem, 1.8vw, 1.3rem);
+    color:rgba(186,230,253,0.7);
+    letter-spacing:0.3em;
+    margin-top:12px;
+    font-weight:400;
+    will-change:transform,opacity;
+    text-align:center;
+  }
+
+  /* 启动按钮：深色玻璃底 + 暖金白文字 + 闪光图标 + 箭头 */
+  .launch-btn{
+    pointer-events:auto;                              /* 穿透层中唯一可交互元素 */
+    position:relative;
+    overflow:hidden;
+    margin-top:56px;                                  /* 距副标题留白 */
+    padding:16px 52px;
+    will-change:transform,opacity;
+    border-radius:30px;                               /* 大圆角胶囊形 */
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    text-align:center;
+    letter-spacing:3px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    /* 深色玻璃质感背景 */
+    background:rgba(10,12,20,0.62);
+    backdrop-filter:blur(10px) saturate(150%);
+    -webkit-backdrop-filter:blur(10px) saturate(150%);
+    color:#fff6e0;                                    /* 暖金白色文字 */
+    border:1px solid rgba(255,225,160,0.45);          /* 暖金边框 */
+    box-shadow:0 4px 18px rgba(0,0,0,0.5),
+               0 0 14px rgba(255,210,120,0.15),
+               inset 0 0 14px rgba(255,210,120,0.08);
+    /* hover/点击动画由 GSAP 驱动（更流畅），CSS 不设 transition 避免冲突 */
+  }
+  /* 闪光图标 */
+  .launch-btn .sparkle{
+    font-size:18px;
+    line-height:1;
+    filter:drop-shadow(0 0 4px rgba(255,225,160,0.7));
+  }
+  /* 箭头 */
+  .launch-btn .arrow{
+    margin-left:4px;
+    opacity:0.85;
+  }
+  /* 底部径向高光（增强镜面感） */
+  .launch-btn::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    border-radius:inherit;
+    background:radial-gradient(120% 80% at 50% 120%,
+      rgba(255,210,120,0.18),
+      transparent 60%);
+    opacity:.7;
+    pointer-events:none;
+    transition:opacity .3s ease;
+  }
+  /* 镜面扫光条：斜向移动的高光带 */
+  .launch-btn::after{
+    content:'';
+    position:absolute;
+    top:0;
+    left:-60%;
+    width:50%;
+    height:100%;
+    background:linear-gradient(105deg,
+      transparent 0%,
+      rgba(255,235,190,0) 30%,
+      rgba(255,235,190,0.55) 50%,
+      rgba(255,235,190,0) 70%,
+      transparent 100%);
+    transform:skewX(-18deg);
+    pointer-events:none;
+    animation:btnSweep 3.5s ease-in-out infinite;
+  }
+  @keyframes btnSweep{
+    0%  { left:-60%; }
+    55% { left:120%; }
+    100%{ left:120%; }
+  }
+  /* hover：底部高光增强（transform/box-shadow 由 GSAP 驱动） */
+  .launch-btn:hover::before{ opacity:1; }
 </style>
 </head>
 <body>
 <!-- ===== 底层 ferrofluid 铁磁流体背景（z-index:-1，非交互，纯氛围层）===== -->
 <canvas id="ferrofluidBg" style="position:fixed;inset:0;width:100%;height:100%;z-index:-1;pointer-events:none;will-change:transform;"></canvas>
+
+<!-- ============================================================
+   * ===== 地球启动层（z-index:50，初始全屏覆盖主内容）=====
+   * HyperFrames / GSAP 驱动：粒子背景(ogl) + 3D地球(globe.gl) + UI(GSAP)
+   * 点击「开始记录」后由 GSAP timeline 淡出隐藏，露出主地图内容。
+   * ============================================================ -->
+<div id="launch-screen">
+  <!-- 粒子星空背景（z-index:2，WebGL 粒子，canvas 由 ogl 自动创建并 append） -->
+  <div id="prism-bg"></div>
+  <!-- 3D 云层地球（z-index:1，全屏铺满，可交互拖拽缩放） -->
+  <div id="globeViz"></div>
+  <!-- 标题 + 按钮（z-index:10，整体穿透，按钮单独可点） -->
+  <div class="launch-overlay">
+    <!-- 标题双层：发光层 + 扫光层 -->
+    <div class="launch-title-wrap">
+      <h1 class="launch-title-glow">Chinese footprint</h1>
+      <h1 class="launch-title">Chinese footprint</h1>
+    </div>
+    <!-- 副标题 -->
+    <p class="launch-subtitle">点亮你走过的每一座城市</p>
+    <!-- 启动按钮：闪光图标 + 文字 + 箭头 -->
+    <button class="launch-btn" id="startBtn">
+      <span class="sparkle">✦</span>
+      <span>开始记录</span>
+      <span class="arrow">→</span>
+    </button>
+  </div>
+</div>
+<!-- 页面过渡遮罩（GSAP 控制淡入/淡出，z-index:100，切换时黑屏过渡） -->
+<div id="page-transition" style="position:fixed;inset:0;z-index:100;background:#000;pointer-events:none;opacity:0;"></div>
+
   <!-- ===== Gooey 黏稠效果 SVG Filter（对标 aceternity gooey-input）===== -->
   <!-- feGaussianBlur + feColorMatrix：让图标气泡与输入框边缘融合产生流体黏稠感 -->
   <svg width="0" height="0" style="position:absolute;" aria-hidden="true">
@@ -2637,6 +2861,416 @@
 <script src="china-geo.js"></script>
 <!-- 【离线部署】34 省地级市边界 GeoJSON 本地缓存，城市点全量加载（371城），不再依赖 DataV CDN -->
 <script src="china-provinces-geo.js"></script>
+
+<!-- ============================================================
+ * ===== 地球启动层脚本（HyperFrames / GSAP 驱动）=====
+ * 依赖：globe.gl（UMD，内部打包 three.js，暴露全局 Globe）
+ *       GSAP（动画引擎，timeline 串联 + GPU 加速 transform/opacity）
+ *       ogl（粒子星空，ES module 动态 import）
+ *       window.CHINA_GEO（主项目上方已加载的中国边界 GeoJSON，用于国界呼吸高光）
+ * 三层动画解耦：粒子背景(ogl) / 3D地球(globe.gl) / UI文字按钮(GSAP) 互不抢占渲染资源。
+ * 点击「开始记录」后由 GSAP timeline 隐藏 #launch-screen，露出主地图内容（非跳转）。
+ * ============================================================ -->
+
+<!-- globe.gl 依赖（UMD，内部已打包 three.js，暴露全局 Globe） -->
+<script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
+
+<!-- HyperFrames / GSAP 动画引擎：全页面动画统一用 GSAP 实现
+     timeline 串联、GPU 加速 transform/opacity、规避 setTimeout 卡顿。
+     点击镜头时间线、按钮反馈、标题入场、页面过渡均由 GSAP 驱动。 -->
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+<!-- GSAP 入场动画（独立执行，不等 globe.gl 加载，避免延迟）
+     用 fromTo 明确起止状态，immediateRender:true 在首帧前即设为隐藏，无闪烁 -->
+<script>
+  /* HyperFrames / GSAP 入场动画：标题 → 副标题 → 按钮依次淡入上浮 */
+  gsap.fromTo('.launch-title-wrap',
+    { y: 40, autoAlpha: 0 },
+    { y: 0, autoAlpha: 1, duration: 1.2, ease: 'power3.out', delay: 0.3 }
+  );
+  gsap.fromTo('.launch-subtitle',
+    { y: 30, autoAlpha: 0 },
+    { y: 0, autoAlpha: 1, duration: 1.0, ease: 'power3.out', delay: 0.7 }
+  );
+  gsap.fromTo('.launch-btn',
+    { y: 30, autoAlpha: 0 },
+    { y: 0, autoAlpha: 1, duration: 1.0, ease: 'back.out(1.4)', delay: 1.0 }
+  );
+</script>
+
+<!-- Particles 粒子星空背景（type=module，动态 import ogl）
+     球体分布粒子点云 + 蓝白冷色调 + 鼠标交互视差。
+     与 globe.gl 共存：各自独立 WebGL 上下文，互不干扰。
+     加载失败时仅 console.warn，不影响地球与跳转逻辑。 -->
+<script type="module">
+  /* 动态 import ogl，try-catch 包裹：失败时仅 warn，不抛出阻断后续逻辑 */
+  import('https://esm.sh/ogl@1.0.11')
+    .then(({ Renderer, Camera, Geometry, Program, Mesh }) => {
+      try {
+        const container = document.getElementById('prism-bg');
+        if(!container) throw new Error('#prism-bg 容器未找到');
+
+        /* ---------- 参数（蓝白冷色调 + 高密度 + 鼠标交互）---------- */
+        const particleCount   = 800;                            /* 粒子数 800，星空密集 */
+        const particleSpread  = 10;                              /* 粒子分布半径 */
+        const speed           = 0.1;                            /* 动画速度 */
+        const particleColors  = ['#ffffff', '#a5d8ff', '#a5d8ff', '#74c0fc', '#74c0fc']; /* 蓝白冷色调 */
+        const moveParticlesOnHover = true;                     /* 鼠标交互视差 */
+        const particleHoverFactor = 1.5;                        /* 交互强度 */
+        const alphaParticles  = true;                           /* 圆形透明粒子，柔和发光 */
+        const particleBaseSize = 100;
+        const sizeRandomness  = 1;
+        const cameraDistance  = 20;
+        const disableRotation = false;                          /* 启用缓慢旋转 */
+        const pixelRatio      = 1;                             /* 像素比（性能优先） */
+
+        /* ---------- hex 转 rgb（归一化 0~1） ---------- */
+        const hexToRgb = hex => {
+          hex = hex.replace(/^#/, '');
+          if(hex.length === 3){ hex = hex.split('').map(c => c + c).join(''); }
+          const int = parseInt(hex, 16);
+          return [((int >> 16) & 255) / 255, ((int >> 8) & 255) / 255, (int & 255) / 255];
+        };
+
+        /* ---------- 顶点着色器 ---------- */
+        const vertex = `
+          attribute vec3 position;
+          attribute vec4 random;
+          attribute vec3 color;
+          uniform mat4 modelMatrix;
+          uniform mat4 viewMatrix;
+          uniform mat4 projectionMatrix;
+          uniform float uTime;
+          uniform float uSpread;
+          uniform float uBaseSize;
+          uniform float uSizeRandomness;
+          varying vec4 vRandom;
+          varying vec3 vColor;
+          void main() {
+            vRandom = random;
+            vColor = color;
+            vec3 pos = position * uSpread;
+            pos.z *= 10.0;
+            vec4 mPos = modelMatrix * vec4(pos, 1.0);
+            float t = uTime;
+            mPos.x += sin(t * random.z + 6.28 * random.w) * mix(0.1, 1.5, random.x);
+            mPos.y += sin(t * random.y + 6.28 * random.x) * mix(0.1, 1.5, random.w);
+            mPos.z += sin(t * random.w + 6.28 * random.y) * mix(0.1, 1.5, random.z);
+            vec4 mvPos = viewMatrix * mPos;
+            if (uSizeRandomness == 0.0) { gl_PointSize = uBaseSize; }
+            else { gl_PointSize = (uBaseSize * (1.0 + uSizeRandomness * (random.x - 0.5))) / length(mvPos.xyz); }
+            gl_Position = projectionMatrix * mvPos;
+          }
+        `;
+
+        /* ---------- 片元着色器 ---------- */
+        const fragment = `
+          precision highp float;
+          uniform float uTime;
+          uniform float uAlphaParticles;
+          varying vec4 vRandom;
+          varying vec3 vColor;
+          void main() {
+            vec2 uv = gl_PointCoord.xy;
+            float d = length(uv - vec2(0.5));
+            if(uAlphaParticles < 0.5) {
+              if(d > 0.5) { discard; }
+              gl_FragColor = vec4(vColor + 0.2 * sin(uv.yxx + uTime + vRandom.y * 6.28), 1.0);
+            } else {
+              float circle = smoothstep(0.5, 0.4, d) * 0.8;
+              gl_FragColor = vec4(vColor + 0.2 * sin(uv.yxx + uTime + vRandom.y * 6.28), circle);
+            }
+          }
+        `;
+
+        /* ---------- 渲染器（透明背景、无深度测试） ---------- */
+        const renderer = new Renderer({ alpha: true, depth: false, dpr: pixelRatio });
+        const gl = renderer.gl;
+        container.appendChild(gl.canvas);
+        gl.canvas.style.cssText = 'display:block;width:100%;height:100%;';
+
+        /* ---------- 相机（fov 15°，z 距离 20） ---------- */
+        const camera = new Camera(gl, { fov: 15 });
+        camera.position.z = cameraDistance;
+
+        /* ---------- 尺寸适配 ---------- */
+        function resize(){
+          renderer.setSize(window.innerWidth, window.innerHeight);
+          camera.perspective({ aspect: window.innerWidth / window.innerHeight });
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        /* ---------- 球体分布生成粒子数据 ---------- */
+        const positions = new Float32Array(particleCount * 3);
+        const randoms   = new Float32Array(particleCount * 4);
+        const colors    = new Float32Array(particleCount * 3);
+        const rgbColors = particleColors.map(hexToRgb);
+        for(let i = 0; i < particleCount; i++){
+          const theta = Math.random() * Math.PI * 2;            /* 方位角 */
+          const phi   = Math.acos(2 * Math.random() - 1);       /* 极角（球内均匀） */
+          const r     = Math.random();                          /* 球内随机半径 */
+          positions[i * 3]     = r * Math.sin(phi) * Math.cos(theta);
+          positions[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+          positions[i * 3 + 2] = r * Math.cos(phi);
+          randoms[i * 4]     = Math.random();
+          randoms[i * 4 + 1] = Math.random();
+          randoms[i * 4 + 2] = Math.random();
+          randoms[i * 4 + 3] = Math.random();
+          const c = rgbColors[i % rgbColors.length];
+          colors[i * 3]     = c[0];
+          colors[i * 3 + 1] = c[1];
+          colors[i * 3 + 2] = c[2];
+        }
+
+        /* ---------- 几何体（position / random / color 三组属性） ---------- */
+        const geometry = new Geometry(gl, {
+          position: { size: 3, data: positions },
+          random:   { size: 4, data: randoms },
+          color:    { size: 3, data: colors },
+        });
+
+        /* ---------- 程序（含 uniform） ---------- */
+        const program = new Program(gl, {
+          vertex,
+          fragment,
+          uniforms: {
+            uTime:           { value: 0 },
+            uSpread:         { value: particleSpread },
+            uBaseSize:       { value: particleBaseSize },
+            uSizeRandomness: { value: sizeRandomness },
+            uAlphaParticles: { value: alphaParticles ? 1.0 : 0.0 },
+          },
+          transparent: true,
+          depthTest: false,
+        });
+
+        /* ---------- 点云 Mesh（gl.POINTS 模式） ---------- */
+        const particles = new Mesh(gl, { mode: gl.POINTS, geometry, program });
+
+        /* ---------- 鼠标交互视差：监听 window（容器 pointer-events:none） ---------- */
+        let mouseX = 0, mouseY = 0;
+        let targetX = 0, targetY = 0;
+        if(moveParticlesOnHover){
+          window.addEventListener('mousemove', e => {
+            targetX = (e.clientX / window.innerWidth)  * 2 - 1;   /* -1~1 */
+            targetY = (e.clientY / window.innerHeight) * 2 - 1;   /* -1~1 */
+          });
+        }
+
+        /* ---------- 渲染循环 ---------- */
+        const startTime = performance.now();
+        function render(){
+          const elapsed = (performance.now() - startTime) * 0.001;
+          program.uniforms.uTime.value = elapsed * speed;
+          /* 缓动跟随鼠标（lerp 平滑过渡） */
+          mouseX += (targetX - mouseX) * 0.05;
+          mouseY += (targetY - mouseY) * 0.05;
+          if(!disableRotation){
+            particles.rotation.x = Math.sin(elapsed * 0.1) * 0.1;
+            particles.rotation.y = Math.cos(elapsed * 0.1) * 0.1;
+          }
+          if(moveParticlesOnHover){
+            particles.position.x = -mouseX * particleHoverFactor;
+            particles.position.y =  mouseY * particleHoverFactor;
+            particles.rotation.x += -mouseY * 0.15;
+            particles.rotation.y +=  mouseX * 0.15;
+          }
+          renderer.render({ scene: particles, camera });
+          requestAnimationFrame(render);
+        }
+        render();
+      } catch(err){
+        console.warn('[Particles] 粒子背景初始化失败，不影响地球与跳转逻辑:', err);
+      }
+    })
+    .catch(err => {
+      console.warn('[Particles] ogl 模块加载失败，粒子背景不显示，不影响地球:', err);
+    });
+</script>
+
+<!-- 主逻辑：地球 / 云层 / 光照 / 自转 / 点击时间线（HyperFrames / GSAP 驱动）
+     用普通 <script>（非 type=module），file:// 双击打开也能正常加载。
+     globe.gl UMD 先加载并初始化地球（用内部打包的 three），
+     再动态加载 three.js UMD 供云层代码使用，避免 ES module 在 file:// 下被 CORS 阻止。 -->
+<script>
+  /* ---------- 等待 globe.gl 加载完成并初始化地球 ---------- */
+  function initGlobe(){
+    if(typeof Globe==='undefined'){
+      setTimeout(initGlobe,50);
+      return;
+    }
+    try {
+
+      /* ---------- 地球初始化（纹理 + 凹凸贴图） ---------- */
+      const world = new Globe(document.getElementById('globeViz'), { animateIn: false })
+        .globeImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg')
+        .bumpImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png');
+
+      /* ---------- 全屏尺寸适配 ---------- */
+      world.width(window.innerWidth).height(window.innerHeight);
+
+      /* ---------- 地球自动缓慢自转 ---------- */
+      world.controls().autoRotate = true;
+      world.controls().autoRotateSpeed = 0.35;
+
+      /* ---------- 初始视角：地球占满大部分屏幕（altitude 1.5） ----------
+       * altitude 1.5 让地球大幅放大、接近全屏铺满页面，
+       * 地平线弧度明显可见，视觉冲击力强。 */
+      world.pointOfView({ lat: 20, lng: 105, altitude: 1.5 });
+
+      /* ---------- 窗口尺寸变化时同步更新地球画布 ---------- */
+      window.addEventListener('resize', () => {
+        world.width(window.innerWidth).height(window.innerHeight);
+      });
+
+      /* ========== HyperFrames / GSAP 动画层 ==========
+       * 全部动效用 GSAP 实现，GPU 加速 transform/opacity，规避 setTimeout 卡顿。
+       * 入场动画已在 GSAP CDN 后独立执行（不等 globe.gl 加载），此处仅保留 hover + 点击时间线。 */
+
+      /* ---------- ① 按钮鼠标 hover 发光放大（GSAP 驱动，比 CSS transition 更流畅） ---------- */
+      const btn = document.getElementById('startBtn');
+      const btnHover = gsap.to(btn, {
+        scale: 1.06,
+        boxShadow: '0 6px 28px rgba(0,0,0,0.6), 0 0 28px rgba(255,210,120,0.45), inset 0 0 20px rgba(255,210,120,0.15)',
+        borderColor: 'rgba(255,225,160,0.75)',
+        duration: 0.3,
+        ease: 'power2.out',
+        paused: true                                /* 默认暂停，hover 时 play */
+      });
+      btn.addEventListener('mouseenter', () => btnHover.play());
+      btn.addEventListener('mouseleave', () => btnHover.reverse());
+
+      /* ---------- ② 「开始记录」点击镜头时间线（gsap.timeline 串联） ----------
+       * 整套连贯时间线：按压反馈 → 停自转 → 镜头缓动拉近中国 → 中国国界呼吸高光
+       * → UI淡出 → 黑屏过渡 → 隐藏地球层 → 黑屏淡出露主地图 → 触发 resize
+       * 防重复点击：isAnimating 标志锁
+       * 核心修改：onComplete 隐藏 #launch-screen（非原 earth-startup 的 window.location.href 跳转） */
+      let isAnimating = false;
+
+      /* 镜头代理对象：GSAP tween 代理数值，onUpdate 回调驱动 globe.gl pointOfView，
+       * 实现 GSAP 缓动控制地球镜头（globe.gl 原生 pointOfView 不支持 GSAP 直接 tween） */
+      const camProxy = { lat: 20, lng: 105, altitude: 1.5 };
+
+      btn.addEventListener('click', () => {
+        if(isAnimating) return;
+        isAnimating = true;
+
+        /* 停止地球自转 */
+        world.controls().autoRotate = false;
+
+        /* === GSAP 时间线：整套点击流程串联 === */
+        const tl = gsap.timeline({
+          defaults: { ease: 'power3.inOut' },
+          /* 核心修改：onComplete 隐藏地球启动层，露出主地图内容（非跳转） */
+          onComplete: () => {
+            /* GSAP 隐藏地球启动层 */
+            gsap.set('#launch-screen', { display: 'none' });
+            gsap.set('#page-transition', { autoAlpha: 0 });
+            /* 触发主地图 resize（ECharts 需要在显示后重新计算尺寸） */
+            window.dispatchEvent(new Event('resize'));
+          }
+        });
+
+        /* 步骤1：按钮按压缩放反馈（0.12s + 0.2s） */
+        tl.to(btn, { scale: 0.94, duration: 0.12, ease: 'power2.in' })
+          .to(btn, { scale: 1.0, duration: 0.2, ease: 'back.out(2)' });
+
+        /* 步骤2：镜头缓动拉近中国全境（1.6s）
+         * GSAP tween camProxy，onUpdate 实时驱动 globe.gl pointOfView
+         * 中国中心 lat:36 lng:105，altitude 1.3 完整展示版图 */
+        tl.to(camProxy, {
+          lat: 36, lng: 105, altitude: 1.3,
+          duration: 1.6,
+          ease: 'power2.inOut',
+          onUpdate: () => world.pointOfView(
+            { lat: camProxy.lat, lng: camProxy.lng, altitude: camProxy.altitude },
+            0
+          )
+        }, '<0.05');                                  /* 与按钮回弹略微重叠 */
+
+        /* 步骤3：停留欣赏中国版图（0.8s 间隙，仅镜头聚焦，无国界高光特效） */
+
+        /* 步骤4：UI 元素淡出（标题 + 副标题 + 按钮，0.6s） */
+        tl.to(['.launch-title-wrap', '.launch-subtitle', '.launch-btn'], {
+          autoAlpha: 0, y: -20, duration: 0.6, ease: 'power2.in'
+        }, '+=0.8');
+
+        /* 步骤5：黑屏遮罩淡入过渡（0.5s） */
+        tl.to('#page-transition', { autoAlpha: 1, duration: 0.5, ease: 'power2.inOut' }, '-=0.2')
+          /* 步骤6：隐藏地球层（display:none，露出主地图内容） */
+          .set('#launch-screen', { display: 'none' })
+          /* 步骤7：黑屏遮罩淡出，露出主地图（0.6s） */
+          .to('#page-transition', { autoAlpha: 0, duration: 0.6, ease: 'power2.out' })
+          /* 步骤8：触发 resize 让 ECharts 重新计算尺寸 */
+          .call(() => window.dispatchEvent(new Event('resize')));
+      });
+
+      /* ---------- 动态加载 three.js UMD 供云层使用 ----------
+       * globe.gl UMD 内部打包了 three.js 但不暴露全局 THREE。
+       * 此处动态加载 three@0.149.0 UMD（最后稳定 UMD 版本），用于创建云层 Mesh/光照。 */
+      function loadThreeScript(){
+        if(typeof THREE!=='undefined'){ setupClouds(THREE); return; }
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js';
+        s.onload=()=>setupClouds(THREE);
+        s.onerror=()=>console.error('three.js UMD 加载失败，云层将不显示');
+        document.head.appendChild(s);
+      }
+
+      /* ---------- 云层 + 补充光照（依赖 three.js） ---------- */
+      function setupClouds(THREE){
+        /* 补充光照：增强云层可见度与昼夜分界 */
+        world.scene().add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(1, 1, 1);
+        world.scene().add(dirLight);
+
+        /* 云层：独立球体包裹地球，独立旋转 */
+        const CLOUDS_URLS = [
+          'https://cdn.jsdelivr.net/gh/turban/webgl-earth@master/media/fair_clouds_4k.png',
+          'https://raw.githubusercontent.com/turban/webgl-earth/master/media/fair_clouds_4k.png'
+        ];
+        const CLOUDS_ALT = 0.004;
+        const CLOUDS_ROTATION_SPEED = -0.006;
+
+        function loadClouds(urlIndex = 0) {
+          if (urlIndex >= CLOUDS_URLS.length) return;
+          new THREE.TextureLoader().load(
+            CLOUDS_URLS[urlIndex],
+            cloudsTexture => {
+              const clouds = new THREE.Mesh(
+                new THREE.SphereGeometry(world.getGlobeRadius() * (1 + CLOUDS_ALT), 75, 75),
+                new THREE.MeshPhongMaterial({ map: cloudsTexture, transparent: true })
+              );
+              world.scene().add(clouds);
+              (function rotateClouds() {
+                clouds.rotation.y += CLOUDS_ROTATION_SPEED * Math.PI / 180;
+                requestAnimationFrame(rotateClouds);
+              })();
+            },
+            undefined,
+            () => loadClouds(urlIndex + 1)
+          );
+        }
+        loadClouds();
+      }
+
+      /* 地球初始化完成后，加载 three.js 用于云层 */
+      loadThreeScript();
+      } catch(err){
+        console.error('[initGlobe] 地球初始化出错，GSAP 动画可能未绑定:', err);
+      }
+    }
+
+    /* DOM 就绪后启动 */
+    if(document.readyState==='loading'){
+      document.addEventListener('DOMContentLoaded',initGlobe);
+    }else{
+      initGlobe();
+    }
+</script>
+
 <script>
 /* =========================================================
  * 我的中国旅行地图 —— 单文件应用
