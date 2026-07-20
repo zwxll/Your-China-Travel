@@ -58,6 +58,7 @@
     position:relative;
     display:inline-block;
     line-height:1.1;
+    will-change:transform,opacity;
   }
   /* 标题通用字体属性（两层共用，确保完全对齐） */
   .launch-title,
@@ -108,6 +109,7 @@
     letter-spacing:0.3em;
     margin-top:12px;
     font-weight:400;
+    will-change:transform,opacity;
     text-align:center;
   }
 
@@ -118,6 +120,7 @@
     overflow:hidden;
     margin-top:56px;                                  /* 距副标题留白 */
     padding:16px 52px;
+    will-change:transform,opacity;
     border-radius:30px;                               /* 大圆角胶囊形，参考照片风格 */
     font-size:16px;
     font-weight:600;
@@ -136,9 +139,7 @@
     box-shadow:0 4px 18px rgba(0,0,0,0.5),
                0 0 14px rgba(255,210,120,0.15),
                inset 0 0 14px rgba(255,210,120,0.08);
-    transition:transform .25s cubic-bezier(.4,0,.2,1),
-               box-shadow .25s ease,
-               border-color .25s ease;
+    /* hover/点击动画由 GSAP 驱动（更流畅），移除 CSS transition 避免冲突 */
   }
   /* 闪光图标 */
   .launch-btn .sparkle{
@@ -188,15 +189,8 @@
     100%{ left:120%; }
   }
   /* hover：上浮 + 加强发光 */
-  .launch-btn:hover{
-    transform:translateY(-2px) scale(1.03);
-    box-shadow:0 8px 26px rgba(0,0,0,0.55),
-               0 0 22px rgba(255,210,120,0.35),
-               inset 0 0 18px rgba(255,210,120,0.14);
-    border-color:rgba(255,235,190,0.85);
-  }
+  /* hover/active 的 transform/box-shadow 由 GSAP 驱动，CSS 仅保留镜面光泽 */
   .launch-btn:hover::before{ opacity:1; }
-  .launch-btn:active{ transform:translateY(0) scale(0.98); }
 </style>
 </head>
 <body>
@@ -224,8 +218,33 @@
     </button>
   </div>
 
+  <!-- ========== 页面过渡遮罩（GSAP 控制淡出/淡入，跳转时黑屏过渡） ========== -->
+  <div id="page-transition" style="position:fixed;inset:0;z-index:100;background:#000;pointer-events:none;opacity:0;"></div>
+
   <!-- ========== globe.gl 依赖（UMD，内部已打包 three.js，暴露全局 Globe） ========== -->
   <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
+
+  <!-- ========== HyperFrames / GSAP 动画引擎 ==========
+       全页面动画统一用 GSAP 实现：timeline 串联、GPU 加速 transform/opacity、
+       规避 setTimeout 卡顿。点击镜头时间线、按钮反馈、标题入场、页面过渡均由 GSAP 驱动。 -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+
+  <!-- ========== GSAP 入场动画（独立执行，不等 globe.gl 加载，避免延迟） ==========
+       用 fromTo 明确起止状态，immediateRender:true 在首帧前即设为隐藏，无闪烁 -->
+  <script>
+    gsap.fromTo('.launch-title-wrap',
+      { y: 40, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 1.2, ease: 'power3.out', delay: 0.3 }
+    );
+    gsap.fromTo('.launch-subtitle',
+      { y: 30, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 1.0, ease: 'power3.out', delay: 0.7 }
+    );
+    gsap.fromTo('.launch-btn',
+      { y: 30, autoAlpha: 0 },
+      { y: 0, autoAlpha: 1, duration: 1.0, ease: 'back.out(1.4)', delay: 1.0 }
+    );
+  </script>
 
   <!-- ========== Particles 粒子星空背景说明 ==========
        使用 reactbits Particles 组件（基于 ogl 的 WebGL 粒子）改造成原生 JS：
@@ -438,6 +457,7 @@
         setTimeout(initGlobe,50);
         return;
       }
+      try {
 
       /* ---------- 地球初始化（纹理 + 凹凸贴图） ---------- */
       const world = new Globe(document.getElementById('globeViz'), { animateIn: false })
@@ -462,27 +482,74 @@
         world.width(window.innerWidth).height(window.innerHeight);
       });
 
-      /* ========== 「开始记录」按钮点击动画流程 ==========
-       * 流程：停转 → 镜头过渡到中国(1.5s) → 跳转
+      /* ========== HyperFrames / GSAP 动画层 ==========
+       * 全部动效用 GSAP 实现，GPU 加速 transform/opacity，规避 setTimeout 卡顿。
+       * 三层动画解耦：粒子背景(ogl) / 3D地球(globe.gl) / UI文字按钮(GSAP) 互不抢占渲染资源。
+       * 入场动画已在 GSAP CDN 后独立执行（不等 globe.gl 加载），此处仅保留 hover + 点击时间线。 */
+
+      /* ---------- ① 按钮鼠标 hover 发光放大（GSAP 驱动，比 CSS transition 更流畅） ---------- */
+      const btn = document.getElementById('startBtn');
+      const btnHover = gsap.to(btn, {
+        scale: 1.06,
+        boxShadow: '0 6px 28px rgba(0,0,0,0.6), 0 0 28px rgba(255,210,120,0.45), inset 0 0 20px rgba(255,210,120,0.15)',
+        borderColor: 'rgba(255,225,160,0.75)',
+        duration: 0.3,
+        ease: 'power2.out',
+        paused: true                                /* 默认暂停，hover 时 play */
+      });
+      btn.addEventListener('mouseenter', () => btnHover.play());
+      btn.addEventListener('mouseleave', () => btnHover.reverse());
+
+      /* ---------- ③ 「开始记录」点击镜头时间线（gsap.timeline 串联） ----------
+       * 整套连贯时间线：按压反馈 → 停自转 → 镜头缓动拉近中国 → UI淡出 → 黑屏过渡 → 跳转
        * 防重复点击：isAnimating 标志锁 */
       let isAnimating = false;
 
-      document.getElementById('startBtn').addEventListener('click', () => {
-        if(isAnimating) return;                        /* 动画进行中，忽略重复点击 */
+      /* 镜头代理对象：GSAP tween 代理数值，onUpdate 回调驱动 globe.gl pointOfView，
+       * 实现 GSAP 缓动控制地球镜头（globe.gl 原生 pointOfView 不支持 GSAP 直接 tween） */
+      const camProxy = { lat: 20, lng: 105, altitude: 1.5 };
+
+      btn.addEventListener('click', () => {
+        if(isAnimating) return;
         isAnimating = true;
 
-        /* ① 停止地球默认自转 */
+        /* 停止地球自转 */
         world.controls().autoRotate = false;
 
-        /* ② 镜头平滑过渡到中国全境（1.5秒缓动）
-         * 中国经度 73~135，纬度 18~54，中心约 lat:36 lng:105
-         * altitude 1.3 可完整展示中国版图，不裁切不偏移 */
-        world.pointOfView({ lat: 36, lng: 105, altitude: 1.3 }, 1500);
+        /* === GSAP 时间线：整套点击流程串联 === */
+        const tl = gsap.timeline({
+          defaults: { ease: 'power3.inOut' },
+          onComplete: () => { window.location.href = './index.html'; }
+        });
 
-        /* ③ 镜头过渡完成(1.5s)后，停留片刻让用户看清中国版图，再跳转 */
-        setTimeout(() => {
-          window.location.href = './index.html';
-        }, 2800);  /* 1.5s 过渡 + 1.3s 停留 */
+        /* 步骤1：按钮按压缩放反馈（0.15s） */
+        tl.to(btn, { scale: 0.94, duration: 0.12, ease: 'power2.in' })
+          .to(btn, { scale: 1.0, duration: 0.2, ease: 'back.out(2)' });
+
+        /* 步骤2：镜头缓动拉近中国全境（1.6s）
+         * GSAP tween camProxy，onUpdate 实时驱动 globe.gl pointOfView
+         * 中国中心 lat:36 lng:105，altitude 1.3 完整展示版图 */
+        tl.to(camProxy, {
+          lat: 36, lng: 105, altitude: 1.3,
+          duration: 1.6,
+          ease: 'power2.inOut',
+          onUpdate: () => world.pointOfView(
+            { lat: camProxy.lat, lng: camProxy.lng, altitude: camProxy.altitude },
+            0
+          )
+        }, '<0.05');                                  /* 与按钮回弹略微重叠 */
+
+        /* 步骤3：停留欣赏中国版图（0.8s 间隙） */
+
+        /* 步骤4：UI 元素淡出（标题 + 副标题 + 按钮，0.6s） */
+        tl.to(['.launch-title-wrap', '.launch-subtitle', '.launch-btn'], {
+          autoAlpha: 0, y: -20, duration: 0.6, ease: 'power2.in'
+        }, '+=0.8');
+
+        /* 步骤5：黑屏遮罩淡入过渡（0.5s），完成后触发 onComplete 跳转 */
+        tl.to('#page-transition', {
+          autoAlpha: 1, duration: 0.5, ease: 'power2.inOut'
+        }, '-=0.2');
       });
 
       /* ---------- 动态加载 three.js UMD 供云层使用 ----------
@@ -538,6 +605,9 @@
 
       /* 地球初始化完成后，加载 three.js 用于云层 */
       loadThreeScript();
+      } catch(err){
+        console.error('[initGlobe] 地球初始化出错，GSAP 动画可能未绑定:', err);
+      }
     }
 
     /* DOM 就绪后启动 */
