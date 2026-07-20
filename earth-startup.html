@@ -243,14 +243,15 @@
           const container = document.getElementById('prism-bg');
           if(!container) throw new Error('#prism-bg 容器未找到');
 
-          /* ---------- 参数（蓝白冷色调 + 性能优化） ---------- */
-          const particleCount   = 150;                            /* 粒子数（比默认 200 略少，避免和 globe.gl 两个 WebGL 抢资源） */
+          /* ---------- 参数（蓝白冷色调 + 超高密度 + 高亮度 + 鼠标交互） ---------- */
+          const particleCount   = 800;                            /* 粒子数增大到 800，星空更密集 */
           const particleSpread  = 10;                              /* 粒子分布半径 */
           const speed           = 0.1;                            /* 动画速度 */
-          const particleColors  = ['#ffffff', '#a5d8ff', '#74c0fc']; /* 蓝白冷色调：白、浅蓝、天蓝 */
-          const moveParticlesOnHover = false;                    /* 不开启鼠标交互（容器 pointer-events:none） */
+          const particleColors  = ['#ffffff', '#ffffff', '#a5d8ff', '#74c0fc']; /* 蓝白冷色调：增加白色比例提升亮度 */
+          const moveParticlesOnHover = true;                     /* 开启鼠标交互：粒子随鼠标偏移 */
+          const particleHoverFactor = 1.5;                        /* 鼠标交互强度 */
           const alphaParticles  = true;                           /* 圆形透明粒子，比方块更柔和 */
-          const particleBaseSize = 80;                            /* 基础粒子大小 */
+          const particleBaseSize = 120;                           /* 粒子大小增大到 120，更亮更醒目 */
           const sizeRandomness  = 1;                             /* 大小随机性 */
           const cameraDistance  = 20;                            /* 相机距离 */
           const disableRotation = false;                          /* 启用缓慢旋转 */
@@ -380,12 +381,14 @@
           /* ---------- 点云 Mesh（gl.POINTS 模式） ---------- */
           const particles = new Mesh(gl, { mode: gl.POINTS, geometry, program });
 
-          /* ---------- 鼠标交互（未启用，预留） ---------- */
+          /* ---------- 鼠标交互：监听 window（容器 pointer-events:none 不影响） ---------- */
+          /* 鼠标位置归一化到 -1~1，粒子整体平移跟随 + 旋转偏移，交互更明显 */
           let mouseX = 0, mouseY = 0;
+          let targetX = 0, targetY = 0;
           if(moveParticlesOnHover){
             window.addEventListener('mousemove', e => {
-              mouseX = e.clientX / window.innerWidth;
-              mouseY = e.clientY / window.innerHeight;
+              targetX = (e.clientX / window.innerWidth)  * 2 - 1;   /* -1~1 */
+              targetY = (e.clientY / window.innerHeight) * 2 - 1;   /* -1~1 */
             });
           }
 
@@ -394,13 +397,22 @@
           function render(){
             const elapsed = (performance.now() - startTime) * 0.001;
             program.uniforms.uTime.value = elapsed * speed;
+
+            /* 缓动跟随鼠标（lerp 平滑过渡，避免突变） */
+            mouseX += (targetX - mouseX) * 0.05;
+            mouseY += (targetY - mouseY) * 0.05;
+
             if(!disableRotation){
               particles.rotation.x = Math.sin(elapsed * 0.1) * 0.1;
               particles.rotation.y = Math.cos(elapsed * 0.1) * 0.1;
             }
             if(moveParticlesOnHover){
-              particles.rotation.x += -mouseY * 0.1;
-              particles.rotation.y +=  mouseX * 0.1;
+              /* 粒子整体平移跟随鼠标（视差效果，交互最明显） */
+              particles.position.x = -mouseX * particleHoverFactor;
+              particles.position.y =  mouseY * particleHoverFactor;
+              /* 叠加旋转偏移，增强空间感 */
+              particles.rotation.x += -mouseY * 0.15;
+              particles.rotation.y +=  mouseX * 0.15;
             }
             renderer.render({ scene: particles, camera });
             requestAnimationFrame(render);
