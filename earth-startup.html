@@ -35,8 +35,7 @@
     display:flex;
     flex-direction:column;
     align-items:center;
-    justify-content:flex-start;
-    padding-top:14vh;                                 /* 标题距顶部约 18% 位置 */
+    justify-content:center;                           /* 垂直居中：标题与按钮位于页面正中 */
   }
 
   /* ===== 标题双层结构 ===== */
@@ -98,30 +97,45 @@
     text-align:center;
   }
 
-  /* ===== 按钮：specular 镜面玻璃质感 ===== */
+  /* ===== 按钮：参考照片风格——深色玻璃底 + 暖金白文字 + 闪光图标 + 箭头 ===== */
   .launch-btn{
     pointer-events:auto;                              /* 按钮单独捕获点击（穿透层中唯一可交互元素） */
     position:relative;
     overflow:hidden;
-    margin-top:48px;                                  /* 距副标题约 40px+ */
-    padding:14px 48px;
-    border-radius:12px;
-    font-size:15px;
-    font-weight:700;
+    margin-top:56px;                                  /* 距副标题留白 */
+    padding:16px 52px;
+    border-radius:30px;                               /* 大圆角胶囊形，参考照片风格 */
+    font-size:16px;
+    font-weight:600;
     cursor:pointer;
     text-align:center;
-    letter-spacing:2px;
-    /* 玻璃质感背景 */
-    background:rgba(8,8,8,0.55);
-    backdrop-filter:blur(8px) saturate(140%);
-    -webkit-backdrop-filter:blur(8px) saturate(140%);
-    color:#38bdf8;
-    border:1.5px solid rgba(56,189,248,.7);
-    box-shadow:0 3px 12px rgba(56,189,248,.25),
-               inset 0 0 12px rgba(56,189,248,.12);
+    letter-spacing:3px;
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    /* 深色玻璃质感背景 */
+    background:rgba(10,12,20,0.62);
+    backdrop-filter:blur(10px) saturate(150%);
+    -webkit-backdrop-filter:blur(10px) saturate(150%);
+    color:#fff6e0;                                    /* 暖金白色文字，参考照片 */
+    border:1px solid rgba(255,225,160,0.45);          /* 暖金边框 */
+    box-shadow:0 4px 18px rgba(0,0,0,0.5),
+               0 0 14px rgba(255,210,120,0.15),
+               inset 0 0 14px rgba(255,210,120,0.08);
     transition:transform .25s cubic-bezier(.4,0,.2,1),
                box-shadow .25s ease,
                border-color .25s ease;
+  }
+  /* 闪光图标 */
+  .launch-btn .sparkle{
+    font-size:18px;
+    line-height:1;
+    filter:drop-shadow(0 0 4px rgba(255,225,160,0.7));
+  }
+  /* 箭头 */
+  .launch-btn .arrow{
+    margin-left:4px;
+    opacity:0.85;
   }
   /* 底部径向高光（增强镜面感） */
   .launch-btn::before{
@@ -130,9 +144,9 @@
     inset:0;
     border-radius:inherit;
     background:radial-gradient(120% 80% at 50% 120%,
-      rgba(56,189,248,0.20),
+      rgba(255,210,120,0.18),
       transparent 60%);
-    opacity:.6;
+    opacity:.7;
     pointer-events:none;
     transition:opacity .3s ease;
   }
@@ -146,9 +160,9 @@
     height:100%;
     background:linear-gradient(105deg,
       transparent 0%,
-      rgba(186,230,253,0) 30%,
-      rgba(186,230,253,0.5) 50%,
-      rgba(186,230,253,0) 70%,
+      rgba(255,235,190,0) 30%,
+      rgba(255,235,190,0.55) 50%,
+      rgba(255,235,190,0) 70%,
       transparent 100%);
     transform:skewX(-18deg);
     pointer-events:none;
@@ -161,10 +175,11 @@
   }
   /* hover：上浮 + 加强发光 */
   .launch-btn:hover{
-    transform:translateY(-2px) scale(1.02);
-    box-shadow:0 8px 24px rgba(56,189,248,.4),
-               inset 0 0 16px rgba(56,189,248,.2);
-    border-color:rgba(56,189,248,.95);
+    transform:translateY(-2px) scale(1.03);
+    box-shadow:0 8px 26px rgba(0,0,0,0.55),
+               0 0 22px rgba(255,210,120,0.35),
+               inset 0 0 18px rgba(255,210,120,0.14);
+    border-color:rgba(255,235,190,0.85);
   }
   .launch-btn:hover::before{ opacity:1; }
   .launch-btn:active{ transform:translateY(0) scale(0.98); }
@@ -184,8 +199,12 @@
     </div>
     <!-- 副标题 -->
     <p class="launch-subtitle">点亮你走过的每一座城市</p>
-    <!-- 启动按钮 -->
-    <button class="launch-btn" id="startBtn">开始记录</button>
+    <!-- 启动按钮：闪光图标 + 文字 + 箭头，参考照片风格 -->
+    <button class="launch-btn" id="startBtn">
+      <span class="sparkle">✦</span>
+      <span>开始记录</span>
+      <span class="arrow">→</span>
+    </button>
   </div>
 
   <!-- ========== globe.gl 依赖（UMD，内部已打包 three.js，暴露全局 Globe） ========== -->
