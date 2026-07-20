@@ -451,10 +451,11 @@
       world.controls().autoRotate = true;
       world.controls().autoRotateSpeed = 0.35;
 
-      /* ---------- 初始视角：完整全球视角 ----------
-       * altitude 2.5 让地球完整显示在视口中，可看到整个地球。
+      /* ---------- 初始视角：地球占满大部分屏幕 ----------
+       * altitude 1.5 让地球大幅放大、接近全屏铺满页面，
+       * 地平线弧度明显可见，视觉冲击力强（参考图效果）。
        * 初始状态无任何区域高亮，地球缓慢自转。 */
-      world.pointOfView({ lat: 20, lng: 105, altitude: 2.5 });
+      world.pointOfView({ lat: 20, lng: 105, altitude: 1.5 });
 
       /* ---------- 窗口尺寸变化时同步更新地球画布 ---------- */
       window.addEventListener('resize', () => {
