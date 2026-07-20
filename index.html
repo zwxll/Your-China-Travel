@@ -2260,81 +2260,96 @@
   }
   .img-viewer.show{display:flex;opacity:1;}
 
-  /* 舞台容器：承载多层照片卡片 */
-  .img-viewer .stage{
+  /* 舞台容器：承载 3D 旋转木马圆环（仅 .carousel-mode 模式）
+   * ★ 改造为 3D Carousel（cult-ui 旋转木马）：卡片围成圆环，整体 rotateY 旋转 */
+  .img-viewer.carousel-mode .stage{
+    position:relative;width:100%;height:100%;
+    display:flex;align-items:center;justify-content:center;
+    overflow:visible;
+    /* 3D 透视：让圆环有纵深感 */
+    perspective:1400px;
+    perspective-origin:50% 50%;
+  }
+  /* 旋转木马圆环：所有卡片挂载于此，整体 rotateY 旋转
+   * 卡片尺寸缩小为 1.1 倍：300×400 → 330×440，视觉精致 */
+  .img-viewer.carousel-mode .carousel-ring{
+    position:relative;width:330px;height:440px;
+    transform-style:preserve-3d;
+    transition:transform .8s cubic-bezier(.25,.46,.45,.94);
+    will-change:transform;
+  }
+  .img-viewer.carousel-mode .carousel-ring.dragging{
+    transition:none;
+  }
+
+  /* ===== 照片卡片：3D 旋转木马单卡（仅 .carousel-mode）
+   * 去除白底相纸边框，照片直接铺满卡片，1.1 倍尺寸 */
+  .img-viewer.carousel-mode .photo-card{
+    position:absolute;top:0;left:0;width:330px;height:440px;
+    /* 去除白色相纸背景和 padding，照片直接铺满 */
+    background:transparent;
+    padding:0;
+    border-radius:8px;
+    display:flex;align-items:center;justify-content:center;
+    overflow:hidden;
+    backface-visibility:hidden;
+    box-shadow:0 16px 48px rgba(0,0,0,.5);
+    transform-style:preserve-3d;
+  }
+  .img-viewer.carousel-mode .photo-card img{
+    width:100%;height:100%;
+    object-fit:cover;          /* 照片铺满整个卡片，无白边 */
+    border-radius:8px;
+    user-select:none;-webkit-user-drag:none;pointer-events:none;
+    display:block;
+  }
+  /* 当前焦点卡片青蓝发光高亮 */
+  .img-viewer.carousel-mode .photo-card.is-active{
+    box-shadow:0 24px 80px rgba(56,189,248,.35),0 8px 32px rgba(0,0,0,.5);
+  }
+
+  /* ===== 原堆叠相册样式（仅 .stack-mode 模式，非景点照片查看使用）===== */
+  .img-viewer.stack-mode .stage{
     position:relative;width:100%;height:100%;
     display:flex;align-items:center;justify-content:center;
     overflow:hidden;
-    /* 移除 perspective：3D 透视会强制每帧重算合成层，拖拽时造成卡顿 */
   }
-
-  /* ===== 照片卡片：统一白色相纸边框，模拟实体打印照片质感 ===== */
-  .photo-card{
+  .img-viewer.stack-mode .photo-card{
     position:absolute;
     background:#fff;
-    padding:12px 12px 12px 12px;
+    padding:12px;
     border-radius:4px;
     display:flex;align-items:center;justify-content:center;
-    /* 性能优化：仅过渡 transform 和 opacity（GPU 合成层属性，不触发重排）
-       box-shadow 改为静态样式，滑动时不重算模糊值 */
     transition:transform .55s cubic-bezier(.25,.46,.45,.94),
                opacity .4s ease;
-    /* 仅提示浏览器 transform 会变化，避免 will-change 多属性过度占用内存 */
     will-change:transform;
     backface-visibility:hidden;
-    /* 静态 box-shadow：不参与 transition，减少重绘开销 */
     box-shadow:0 12px 40px rgba(0,0,0,.35);
   }
-  .photo-card img{
+  .img-viewer.stack-mode .photo-card img{
     max-width:70vw;max-height:66vh;object-fit:contain;
     border-radius:2px;
     user-select:none;-webkit-user-drag:none;pointer-events:none;
     display:block;
   }
-  /* 拖拽时移除过渡，实现跟手实时移动 */
-  .photo-card.dragging{
-    transition:none !important;
-  }
-  /* 初始渲染时无动画直接定位 */
-  .photo-card.no-transition{
-    transition:none !important;
-  }
-
-  /* ===== 顶层：当前主照片 —— 居中、最大、静态大范围投影 ===== */
-  .photo-card.main{
-    z-index:10;
-    transform:translate(0,0) rotate(0deg) scale(1);
-    opacity:1;
-    /* 静态大投影：不参与 transition，减少重绘 */
+  .img-viewer.stack-mode .photo-card.dragging{ transition:none !important; }
+  .img-viewer.stack-mode .photo-card.no-transition{ transition:none !important; }
+  .img-viewer.stack-mode .photo-card.main{
+    z-index:10;transform:translate(0,0) rotate(0deg) scale(1);opacity:1;
     box-shadow:0 24px 80px rgba(0,0,0,.55),0 8px 32px rgba(0,0,0,.3);
   }
-
-  /* ===== 次底层：上一张 —— 偏移左下方，逆时针旋转，半透明 ===== */
-  .photo-card.prev{
-    z-index:8;
-    transform:translate(-130px,32px) rotate(-8deg) scale(.78);
-    opacity:.5;
-    /* 阴影继承基础静态样式，不单独过渡 */
+  .img-viewer.stack-mode .photo-card.prev{
+    z-index:8;transform:translate(-130px,32px) rotate(-8deg) scale(.78);opacity:.5;
   }
-
-  /* ===== 次底层：下一张 —— 偏移右下方，顺时针旋转，半透明 ===== */
-  .photo-card.next{
-    z-index:8;
-    transform:translate(130px,32px) rotate(8deg) scale(.78);
-    opacity:.5;
+  .img-viewer.stack-mode .photo-card.next{
+    z-index:8;transform:translate(130px,32px) rotate(8deg) scale(.78);opacity:.5;
   }
-
-  /* ===== 最底层：更远的照片 —— 仅透出边缘阴影，营造一叠相片厚重感 ===== */
-  .photo-card.far-prev{
-    z-index:6;
-    transform:translate(-240px,58px) rotate(-14deg) scale(.64);
-    opacity:.22;
+  .img-viewer.stack-mode .photo-card.far-prev{
+    z-index:6;transform:translate(-240px,58px) rotate(-14deg) scale(.64);opacity:.22;
     box-shadow:0 6px 20px rgba(0,0,0,.2);
   }
-  .photo-card.far-next{
-    z-index:6;
-    transform:translate(240px,58px) rotate(14deg) scale(.64);
-    opacity:.22;
+  .img-viewer.stack-mode .photo-card.far-next{
+    z-index:6;transform:translate(240px,58px) rotate(14deg) scale(.64);opacity:.22;
     box-shadow:0 6px 20px rgba(0,0,0,.2);
   }
 
@@ -3008,7 +3023,7 @@
         if(!container) throw new Error('#prism-bg 容器未找到');
 
         /* ---------- 参数（蓝白冷色调 + 高密度 + 鼠标交互）---------- */
-        const particleCount   = 500;                            /* 粒子数500，平衡密度与性能（避免和globe.gl抢GPU） */
+        const particleCount   = 1200;                           /* 粒子数1200，提升星空密度（原500过稀疏） */
         const particleSpread  = 10;                              /* 粒子分布半径 */
         const speed           = 0.1;                            /* 动画速度 */
         const particleColors  = ['#ffffff', '#a5d8ff', '#a5d8ff', '#74c0fc', '#74c0fc']; /* 蓝白冷色调 */
@@ -3321,8 +3336,22 @@
           )
         }, '<0.05');                                  /* 与按钮回弹略微重叠 */
 
-        /* 步骤3：停留欣赏中国版图（0.8s 间隙，仅镜头聚焦） */
-        tl.to({}, { duration: 0.8 });
+        /* 步骤3：继续放大中国版图（altitude 1.3 → 0.8，1.0s）
+         * ★ 二次缩放：步骤2先完整展示中国全境(altitude 1.3)，此处进一步拉近聚焦中国
+         * altitude 越小相机越近，0.8 让中国版图更大更清晰，仍保留周边邻国作参照
+         * 旋转角度不变（已对准中国），仅缩放， onUpdate 持续驱动 pointOfView */
+        tl.to(camProxy, {
+          altitude: 0.8,
+          duration: 1.0,
+          ease: 'power2.inOut',
+          onUpdate: () => world.pointOfView(
+            { lat: camProxy.lat, lng: camProxy.lng, altitude: camProxy.altitude },
+            0
+          )
+        });
+
+        /* 步骤3.5：停留欣赏放大后的中国版图（0.5s 间隙） */
+        tl.to({}, { duration: 0.5 });
 
         /* 步骤4：UI 元素淡出（标题 + 副标题 + 按钮，0.6s） */
         tl.to(['.launch-title-wrap', '.launch-subtitle', '.launch-btn'], {
@@ -6064,11 +6093,11 @@
       arrow.className='att-item-arrow';
       arrow.title='查看景点照片';
       arrow.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>';
-      // 点击箭头或整条景点 → 打开照片浏览器
+      // 点击箭头或整条景点 → 打开照片浏览器（3D 旋转木马）
       const openPhotos=()=>{
         const photos=att.photos||[];
         if(photos.length){
-          openPhotoViewer(photos,0);
+          openPhotoViewer(photos,0,true);  /* true = 景点照片用 3D 旋转木马 */
         }else{
           toast('该景点暂无照片');
         }
@@ -6169,7 +6198,7 @@
         const img=document.createElement('img');
         img.src=ph.dataUrl; img.alt=att.name||'';
         t.appendChild(img);
-        t.addEventListener('click',()=>openPhotoViewer(att.photos||[],pi));
+        t.addEventListener('click',()=>openPhotoViewer(att.photos||[],pi,true));  /* true = 景点照片用 3D 旋转木马 */
         const d=document.createElement('button');
         d.className='del'; d.innerHTML='&times;';
         d.addEventListener('click',e=>{ e.stopPropagation(); deleteAttractionPhoto(idx,pi); });
@@ -7155,9 +7184,14 @@
   function closeLightbox(){ lightbox.classList.remove('show'); lightboxImg.src=''; }
   /* ---------- 全屏图片预览器 ---------- */
   // 传入照片列表和起始索引，支持左右切换、滚轮缩放
-  function openPhotoViewer(photos,startIdx){
-    if(window.__imgViewer){
-      const list=photos.map(p=>({dataUrl:p.dataUrl,name:p.name||''}));
+  // useCarousel=true 时使用 3D 旋转木马（仅景点照片），否则使用原堆叠相册
+  function openPhotoViewer(photos,startIdx,useCarousel){
+    const list=photos.map(p=>({dataUrl:p.dataUrl,name:p.name||''}));
+    // 景点照片 → 3D 旋转木马；其他 → 原堆叠相册
+    const viewer = useCarousel ? window.__imgViewerCarousel : window.__imgViewer;
+    if(viewer){
+      viewer.open(list,startIdx||0);
+    }else if(window.__imgViewer){
       window.__imgViewer.open(list,startIdx||0);
     }else{
       // 降级：用旧灯箱
@@ -7504,26 +7538,23 @@
 })();
 
 /* ===== 分层堆叠相册预览器（独立 IIFE） =====
- * 分层架构（5 层卡片堆叠）：
- *   far-prev(底层)  →  prev(次底层)  →  main(顶层)  →  next(次底层)  →  far-next(底层)
- *   每层白色相纸边框 + 递减透明度/缩放/阴影，形成纵深感
- *
- * 切换动画（抽拉式分层）：
- *   切换时各卡片重新分配层级位置，CSS transition 同步渐变位移/旋转/缩放/透明度
- *   新主图从侧边滑入居中，原主图偏移至侧边底层归入堆叠
+ * 3D 旋转木马架构（cult-ui 3D Carousel 风格）：
+ *   所有照片卡片围成圆环，每张通过 rotateY(angle) translateZ(radius) 定位
+ *   切换时整体 ring rotateY 旋转，当前照片转到正前方
  *
  * 交互保留：
- *   拖拽滑动(阻尼) + 滚轮缩放 + 双击放大 + 下载 + 键盘 ← → Esc + 缩略图 + 箭头
+ *   拖拽滑动(旋转环) + 滚轮缩放 + 双击放大 + 下载 + 键盘 ← → Esc + 缩略图 + 箭头
  */
 (function(){
   // ===== 构建 DOM 结构 =====
   const viewer=document.createElement('div');
-  viewer.className='img-viewer';
+  viewer.className='img-viewer carousel-mode';  /* carousel-mode: 3D 旋转木马模式，与 stack-mode 区分 */
   viewer.innerHTML=`
     <button class="close-btn" title="关闭">&times;</button>
     <button class="download-btn" title="下载原图">&#11015;</button>
     <div class="counter" id="viewerCounter"></div>
     <div class="stage" id="viewerStage">
+      <div class="carousel-ring" id="carouselRing"></div>
       <button class="nav-btn nav-prev" title="上一张">&#8249;</button>
       <button class="nav-btn nav-next" title="下一张">&#8250;</button>
     </div>
@@ -7533,6 +7564,7 @@
   document.body.appendChild(viewer);
 
   const vStage=viewer.querySelector('#viewerStage');
+  const vRing=viewer.querySelector('#carouselRing');
   const vCounter=viewer.querySelector('#viewerCounter');
   const vPrev=viewer.querySelector('.nav-prev');
   const vNext=viewer.querySelector('.nav-next');
@@ -7540,37 +7572,29 @@
   const vDownload=viewer.querySelector('.download-btn');
   const vThumbs=viewer.querySelector('#viewerThumbStrip');
 
-  // ===== 创建 5 张持久化照片卡片 =====
-  // 卡片身份固定，切换时仅改变 position class + 图片源，CSS transition 负责动画
-  // 性能优化：cards 数组索引与 POSITIONS 索引一一对应，通过索引直接访问，避免 find() 遍历
-  const POSITIONS=['far-prev','prev','main','next','far-next']; // 索引 0-4
-  const MAIN_IDX=2; // POSITIONS[2]='main'，缓存主卡片索引避免反复查找
-  const cards=POSITIONS.map(pos=>{
-    const el=document.createElement('div');
-    el.className='photo-card '+pos;
-    const img=document.createElement('img');
-    el.appendChild(img);
-    vStage.appendChild(el);
-    return {el,img,position:pos};
-  });
-  // 位置名 → cards 数组索引的快速映射表（避免每次 switchTo 中 indexOf 遍历）
-  const posToIdx={'far-prev':0,'prev':1,'main':2,'next':3,'far-next':4};
-
   // ===== 状态变量 =====
-  let photoList=[];      // 当前预览的照片列表 [{dataUrl, name}]
+  let photoList=[];
   let currentIdx=0;
-  let isAnimating=false; // 切换动画进行中标记
-  let zoomScale=1;       // 滚轮缩放比例
-  let isZoomed=false;    // 双击放大状态
-  // ===== 滚轮缩放偏移缓存（Bug修复：屏幕中心缩放补偿）=====
-  // 缩放时为保持画面中心锁定，需反向平移抵消缩放产生的位移
-  let zoomOffsetX=0;     // 当前主卡片 X 方向补偿偏移
-  let zoomOffsetY=0;     // 当前主卡片 Y 方向补偿偏移
+  let isAnimating=false;
+  let zoomScale=1;
+  let isZoomed=false;
+  let cards=[];              // 动态创建的卡片数组 [{el,img}]
+  let ringRotation=0;        // 圆环当前旋转角度（度）
+  let angleStep=0;           // 每张卡片之间的角度间隔
+  let radius=0;              // 圆环半径
 
-  // ===== 工具：根据层级位置获取对应的照片索引 =====
-  function getPhotoIdxForPosition(position){
-    const offset={'far-prev':-2,'prev':-1,'main':0,'next':1,'far-next':2};
-    return currentIdx+offset[position];
+  // 根据照片数量计算圆环参数
+  function computeRingParams(){
+    const n=photoList.length;
+    if(n<=1){ angleStep=0; radius=0; return; }
+    // 角度间隔：n 张卡片均分 360°
+    angleStep=360/n;
+    // 半径：根据卡片宽度和角度间隔计算，保证卡片不重叠且视觉间距舒适
+    // 公式：r = (cardWidth/2) / tan(angleStep/2)，最小 420
+    // 系数 1.20：照片间空隙适中，侧边照片与主照片保持舒适呼吸距离
+    const cardW=330;
+    const baseRadius=(cardW/2)/Math.tan((angleStep*Math.PI/180)/2);
+    radius=Math.max(420, baseRadius*1.20);
   }
 
   // ===== 打开预览器 =====
@@ -7579,10 +7603,34 @@
     photoList=photos;
     currentIdx=Math.min(startIdx||0, photos.length-1);
     zoomScale=1; isZoomed=false;
-    zoomOffsetX=0; zoomOffsetY=0; // 打开时清除偏移缓存
+    // 清空旧卡片
+    vRing.innerHTML='';
+    cards=[];
+    computeRingParams();
+    // 创建所有照片卡片并定位到圆环
+    photoList.forEach((p,i)=>{
+      const el=document.createElement('div');
+      el.className='photo-card';
+      const img=document.createElement('img');
+      img.src=p.dataUrl;
+      el.appendChild(img);
+      // 定位：rotateY(角度) translateZ(半径)
+      const angle=i*angleStep;
+      el.style.transform='rotateY('+angle+'deg) translateZ('+radius+'px)';
+      vRing.appendChild(el);
+      cards.push({el,img});
+    });
+    // 旋转到当前照片
+    ringRotation=-currentIdx*angleStep;
+    vRing.style.transition='none';
+    vRing.style.transform='rotateY('+ringRotation+'deg)';
+    requestAnimationFrame(()=>{
+      vRing.style.transition='';
+    });
+    updateActiveCard();
     renderThumbnails();
-    renderStack(true); // 初始渲染，无动画
     updateNavButtons();
+    vCounter.textContent=(currentIdx+1)+' / '+photoList.length;
     viewer.classList.add('show');
   }
 
@@ -7590,32 +7638,17 @@
   function closeViewer(){
     viewer.classList.remove('show');
     photoList=[];
+    vRing.innerHTML='';
+    cards=[];
     vThumbs.innerHTML='';
     zoomScale=1; isZoomed=false;
   }
 
-  // ===== 全量渲染堆叠（初始打开 / 动画后同步）=====
-  // instant=true 时无动画直接渲染
-  function renderStack(instant){
-    cards.forEach(card=>{
-      const photoIdx=getPhotoIdxForPosition(card.position);
-      if(photoIdx>=0 && photoIdx<photoList.length){
-        card.el.style.display='';
-        card.img.src=photoList[photoIdx].dataUrl;
-      }else{
-        // 超出范围的卡片隐藏
-        card.el.style.display='none';
-      }
-      card.el.className='photo-card '+card.position+(instant?' no-transition':'');
+  // ===== 更新当前激活卡片高亮 =====
+  function updateActiveCard(){
+    cards.forEach((c,i)=>{
+      c.el.classList.toggle('is-active', i===currentIdx);
     });
-    if(instant){
-      // 下一帧移除 no-transition 类，恢复过渡
-      requestAnimationFrame(()=>{
-        cards.forEach(c=>c.el.classList.remove('no-transition'));
-      });
-    }
-    vCounter.textContent=(currentIdx+1)+' / '+photoList.length;
-    updateThumbActive();
   }
 
   // ===== 渲染缩略图条 =====
@@ -7629,8 +7662,7 @@
       t.addEventListener('click',e=>{
         e.stopPropagation();
         if(i!==currentIdx){
-          const dir=i>currentIdx?'next':'prev';
-          switchTo(i,dir);
+          switchTo(i);
         }
       });
       vThumbs.appendChild(t);
@@ -7653,294 +7685,159 @@
   }
 
   // ===== 更新左右箭头禁用状态 =====
+  // 循环模式：多张照片时箭头始终可用，仅单张时禁用
   function updateNavButtons(){
-    vPrev.classList.toggle('disabled', currentIdx===0);
-    vNext.classList.toggle('disabled', currentIdx===photoList.length-1);
+    const single=photoList.length<=1;
+    vPrev.classList.toggle('disabled', single);
+    vNext.classList.toggle('disabled', single);
   }
 
-  // ===== 抽拉式分层切换动画（性能优化版）=====
-  // dir: 'next'(向前翻) 或 'prev'(向后翻)
-  // 核心算法：每张卡片向 dir 方向移动一个层级位置，末尾卡片循环到另一端
-  // 优化：用 posToIdx 映射表替代 indexOf 遍历，用 cards[MAIN_IDX] 替代 find()
-  function switchTo(newIdx, dir){
+  // ===== 旋转木马切换：整体 ring rotateY 旋转到目标照片（支持循环首尾相连）=====
+  function switchTo(newIdx){
     if(isAnimating) return;
-    if(newIdx<0||newIdx>=photoList.length) return;
+    const n=photoList.length;
+    if(n<=1) return;
+    // 归一化到 [0, n)，支持越界循环（如 -1 → n-1，n → 0）
+    newIdx=((newIdx%n)+n)%n;
+    if(newIdx===currentIdx) return;
     isAnimating=true;
-
-    // 重置缩放状态（Bug修复：重置当前居中主卡片 + 清除偏移缓存，避免切换后残留坐标导致偏转）
+    // 重置缩放
     zoomScale=1; isZoomed=false;
-    zoomOffsetX=0; zoomOffsetY=0; // 清除上一张缩放偏移缓存
-    const mcReset=cards.find(c=>c.position==='main');
-    if(mcReset){ mcReset.el.style.transform=''; mcReset.el.style.transformOrigin=''; }
-
-    // ===== 重新分配每张卡片的层级位置 =====
-    // 用 posToIdx 映射表替代 indexOf，O(1) 查找
-    for(let i=0;i<cards.length;i++){
-      const card=cards[i];
-      const currentPosIdx=posToIdx[card.position];
-      let newPosIdx = dir==='next' ? currentPosIdx-1 : currentPosIdx+1;
-
-      if(newPosIdx<0){
-        // 循环到最右端(far-next)：先淡出，动画结束后更新图片
-        card.position='far-next';
-        card.el.style.opacity='0';
-        card._recycled=true;
-      }else if(newPosIdx>=POSITIONS.length){
-        // 循环到最左端(far-prev)：先淡出，动画结束后更新图片
-        card.position='far-prev';
-        card.el.style.opacity='0';
-        card._recycled=true;
-      }else{
-        card.position=POSITIONS[newPosIdx];
-        card._recycled=false;
-      }
-      // 应用新层级位置 class，CSS transition 自动执行动画
-      card.el.className='photo-card '+card.position;
+    // 计算最短旋转路径（支持循环环绕）
+    // forward = 正向（next方向）步数 0~n-1，>n/2 时反向旋转更近
+    const forward=((newIdx-currentIdx)%n+n)%n;
+    if(forward<=n/2){
+      ringRotation-=forward*angleStep;       // 正向旋转（next 方向）
+    }else{
+      ringRotation+=(n-forward)*angleStep;   // 反向旋转（prev 方向，更近）
     }
-
+    vRing.style.transform='rotateY('+ringRotation+'deg)';
     currentIdx=newIdx;
     vCounter.textContent=(currentIdx+1)+' / '+photoList.length;
+    updateActiveCard();
     updateNavButtons();
-
-    // ===== 动画结束后：同步所有卡片的图片和状态 =====
+    updateThumbActive();
+    // 动画结束后释放锁（CSS transition 0.8s）
     setTimeout(()=>{
-      for(let i=0;i<cards.length;i++){
-        const card=cards[i];
-        const photoIdx=getPhotoIdxForPosition(card.position);
-        if(photoIdx>=0 && photoIdx<photoList.length){
-          card.el.style.display='';
-          card.img.src=photoList[photoIdx].dataUrl;
-          // 恢复透明度（循环卡片淡入归位）
-          card.el.style.opacity='';
-        }else{
-          card.el.style.display='none';
-        }
-        card._recycled=false;
-      }
-      updateThumbActive();
       isAnimating=false;
-    },560); // 略大于 CSS transition 550ms
+    },820);
   }
 
-  // ===== 上一张/下一张 =====
+  // ===== 上一张/下一张（循环：首尾相连）=====
   function prev(){
-    if(currentIdx<=0) return;
-    switchTo(currentIdx-1,'prev');
+    if(photoList.length<=1) return;
+    switchTo(currentIdx-1);   // 越界由 switchTo 归一化处理，第1张→最后1张
   }
   function next(){
-    if(currentIdx>=photoList.length-1) return;
-    switchTo(currentIdx+1,'next');
+    if(photoList.length<=1) return;
+    switchTo(currentIdx+1);   // 越界由 switchTo 归一化处理，最后1张→第1张
   }
 
-  // ===== 拖拽滑动 + 非线性阻尼（性能优化版）=====
-  // 优化点：
-  //   1. rAF 节流：mousemove 回调只标记 dirty，实际 DOM 操作在 requestAnimationFrame 中执行（16ms/帧）
-  //   2. 缓存主卡片引用：拖拽开始时缓存 main 卡片 DOM 引用，避免每次 mousemove 调用 find() 遍历
-  //   3. 仅修改 transform 和 opacity（GPU 合成层属性），不触发重排
-  let dragging=false, dragStartX=0, dragDelta=0;
-  let dragMainCard=null;          // 拖拽开始时缓存的主卡片引用，避免每次 mousemove 遍历
-  let dragRAFpending=false;       // rAF 节流标记：当前帧是否已排队
-  // ===== 【拖拽优化】长按拖拽移动图片状态（缩放>1时启用）=====
-  let isDraggingImage=false;      // 当前是否处于「拖拽移动图片」模式（区别于左右滑动切图）
-  let imgDragStartX=0, imgDragStartY=0; // 拖拽起点坐标（缓存，避免实时重复运算）
-  let imgDragBaseOffsetX=0, imgDragBaseOffsetY=0; // 拖拽起始时的偏移缓存基值
-  let imgDragRAFpending=false;    // 【Bug1修复】rAF 节流标记：图片拖拽专用，降低主线程阻塞
-  let imgDragBounds=null;         // 【Bug2修复】缓存拖拽边界范围 {maxX,maxY}，拖拽期间不重复计算 getBoundingClientRect
-  let imgDragPendingX=0, imgDragPendingY=0; // 【Bug1修复】缓存待渲染的目标坐标，rAF 内统一写入
+  // ===== 拖拽滑动旋转圆环（强粘滞感 + 低起始速度）=====
+  // 设计：用 tanh 双曲正切曲线替代指数曲线
+  //   1. tanh 起始斜率更低：小位移时旋转更慢，解决"旋转太快"
+  //   2. tanh 平滑饱和到上限：大位移时渐近停止，产生强烈橡皮筋粘滞感
+  //   3. STICKY_MAX_DEG 需 > angleStep/2 才能切换（4张时间隔90度需>45，70足够）
+  let dragging=false, dragStartX=0, dragStartRotation=0;
+  let dragRAFpending=false;
+  let dragPendingRotation=0;
+  const STICKY_MAX_DEG=70;              // 粘滞最大旋转角度上限（保证4张照片能切换>45度）
+  const TANH_SCALE=600;                 // tanh 缩放：值越大起始越慢、粘滞感越强
+
+  // 粘滞阻尼函数（tanh）：输入原始位移 dx，输出旋转角度（度）
+  // tanh 曲线：起始低斜率（慢）+ 平滑饱和（粘滞），比指数曲线起步更柔和
+  function stickyDamp(dx){
+    const sign=dx>=0?1:-1;
+    const abs=Math.abs(dx);
+    const effective=STICKY_MAX_DEG*Math.tanh(abs/TANH_SCALE);
+    return sign*effective;
+  }
 
   viewer.addEventListener('mousedown',e=>{
     if(e.target.closest('.nav-btn')||e.target.closest('.close-btn')||e.target.closest('.thumb')||e.target.closest('.download-btn')) return;
-    // 【Bug2修复】严格判定：仅当缩放倍率>1 才允许拖拽移动图片，去除多余判断拦截
-    if(zoomScale>1){
-      isDraggingImage=true;
-      imgDragStartX=e.clientX;
-      imgDragStartY=e.clientY;
-      // 缓存拖拽起始时的偏移基值（避免实时重复运算）
-      imgDragBaseOffsetX=zoomOffsetX;
-      imgDragBaseOffsetY=zoomOffsetY;
-      dragMainCard=cards.find(c=>c.position==='main');
-      // 【Bug1修复】拖拽时添加 dragging 类，移除 0.55s CSS 过渡，实现跟手无延迟
-      if(dragMainCard){
-        dragMainCard.el.classList.add('dragging');
-        // 【Bug2修复】预先计算拖拽边界范围并缓存，拖拽期间不再重复调用 getBoundingClientRect
-        const rect=dragMainCard.el.getBoundingClientRect();
-        const vRect=viewer.getBoundingClientRect();
-        const halfW=rect.width/2, halfH=rect.height/2;
-        const screenHalfW=vRect.width/2, screenHalfH=vRect.height/2;
-        // 图片边缘不超出屏幕边界的最大偏移量
-        imgDragBounds={
-          maxX:Math.max(0,halfW-screenHalfW),
-          maxY:Math.max(0,halfH-screenHalfH)
-        };
-      }
-      e.preventDefault();
-      return;
-    }
     dragging=true;
     dragStartX=e.clientX;
-    dragDelta=0;
-    // 缓存主卡片引用 + 添加 dragging 类（一次查找，不在 mousemove 中重复）
-    dragMainCard=cards.find(c=>c.position==='main');
-    if(dragMainCard) dragMainCard.el.classList.add('dragging');
+    dragStartRotation=ringRotation;
+    vRing.classList.add('dragging');
     e.preventDefault();
   });
 
-  // mousemove：仅计算 dx 并标记 dirty，DOM 操作延迟到 rAF 执行
   document.addEventListener('mousemove',e=>{
-    // ===== 【拖拽优化】拖拽移动图片模式（rAF 节流 + 缓存坐标，避免卡顿）=====
-    if(isDraggingImage&&dragMainCard){
-      const mdx=e.clientX-imgDragStartX; // 鼠标水平位移
-      const mdy=e.clientY-imgDragStartY; // 鼠标垂直位移
-      let newX=imgDragBaseOffsetX+mdx;
-      let newY=imgDragBaseOffsetY+mdy;
-      // 【Bug2修复】边界限位：使用缓存的 imgDragBounds，修正坐标计算错误
-      if(imgDragBounds){
-        newX=Math.max(-imgDragBounds.maxX,Math.min(imgDragBounds.maxX,newX));
-        newY=Math.max(-imgDragBounds.maxY,Math.min(imgDragBounds.maxY,newY));
-      }
-      // 【Bug1修复】缓存待渲染坐标，rAF 内统一写入 DOM，限制重绘频率
-      imgDragPendingX=newX;
-      imgDragPendingY=newY;
-      if(!imgDragRAFpending){
-        imgDragRAFpending=true;
-        requestAnimationFrame(()=>{
-          imgDragRAFpending=false;
-          if(!isDraggingImage||!dragMainCard) return;
-          zoomOffsetX=imgDragPendingX;
-          zoomOffsetY=imgDragPendingY;
-          // 统一合并 translate+scale 写入同一 transform，GPU 合成层渲染
-          dragMainCard.el.style.transform='translate('+zoomOffsetX+'px,'+zoomOffsetY+'px) scale('+zoomScale+')';
-        });
-      }
-      return;
-    }
-    if(!dragging||!dragMainCard) return;
-    let dx=e.clientX-dragStartX;
-    // 边界阻尼：首张右拖/末张左拖时阻力增大（位移衰减到 30%）
-    if((currentIdx===0&&dx>0)||(currentIdx===photoList.length-1&&dx<0)){
-      dx*=0.3;
-    }
-    dragDelta=dx;
-    // rAF 节流：如果当前帧已排队则跳过，避免一帧内多次操作 DOM
+    if(!dragging) return;
+    const dx=e.clientX-dragStartX;
+    // 粘滞阻尼：直接输出旋转角度（度），小位移跟手、大位移饱和
+    // 循环模式：首尾不设边界阻尼，始终用 stickyDamp，可自由循环拖动
+    const rotDelta=stickyDamp(dx);
+    dragPendingRotation=dragStartRotation+rotDelta;
     if(!dragRAFpending){
       dragRAFpending=true;
       requestAnimationFrame(()=>{
         dragRAFpending=false;
-        if(!dragging||!dragMainCard) return;
-        // 仅修改 transform + opacity（GPU 合成层，不触发重排）
-        dragMainCard.el.style.transform='translateX('+dragDelta+'px) rotate('+(dragDelta*0.02)+'deg)';
-        dragMainCard.el.style.opacity=String(Math.max(0.4,1-Math.abs(dragDelta)/500));
+        if(!dragging) return;
+        ringRotation=dragPendingRotation;
+        vRing.style.transform='rotateY('+ringRotation+'deg)';
       });
     }
   });
 
-  document.addEventListener('mouseup',()=>{
-    // ===== 【拖拽优化】拖拽移动图片结束（移除 dragging 类，不触发切图）=====
-    if(isDraggingImage){
-      isDraggingImage=false;
-      if(dragMainCard) dragMainCard.el.classList.remove('dragging');
-      imgDragBounds=null; // 清除边界缓存
-      dragMainCard=null;
-      return;
-    }
+  document.addEventListener('mouseup',e=>{
     if(!dragging) return;
     dragging=false;
-    if(dragMainCard) dragMainCard.el.classList.remove('dragging');
-
-    const threshold=80;
-    if(dragDelta>threshold&&currentIdx>0){
-      // 向右拖拽 → 上一张
-      switchTo(currentIdx-1,'prev');
-    }else if(dragDelta<-threshold&&currentIdx<photoList.length-1){
-      // 向左拖拽 → 下一张
-      switchTo(currentIdx+1,'next');
+    vRing.classList.remove('dragging');
+    // 拖拽超过半张卡片角度则切换，否则回弹
+    const moved=ringRotation-dragStartRotation;
+    // 计算实际移动了几张（负数表示向前 next，正数表示向后 prev）
+    const steps=Math.round(-moved/angleStep);
+    if(steps!==0){
+      // 循环切换：switchTo 内部归一化并计算最短路径，支持首尾相连
+      switchTo(currentIdx+steps);
     }else{
-      // 未达阈值 → 回弹到原位（rAF 执行，避免布局抖动）
-      if(dragMainCard){
-        requestAnimationFrame(()=>{
-          if(dragMainCard){
-            dragMainCard.el.style.transform='';
-            dragMainCard.el.style.opacity='';
-          }
-        });
-      }
+      // 回弹到拖拽开始的对齐位置（累积角度基准）
+      ringRotation=dragStartRotation;
+      vRing.style.transform='rotateY('+ringRotation+'deg)';
     }
-    dragDelta=0;
-    dragMainCard=null; // 释放引用
   });
 
-  // ===== 滚轮缩放（Bug修复：以屏幕可视区域正中心为固定缩放基准，合并 translate+scale）=====
-  // 原因：跟随鼠标点位缩放会导致画面偏移偏转；拆分多段 transform 会造成坐标计算错乱。
-  // 修复规则：
-  //   1. transform-origin 固定设为屏幕正中心（center center），不跟随鼠标；
-  //   2. translate 与 scale 合并写入同一 transform，格式 translate(x,y) scale(s)；
-  //   3. 每次缩放后基于屏幕中心重新修正 translate 偏移，抵消缩放位移，中心始终锁定。
+  // ===== 滚轮缩放（缩放当前正前方卡片）=====
   let wheelZoomRAF=false;
   viewer.addEventListener('wheel',e=>{
     e.preventDefault();
-    // rAF 节流：避免高频滚轮事件连续操作 DOM
     if(wheelZoomRAF) return;
     wheelZoomRAF=true;
     requestAnimationFrame(()=>{
       wheelZoomRAF=false;
-      // 实时查找当前居中主卡片，保证滚轮作用于最新选中的居中照片
-      const mc=cards.find(c=>c.position==='main');
+      const mc=cards[currentIdx];
       if(!mc) return;
-      // 滚轮上滚放大，下滚缩小（保留原有 1~4 倍边界限制）
-      const oldScale=zoomScale; // 缓存本次缩放前倍率，用于补偿计算
+      const oldScale=zoomScale;
       const newScale=Math.max(1,Math.min(4,zoomScale+(e.deltaY>0?-0.15:0.15)));
-      if(newScale===oldScale) return; // 已达边界，无变化
-      // ===== 屏幕中心缩放补偿计算 =====
-      // 以屏幕正中心为缩放原点：图片中心点在缩放前后都应落在屏幕中心。
-      // 用主卡片中心相对屏幕中心的偏移，配合新旧缩放比，反向计算需补偿的 translate。
-      const rect=mc.el.getBoundingClientRect();
-      const cardCx=rect.left+rect.width/2;   // 主卡片中心点 X
-      const cardCy=rect.top+rect.height/2;   // 主卡片中心点 Y
-      const vRect=viewer.getBoundingClientRect();
-      const screenCx=vRect.left+vRect.width/2; // 屏幕中心 X
-      const screenCy=vRect.top+vRect.height/2; // 屏幕中心 Y
-      // 主卡片中心相对屏幕中心的偏移（缩放原点偏差）
-      const dx=cardCx-screenCx;
-      const dy=cardCy-screenCy;
+      if(newScale===oldScale) return;
       if(newScale>1){
         isZoomed=true;
         zoomScale=newScale;
-        // 固定 transform-origin 为元素自身中心（配合 translate 补偿实现屏幕中心缩放）
-        mc.el.style.transformOrigin='center center';
-        // 中心锁定补偿：在已有 zoomOffset 基础上叠加本次缩放产生的位移
-        // 推导：以屏幕中心为原点，图片中心偏移 dx，缩放由 oldScale→newScale，
-        //       缩放产生的额外位移 = dx*(newScale-oldScale)/oldScale，需反向平移抵消
-        zoomOffsetX-=dx*(newScale-oldScale)/oldScale;
-        zoomOffsetY-=dy*(newScale-oldScale)/oldScale;
-        // 合并 translate+scale 写入同一 transform，避免拆分多段造成偏转
-        mc.el.style.transform='translate('+zoomOffsetX+'px,'+zoomOffsetY+'px) scale('+zoomScale+')';
+        // 当前卡片叠加 scale（保留 rotateY + translateZ 基础变换）
+        const baseAngle=currentIdx*angleStep;
+        mc.el.style.transform='rotateY('+baseAngle+'deg) translateZ('+radius+'px) scale('+zoomScale+')';
       }else{
-        // 缩放回归 1 倍：重置所有缩放状态与偏移缓存
         isZoomed=false;
         zoomScale=1;
-        zoomOffsetX=0; zoomOffsetY=0;
-        mc.el.style.transform='';
+        const baseAngle=currentIdx*angleStep;
+        mc.el.style.transform='rotateY('+baseAngle+'deg) translateZ('+radius+'px)';
       }
     });
   },{passive:false});
 
-  // ===== 双击放大/还原（Bug修复：重置偏移缓存，合并 translate+scale）=====
+  // ===== 双击放大/还原 =====
   viewer.addEventListener('dblclick',e=>{
     if(e.target.closest('.nav-btn')||e.target.closest('.close-btn')||e.target.closest('.thumb')||e.target.closest('.download-btn')) return;
-    // 实时查找当前居中主卡片
-    const mc=cards.find(c=>c.position==='main');
+    const mc=cards[currentIdx];
     if(!mc) return;
+    const baseAngle=currentIdx*angleStep;
     if(isZoomed){
-      // 还原：重置缩放倍率与偏移缓存
       zoomScale=1; isZoomed=false;
-      zoomOffsetX=0; zoomOffsetY=0;
-      mc.el.style.transform='';
+      mc.el.style.transform='rotateY('+baseAngle+'deg) translateZ('+radius+'px)';
     }else{
-      // 放大到 2x：重置偏移缓存，以屏幕中心为基准
       zoomScale=2; isZoomed=true;
-      zoomOffsetX=0; zoomOffsetY=0;
-      mc.el.style.transformOrigin='center center';
-      mc.el.style.transform='translate(0px,0px) scale(2)';
+      mc.el.style.transform='rotateY('+baseAngle+'deg) translateZ('+radius+'px) scale(2)';
     }
   });
 
@@ -7956,8 +7853,8 @@
     document.body.removeChild(a);
   }
 
-  // ===== 暴露给外部使用 =====
-  window.__imgViewer={open:openViewer, close:closeViewer};
+  // ===== 暴露给外部使用（3D 旋转木马版本，仅景点照片使用）=====
+  window.__imgViewerCarousel={open:openViewer, close:closeViewer};
 
   // ===== 事件绑定 =====
   vClose.addEventListener('click',closeViewer);
@@ -7965,11 +7862,359 @@
   vPrev.addEventListener('click',e=>{ e.stopPropagation(); prev(); });
   vNext.addEventListener('click',e=>{ e.stopPropagation(); next(); });
 
-  // 【修改】已移除单击图片/背景关闭相册的逻辑：点击图片、空白遮罩层不再触发关闭。
-  // 关闭入口仅保留：右上角×关闭按钮、ESC 键盘按键。
-  // （原 viewer.addEventListener('click', ... closeViewer()) 已删除）
-
   // 键盘交互
+  document.addEventListener('keydown',e=>{
+    if(!viewer.classList.contains('show')) return;
+    if(e.key==='Escape') closeViewer();
+    else if(e.key==='ArrowLeft') prev();
+    else if(e.key==='ArrowRight') next();
+  });
+})();
+
+  /* ===== 原堆叠相册预览器（stack-mode，非景点照片查看使用）=====
+   * 恢复 5 层卡片堆叠架构：far-prev → prev → main → next → far-next
+   * 抽拉式分层切换 + 拖拽阻尼 + 滚轮缩放 + 双击放大 + 下载 + 键盘
+   * 仅城市照片、全览轨迹等非景点场景使用 */
+(function(){
+  const viewer=document.createElement('div');
+  viewer.className='img-viewer stack-mode';
+  viewer.innerHTML=`
+    <button class="close-btn" title="关闭">&times;</button>
+    <button class="download-btn" title="下载原图">&#11015;</button>
+    <div class="counter" id="stackViewerCounter"></div>
+    <div class="stage" id="stackViewerStage">
+      <button class="nav-btn nav-prev" title="上一张">&#8249;</button>
+      <button class="nav-btn nav-next" title="下一张">&#8250;</button>
+    </div>
+    <div class="hint">拖拽滑动 · 滚轮缩放 · 双击放大 · ← → 翻页 · ESC 关闭</div>
+    <div class="thumb-strip" id="stackViewerThumbStrip"></div>
+  `;
+  document.body.appendChild(viewer);
+
+  const vStage=viewer.querySelector('#stackViewerStage');
+  const vCounter=viewer.querySelector('#stackViewerCounter');
+  const vPrev=viewer.querySelector('.nav-prev');
+  const vNext=viewer.querySelector('.nav-next');
+  const vClose=viewer.querySelector('.close-btn');
+  const vDownload=viewer.querySelector('.download-btn');
+  const vThumbs=viewer.querySelector('#stackViewerThumbStrip');
+
+  const POSITIONS=['far-prev','prev','main','next','far-next'];
+  const MAIN_IDX=2;
+  const cards=POSITIONS.map(pos=>{
+    const el=document.createElement('div');
+    el.className='photo-card '+pos;
+    const img=document.createElement('img');
+    el.appendChild(img);
+    vStage.appendChild(el);
+    return {el,img,position:pos};
+  });
+  const posToIdx={'far-prev':0,'prev':1,'main':2,'next':3,'far-next':4};
+
+  let photoList=[];
+  let currentIdx=0;
+  let isAnimating=false;
+  let zoomScale=1;
+  let isZoomed=false;
+  let zoomOffsetX=0;
+  let zoomOffsetY=0;
+
+  function getPhotoIdxForPosition(position){
+    const offset={'far-prev':-2,'prev':-1,'main':0,'next':1,'far-next':2};
+    return currentIdx+offset[position];
+  }
+
+  function openViewer(photos, startIdx){
+    if(!photos||!photos.length) return;
+    photoList=photos;
+    currentIdx=Math.min(startIdx||0, photos.length-1);
+    zoomScale=1; isZoomed=false;
+    zoomOffsetX=0; zoomOffsetY=0;
+    renderThumbnails();
+    renderStack(true);
+    updateNavButtons();
+    viewer.classList.add('show');
+  }
+
+  function closeViewer(){
+    viewer.classList.remove('show');
+    photoList=[];
+    vThumbs.innerHTML='';
+    zoomScale=1; isZoomed=false;
+  }
+
+  function renderStack(instant){
+    cards.forEach(card=>{
+      const photoIdx=getPhotoIdxForPosition(card.position);
+      if(photoIdx>=0 && photoIdx<photoList.length){
+        card.el.style.display='';
+        card.img.src=photoList[photoIdx].dataUrl;
+      }else{
+        card.el.style.display='none';
+      }
+      card.el.className='photo-card '+card.position+(instant?' no-transition':'');
+    });
+    if(instant){
+      requestAnimationFrame(()=>{
+        cards.forEach(c=>c.el.classList.remove('no-transition'));
+      });
+    }
+    vCounter.textContent=(currentIdx+1)+' / '+photoList.length;
+    updateThumbActive();
+  }
+
+  function renderThumbnails(){
+    vThumbs.innerHTML='';
+    photoList.forEach((p,i)=>{
+      const t=document.createElement('img');
+      t.className='thumb'+(i===currentIdx?' active':'');
+      t.src=p.dataUrl;
+      t.title=(i+1)+' / '+photoList.length;
+      t.addEventListener('click',e=>{
+        e.stopPropagation();
+        if(i!==currentIdx){
+          const dir=i>currentIdx?'next':'prev';
+          switchTo(i,dir);
+        }
+      });
+      vThumbs.appendChild(t);
+    });
+  }
+
+  function updateThumbActive(){
+    vThumbs.querySelectorAll('.thumb').forEach((t,i)=>{
+      t.classList.toggle('active',i===currentIdx);
+    });
+    const active=vThumbs.querySelector('.thumb.active');
+    if(active){
+      const stripRect=vThumbs.getBoundingClientRect();
+      const thumbRect=active.getBoundingClientRect();
+      if(thumbRect.left<stripRect.left||thumbRect.right>stripRect.right){
+        active.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+      }
+    }
+  }
+
+  function updateNavButtons(){
+    vPrev.classList.toggle('disabled', currentIdx===0);
+    vNext.classList.toggle('disabled', currentIdx===photoList.length-1);
+  }
+
+  function switchTo(newIdx, dir){
+    if(isAnimating) return;
+    if(newIdx<0||newIdx>=photoList.length) return;
+    isAnimating=true;
+    zoomScale=1; isZoomed=false;
+    zoomOffsetX=0; zoomOffsetY=0;
+    const mcReset=cards.find(c=>c.position==='main');
+    if(mcReset){ mcReset.el.style.transform=''; mcReset.el.style.transformOrigin=''; }
+
+    for(let i=0;i<cards.length;i++){
+      const card=cards[i];
+      const currentPosIdx=posToIdx[card.position];
+      let newPosIdx = dir==='next' ? currentPosIdx-1 : currentPosIdx+1;
+      if(newPosIdx<0){
+        card.position='far-next';
+        card.el.style.opacity='0';
+        card._recycled=true;
+      }else if(newPosIdx>=POSITIONS.length){
+        card.position='far-prev';
+        card.el.style.opacity='0';
+        card._recycled=true;
+      }else{
+        card.position=POSITIONS[newPosIdx];
+        card._recycled=false;
+      }
+      card.el.className='photo-card '+card.position;
+    }
+
+    currentIdx=newIdx;
+    vCounter.textContent=(currentIdx+1)+' / '+photoList.length;
+    updateNavButtons();
+
+    setTimeout(()=>{
+      for(let i=0;i<cards.length;i++){
+        const card=cards[i];
+        const photoIdx=getPhotoIdxForPosition(card.position);
+        if(photoIdx>=0 && photoIdx<photoList.length){
+          card.el.style.display='';
+          card.img.src=photoList[photoIdx].dataUrl;
+          card.el.style.opacity='';
+        }else{
+          card.el.style.display='none';
+        }
+        card._recycled=false;
+      }
+      updateThumbActive();
+      isAnimating=false;
+    },560);
+  }
+
+  function prev(){ if(currentIdx<=0) return; switchTo(currentIdx-1,'prev'); }
+  function next(){ if(currentIdx>=photoList.length-1) return; switchTo(currentIdx+1,'next'); }
+
+  // 拖拽滑动 + 滚轮缩放 + 双击放大
+  let dragging=false, dragStartX=0, dragDelta=0;
+  let dragMainCard=null;
+  let dragRAFpending=false;
+  let isDraggingImage=false;
+  let imgDragStartX=0, imgDragStartY=0;
+  let imgDragBaseOffsetX=0, imgDragBaseOffsetY=0;
+  let imgDragRAFpending=false;
+  let imgDragBounds=null;
+  let imgDragPendingX=0, imgDragPendingY=0;
+
+  viewer.addEventListener('mousedown',e=>{
+    if(e.target.closest('.nav-btn')||e.target.closest('.close-btn')||e.target.closest('.thumb')||e.target.closest('.download-btn')) return;
+    if(zoomScale>1){
+      isDraggingImage=true;
+      imgDragStartX=e.clientX; imgDragStartY=e.clientY;
+      imgDragBaseOffsetX=zoomOffsetX; imgDragBaseOffsetY=zoomOffsetY;
+      dragMainCard=cards.find(c=>c.position==='main');
+      if(dragMainCard){
+        dragMainCard.el.classList.add('dragging');
+        const rect=dragMainCard.el.getBoundingClientRect();
+        const vRect=viewer.getBoundingClientRect();
+        imgDragBounds={maxX:Math.max(0,rect.width/2-vRect.width/2),maxY:Math.max(0,rect.height/2-vRect.height/2)};
+      }
+      e.preventDefault(); return;
+    }
+    dragging=true;
+    dragStartX=e.clientX;
+    dragDelta=0;
+    dragMainCard=cards.find(c=>c.position==='main');
+    if(dragMainCard) dragMainCard.el.classList.add('dragging');
+    e.preventDefault();
+  });
+
+  document.addEventListener('mousemove',e=>{
+    if(isDraggingImage&&dragMainCard){
+      let newX=imgDragBaseOffsetX+(e.clientX-imgDragStartX);
+      let newY=imgDragBaseOffsetY+(e.clientY-imgDragStartY);
+      if(imgDragBounds){
+        newX=Math.max(-imgDragBounds.maxX,Math.min(imgDragBounds.maxX,newX));
+        newY=Math.max(-imgDragBounds.maxY,Math.min(imgDragBounds.maxY,newY));
+      }
+      imgDragPendingX=newX; imgDragPendingY=newY;
+      if(!imgDragRAFpending){
+        imgDragRAFpending=true;
+        requestAnimationFrame(()=>{
+          imgDragRAFpending=false;
+          if(!isDraggingImage||!dragMainCard) return;
+          zoomOffsetX=imgDragPendingX; zoomOffsetY=imgDragPendingY;
+          dragMainCard.el.style.transform='translate('+zoomOffsetX+'px,'+zoomOffsetY+'px) scale('+zoomScale+')';
+        });
+      }
+      return;
+    }
+    if(!dragging||!dragMainCard) return;
+    let dx=e.clientX-dragStartX;
+    if((currentIdx===0&&dx>0)||(currentIdx===photoList.length-1&&dx<0)) dx*=0.3;
+    dragDelta=dx;
+    if(!dragRAFpending){
+      dragRAFpending=true;
+      requestAnimationFrame(()=>{
+        dragRAFpending=false;
+        if(!dragging||!dragMainCard) return;
+        dragMainCard.el.style.transform='translateX('+dragDelta+'px) rotate('+(dragDelta*0.02)+'deg)';
+        dragMainCard.el.style.opacity=String(Math.max(0.4,1-Math.abs(dragDelta)/500));
+      });
+    }
+  });
+
+  document.addEventListener('mouseup',()=>{
+    if(isDraggingImage){
+      isDraggingImage=false;
+      if(dragMainCard) dragMainCard.el.classList.remove('dragging');
+      imgDragBounds=null;
+      dragMainCard=null; return;
+    }
+    if(!dragging) return;
+    dragging=false;
+    if(dragMainCard) dragMainCard.el.classList.remove('dragging');
+    const threshold=80;
+    if(dragDelta>threshold&&currentIdx>0){
+      switchTo(currentIdx-1,'prev');
+    }else if(dragDelta<-threshold&&currentIdx<photoList.length-1){
+      switchTo(currentIdx+1,'next');
+    }else{
+      if(dragMainCard){
+        requestAnimationFrame(()=>{
+          if(dragMainCard){
+            dragMainCard.el.style.transform='';
+            dragMainCard.el.style.opacity='';
+          }
+        });
+      }
+    }
+    dragDelta=0;
+    dragMainCard=null;
+  });
+
+  let wheelZoomRAF=false;
+  viewer.addEventListener('wheel',e=>{
+    e.preventDefault();
+    if(wheelZoomRAF) return;
+    wheelZoomRAF=true;
+    requestAnimationFrame(()=>{
+      wheelZoomRAF=false;
+      const mc=cards.find(c=>c.position==='main');
+      if(!mc) return;
+      const oldScale=zoomScale;
+      const newScale=Math.max(1,Math.min(4,zoomScale+(e.deltaY>0?-0.15:0.15)));
+      if(newScale===oldScale) return;
+      const rect=mc.el.getBoundingClientRect();
+      const dx=(rect.left+rect.width/2)-(viewer.getBoundingClientRect().left+viewer.getBoundingClientRect().width/2);
+      const dy=(rect.top+rect.height/2)-(viewer.getBoundingClientRect().top+viewer.getBoundingClientRect().height/2);
+      if(newScale>1){
+        isZoomed=true; zoomScale=newScale;
+        mc.el.style.transformOrigin='center center';
+        zoomOffsetX-=dx*(newScale-oldScale)/oldScale;
+        zoomOffsetY-=dy*(newScale-oldScale)/oldScale;
+        mc.el.style.transform='translate('+zoomOffsetX+'px,'+zoomOffsetY+'px) scale('+zoomScale+')';
+      }else{
+        isZoomed=false; zoomScale=1;
+        zoomOffsetX=0; zoomOffsetY=0;
+        mc.el.style.transform='';
+      }
+    });
+  },{passive:false});
+
+  viewer.addEventListener('dblclick',e=>{
+    if(e.target.closest('.nav-btn')||e.target.closest('.close-btn')||e.target.closest('.thumb')||e.target.closest('.download-btn')) return;
+    const mc=cards.find(c=>c.position==='main');
+    if(!mc) return;
+    if(isZoomed){
+      zoomScale=1; isZoomed=false;
+      zoomOffsetX=0; zoomOffsetY=0;
+      mc.el.style.transform='';
+    }else{
+      zoomScale=2; isZoomed=true;
+      zoomOffsetX=0; zoomOffsetY=0;
+      mc.el.style.transformOrigin='center center';
+      mc.el.style.transform='translate(0px,0px) scale(2)';
+    }
+  });
+
+  function downloadCurrent(){
+    if(!photoList.length) return;
+    const photo=photoList[currentIdx];
+    const a=document.createElement('a');
+    a.href=photo.dataUrl;
+    a.download=(photo.name||('photo_'+(currentIdx+1)))+'.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  // 暴露为 __imgViewer（原堆叠版本，非景点照片使用）
+  window.__imgViewer={open:openViewer, close:closeViewer};
+
+  vClose.addEventListener('click',closeViewer);
+  vDownload.addEventListener('click',e=>{ e.stopPropagation(); downloadCurrent(); });
+  vPrev.addEventListener('click',e=>{ e.stopPropagation(); prev(); });
+  vNext.addEventListener('click',e=>{ e.stopPropagation(); next(); });
+
   document.addEventListener('keydown',e=>{
     if(!viewer.classList.contains('show')) return;
     if(e.key==='Escape') closeViewer();
