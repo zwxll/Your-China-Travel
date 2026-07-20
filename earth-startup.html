@@ -188,79 +188,107 @@
     <button class="launch-btn" id="startBtn">开始记录</button>
   </div>
 
-  <!-- ========== globe.gl 依赖（UMD，暴露全局 Globe） ========== -->
-  <script src="//cdn.jsdelivr.net/npm/globe.gl"></script>
+  <!-- ========== globe.gl 依赖（UMD，内部已打包 three.js，暴露全局 Globe） ========== -->
+  <script src="https://cdn.jsdelivr.net/npm/globe.gl"></script>
 
-  <!-- ========== 主逻辑：地球 / 云层 / 光照 / 自转 / 跳转 ========== -->
-  <script type="module">
-    import * as THREE from 'https://esm.sh/three';
+  <!-- ========== 主逻辑：地球 / 云层 / 光照 / 自转 / 跳转 ==========
+       用普通 <script>（非 type=module），file:// 双击打开也能正常加载。
+       globe.gl UMD 先加载并初始化地球（用内部打包的 three），
+       再动态加载 three.js UMD 供云层代码使用，避免 ES module 在 file:// 下被 CORS 阻止。 -->
+  <script>
+    /* ---------- 等待 globe.gl 加载完成并初始化地球 ---------- */
+    function initGlobe(){
+      if(typeof Globe==='undefined'){
+        setTimeout(initGlobe,50);
+        return;
+      }
 
-    /* ---------- 地球初始化（纹理 + 凹凸贴图） ---------- */
-    const world = new Globe(document.getElementById('globeViz'), { animateIn: false })
-      .globeImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg')
-      .bumpImageUrl('//cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png');
+      /* ---------- 地球初始化（纹理 + 凹凸贴图） ---------- */
+      const world = new Globe(document.getElementById('globeViz'), { animateIn: false })
+        .globeImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg')
+        .bumpImageUrl('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-topology.png');
 
-    /* ---------- 全屏尺寸适配 ---------- */
-    world.width(window.innerWidth).height(window.innerHeight);
-
-    /* ---------- 地球自动缓慢自转 ---------- */
-    world.controls().autoRotate = true;
-    world.controls().autoRotateSpeed = 0.35;           // 慢速自转
-
-    /* ---------- 初始视角：定位到中国上空，地球占视口约 60-70% ---------- */
-    world.pointOfView({ lat: 20, lng: 105, altitude: 2.5 });
-
-    /* ---------- 补充光照：环境光 + 方向光，让地球与云层有立体感 ---------- */
-    /* 注：globe.gl 默认已带光源，此处补充以增强云层可见度与昼夜分界 */
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
-    world.scene().add(ambientLight);
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(1, 1, 1);
-    world.scene().add(dirLight);
-
-    /* ---------- 云层：独立球体包裹地球，独立旋转 ---------- */
-    const CLOUDS_URLS = [
-      // 主用 CDN（jsdelivr 对 gh 仓库有稳定 CORS 支持）
-      'https://cdn.jsdelivr.net/gh/turban/webgl-earth@master/media/fair_clouds_4k.png',
-      // 备用：raw.githubusercontent 原始来源
-      'https://raw.githubusercontent.com/turban/webgl-earth/master/media/fair_clouds_4k.png'
-    ];
-    const CLOUDS_ALT = 0.004;                          // 云层高度（相对地球半径）
-    const CLOUDS_ROTATION_SPEED = -0.006;              // 云层旋转速度（度/帧）
-
-    function loadClouds(urlIndex = 0) {
-      if (urlIndex >= CLOUDS_URLS.length) return;      // 全部失败则放弃
-      new THREE.TextureLoader().load(
-        CLOUDS_URLS[urlIndex],
-        cloudsTexture => {
-          // 创建云层球体（略大于地球）
-          const clouds = new THREE.Mesh(
-            new THREE.SphereGeometry(world.getGlobeRadius() * (1 + CLOUDS_ALT), 75, 75),
-            new THREE.MeshPhongMaterial({ map: cloudsTexture, transparent: true })
-          );
-          world.scene().add(clouds);
-          // 云层独立旋转动画（与地球自转方向/速度不同）
-          (function rotateClouds() {
-            clouds.rotation.y += CLOUDS_ROTATION_SPEED * Math.PI / 180;
-            requestAnimationFrame(rotateClouds);
-          })();
-        },
-        undefined,
-        () => loadClouds(urlIndex + 1)                 // 加载失败则尝试备用地址
-      );
-    }
-    loadClouds();
-
-    /* ---------- 窗口尺寸变化时同步更新地球画布 ---------- */
-    window.addEventListener('resize', () => {
+      /* ---------- 全屏尺寸适配 ---------- */
       world.width(window.innerWidth).height(window.innerHeight);
-    });
 
-    /* ---------- 按钮点击：跳转主旅游地图页面 ---------- */
-    // 如仅作演示，可将下方跳转注释掉
-    document.getElementById('startBtn').addEventListener('click', () => {
-      window.location.href = './index.html';           // 同目录主页面
-    });
+      /* ---------- 地球自动缓慢自转 ---------- */
+      world.controls().autoRotate = true;
+      world.controls().autoRotateSpeed = 0.35;
+
+      /* ---------- 初始视角：定位到中国上空 ---------- */
+      world.pointOfView({ lat: 20, lng: 105, altitude: 2.5 });
+
+      /* ---------- 窗口尺寸变化时同步更新地球画布 ---------- */
+      window.addEventListener('resize', () => {
+        world.width(window.innerWidth).height(window.innerHeight);
+      });
+
+      /* ---------- 按钮点击：跳转主旅游地图页面 ---------- */
+      document.getElementById('startBtn').addEventListener('click', () => {
+        window.location.href = './index.html';
+      });
+
+      /* ---------- 动态加载 three.js UMD 供云层使用 ----------
+       * globe.gl UMD 内部打包了 three.js 但不暴露全局 THREE。
+       * 此处动态加载 three@0.149.0 UMD（最后稳定 UMD 版本），
+       * 用于创建云层 Mesh/光照等。globe.gl 已初始化完毕，不受影响。 */
+      function loadThreeScript(){
+        if(typeof THREE!=='undefined'){ setupClouds(THREE); return; }
+        const s=document.createElement('script');
+        s.src='https://cdn.jsdelivr.net/npm/three@0.149.0/build/three.min.js';
+        s.onload=()=>setupClouds(THREE);
+        s.onerror=()=>console.error('three.js UMD 加载失败，云层将不显示');
+        document.head.appendChild(s);
+      }
+
+      /* ---------- 云层 + 补充光照（依赖 three.js） ---------- */
+      function setupClouds(THREE){
+        /* 补充光照：增强云层可见度与昼夜分界 */
+        world.scene().add(new THREE.AmbientLight(0xffffff, 0.6));
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(1, 1, 1);
+        world.scene().add(dirLight);
+
+        /* 云层：独立球体包裹地球，独立旋转 */
+        const CLOUDS_URLS = [
+          'https://cdn.jsdelivr.net/gh/turban/webgl-earth@master/media/fair_clouds_4k.png',
+          'https://raw.githubusercontent.com/turban/webgl-earth/master/media/fair_clouds_4k.png'
+        ];
+        const CLOUDS_ALT = 0.004;
+        const CLOUDS_ROTATION_SPEED = -0.006;
+
+        function loadClouds(urlIndex = 0) {
+          if (urlIndex >= CLOUDS_URLS.length) return;
+          new THREE.TextureLoader().load(
+            CLOUDS_URLS[urlIndex],
+            cloudsTexture => {
+              const clouds = new THREE.Mesh(
+                new THREE.SphereGeometry(world.getGlobeRadius() * (1 + CLOUDS_ALT), 75, 75),
+                new THREE.MeshPhongMaterial({ map: cloudsTexture, transparent: true })
+              );
+              world.scene().add(clouds);
+              (function rotateClouds() {
+                clouds.rotation.y += CLOUDS_ROTATION_SPEED * Math.PI / 180;
+                requestAnimationFrame(rotateClouds);
+              })();
+            },
+            undefined,
+            () => loadClouds(urlIndex + 1)
+          );
+        }
+        loadClouds();
+      }
+
+      /* 地球初始化完成后，加载 three.js 用于云层 */
+      loadThreeScript();
+    }
+
+    /* DOM 就绪后启动 */
+    if(document.readyState==='loading'){
+      document.addEventListener('DOMContentLoaded',initGlobe);
+    }else{
+      initGlobe();
+    }
   </script>
 </body>
 </html>
