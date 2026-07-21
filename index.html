@@ -1747,105 +1747,274 @@
 
   /* ===== 景点详情页（毛玻璃卡片风格） ===== */
   /* 全屏覆盖层：浅渐变底色 + 毛玻璃质感 */
+  /* ===== 城市详情页（点击城市卡片后）：虚化封面背景 + 金色标题 + 景点网格 =====
+   * 视觉层级：底层虚化封面(z:0) → 中层标题/简介/网格(z:10) → 顶层编辑面板/轮播(z:20) */
   .att-detail-overlay{
     position:fixed;inset:0;z-index:10001;
-    display:none;flex-direction:column;align-items:center;
-    background:linear-gradient(160deg,#f5f7fa 0%,#eef2f7 40%,#e8edf4 100%);
-    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
-    overflow-y:auto;
-    animation:attFadeIn .3s ease;
+    display:none;flex-direction:column;
+    background:#0a0c10;
+    overflow-y:auto;overflow-x:hidden;
+    animation:attFadeIn .4s ease;
   }
   .att-detail-overlay.show{display:flex;}
-  @keyframes attFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
-  /* 毛玻璃卡片容器 */
-  .att-detail-card{
-    width:90vw;max-width:680px;margin:40px auto 60px;
-    background:rgba(8,8,8,.72);
-    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
-    border-radius:24px;border:1px solid rgba(255,255,255,.6);
-    box-shadow:0 12px 48px rgba(0,0,0,.08),0 2px 8px rgba(0,0,0,.04);
+  @keyframes attFadeIn{from{opacity:0;}to{opacity:1;}}
+  /* 底层：虚化城市封面背景图 */
+  .att-detail-bg{
+    position:fixed;inset:0;z-index:0;
+    background-size:cover;background-position:center;
+    filter:blur(4px) brightness(.70);
+    transform:scale(1.08);
+    transition:background-image .4s ease;
+  }
+  /* 底层暗化遮罩（半透明深色渐变，增强文字可读性，不遮挡封面图） */
+  .att-detail-bg::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg,rgba(8,10,14,.25) 0%,rgba(8,10,14,.55) 100%);
+  }
+  /* 中层：内容容器（收紧留白，提升紧凑度） */
+  .att-detail-inner{
+    position:relative;z-index:10;
+    width:100%;max-width:1200px;margin:0 auto;
+    padding:44px 32px 40px;
+    display:flex;flex-direction:column;align-items:center;
+    flex:1;gap:0;
+  }
+  /* 顶部关闭按钮 */
+  .att-detail-close{
+    position:fixed;top:24px;right:28px;z-index:30;
+    width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.18);
+    background:rgba(20,24,30,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    font-size:18px;cursor:pointer;color:rgba(255,255,255,.85);
+    display:grid;place-items:center;transition:.25s;
+  }
+  .att-detail-close:hover{background:rgba(255,255,255,.15);color:#fff;transform:rotate(90deg);}
+  /* 城市主标题：大号衬线字体 + 浅金色柔和发光（参考图1「广东 全景风光」排版） */
+  .att-detail-city-name{
+    font-family:'Noto Serif SC','Source Han Serif SC',serif;
+    font-size:clamp(40px,7vw,84px);font-weight:700;
+    text-align:center;letter-spacing:6px;line-height:1.1;
+    background:linear-gradient(180deg,#f5d98a 0%,#e8c068 50%,#caa244 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 0 40px rgba(232,192,104,.35);
+    margin-bottom:14px;
+  }
+  /* 城市简介文字（透明展示，适当放大尺寸） */
+  .att-detail-desc{
+    width:100%;
+    padding:0;margin:0;
+    background:transparent;border:none;border-radius:0;
+    color:#f5e6c8;font-size:18px;font-weight:600;line-height:1.9;
+    letter-spacing:1px;
+    font-family:inherit;text-align:center;
+    text-shadow:0 1px 8px rgba(20,12,4,.7),0 0 4px rgba(20,12,4,.5);
+  }
+  .att-detail-desc.empty{display:none;}
+  .att-detail-desc .desc-label{display:none;}
+  /* 城市简介：缓慢逐字呈现动画 */
+  .att-detail-desc.revealing{
     overflow:hidden;
+  }
+  .att-detail-desc .desc-text{
+    display:inline-block;
+    animation:descReveal 1.6s steps(40,end) both;
+  }
+  @keyframes descReveal{
+    0%{clip-path:inset(0 100% 0 0);opacity:0;}
+    100%{clip-path:inset(0 0 0 0);opacity:1;}
+  }
+  /* ===== Shiny Text 闪光文字效果（参照 reactbits.dev/shiny-text）=====
+   * 原理：linear-gradient 渐变 + background-clip:text 裁切 + 动画移动渐变位置
+   * 基础色 + 高光色，高光带以 120° 扩散从左向右扫过文字 */
+  .shiny-text{
+    background:linear-gradient(110deg,
+      var(--shiny-base,#e8c068) 0%,
+      var(--shiny-base,#e8c068) 35%,
+      var(--shiny-shine,#ffffff) 50%,
+      var(--shiny-base,#e8c068) 65%,
+      var(--shiny-base,#e8c068) 100%);
+    background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;
+    color:transparent;
+    -webkit-text-fill-color:transparent;
+    animation:shinySweep 2.5s linear infinite;
+  }
+  @keyframes shinySweep{
+    0%{background-position:200% 0;}
+    100%{background-position:-200% 0;}
+  }
+  /* 景点网格区标题（应用 Shiny Text，删除英文 ATTRACTIONS） */
+  .att-grid-title{
+    font-size:16px;font-weight:700;letter-spacing:4px;margin-bottom:24px;
+  }
+
+  /* ============================================================ */
+  /* ===== 新增模块1：全局轻量化科技装饰层（z-index:5，不遮挡主体）===== */
+  /* ============================================================ */
+  .att-tech-deco{position:fixed;inset:0;z-index:5;pointer-events:none;overflow:hidden;}
+  /* 极低透明度细网格辅助线（叠加在虚化封面上层） */
+  .att-tech-grid{
+    position:absolute;inset:0;opacity:.06;
+    background-image:
+      linear-gradient(rgba(120,180,255,.5) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(120,180,255,.5) 1px,transparent 1px);
+    background-size:60px 60px;
+    mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%);
+    -webkit-mask-image:radial-gradient(ellipse at center,#000 30%,transparent 80%);
+  }
+  /* 左右两侧竖向流动蓝光条 */
+  .att-tech-side{position:absolute;top:0;bottom:0;width:2px;opacity:.18;}
+  .att-tech-side-l{left:0;background:linear-gradient(180deg,transparent,rgba(100,170,255,.8) 50%,transparent);background-size:100% 300%;animation:techSideFlow 8s linear infinite;}
+  .att-tech-side-r{right:0;background:linear-gradient(180deg,transparent,rgba(100,170,255,.8) 50%,transparent);background-size:100% 300%;animation:techSideFlow 8s linear infinite reverse;}
+  @keyframes techSideFlow{0%{background-position:0 -300%;}100%{background-position:0 300%;}}
+  /* 角落缓慢漂浮粒子 */
+  .att-tech-particles{position:absolute;inset:0;}
+  .att-tech-particle{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(120,180,255,.5);box-shadow:0 0 6px rgba(120,180,255,.6);}
+
+  /* ============================================================ */
+  /* ===== 新增模块2：城市基础数据玻璃信息栏（横向4项）===== */
+  /* ============================================================ */
+  .att-info-bar{
+    width:100%;max-width:760px;margin-bottom:22px;
+    display:flex;align-items:center;justify-content:center;gap:0;
+    padding:14px 12px;border-radius:14px;
+    background:rgba(14,20,30,.55);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+    border:1px solid rgba(100,170,255,.22);
+    box-shadow:0 0 24px rgba(60,130,220,.12),inset 0 1px 0 rgba(255,255,255,.06);
+  }
+  .att-info-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;}
+  .att-info-label{font-size:11px;letter-spacing:1.5px;color:rgba(180,210,255,.6);text-transform:uppercase;}
+  .att-info-value{font-size:19px;font-weight:700;color:#e8c068;letter-spacing:.5px;text-shadow:0 0 10px rgba(232,192,104,.25);animation:infoBreathe 3.5s ease-in-out infinite;}
+  @keyframes infoBreathe{0%,100%{opacity:.85;}50%{opacity:1;text-shadow:0 0 14px rgba(232,192,104,.45);}}
+  .att-info-sep{width:1px;height:28px;background:linear-gradient(180deg,transparent,rgba(100,170,255,.3),transparent);}
+
+  /* ============================================================ */
+  /* 城市简介容器（去除玻璃背景边框，透明展示，文字直接浮于背景） */
+  /* ============================================================ */
+  .att-desc-wrap{
+    width:100%;max-width:680px;margin-bottom:18px;
+    padding:0;border-radius:0;
+    background:transparent;backdrop-filter:none;-webkit-backdrop-filter:none;
+    border:none;position:static;overflow:visible;
+  }
+  /* 流光扫描线移除（透明容器无需） */
+  .att-desc-wrap::before,.att-desc-wrap::after{display:none;}
+
+  /* 景点卡片网格（参考图2 城市速览卡片布局） */
+  .att-grid{
+    width:100%;display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+    gap:22px;
+  }
+  /* 单张景点卡片：背景取景点第一张照片 */
+  .att-card{
+    position:relative;aspect-ratio:4/5;border-radius:16px;overflow:hidden;
+    cursor:pointer;background-size:cover;background-position:center;
+    border:1px solid rgba(255,255,255,.1);
+    box-shadow:0 8px 28px rgba(0,0,0,.4);
+    transition:transform .35s cubic-bezier(.2,.8,.3,1),box-shadow .35s ease;
+    will-change:transform;
+  }
+  /* 卡片底部渐变遮罩，保证文字可读 */
+  .att-card::after{
+    content:'';position:absolute;inset:0;
+    background:linear-gradient(180deg,transparent 35%,rgba(8,10,14,.35) 60%,rgba(8,10,14,.88) 100%);
+    transition:opacity .3s ease;
+  }
+  .att-card:hover{
+    transform:translateY(-8px) scale(1.02);
+    box-shadow:0 18px 48px rgba(0,0,0,.55),0 0 28px rgba(100,170,255,.25),0 0 0 1px rgba(100,170,255,.3);
+  }
+  /* 卡片文字层 */
+  .att-card-text{
+    position:absolute;left:0;right:0;bottom:0;z-index:2;
+    padding:18px 18px 16px;
+  }
+  /* 单景点照片数量小字（卡片底部数据点缀） */
+  .att-card-photo-count{
+    position:absolute;top:10px;right:10px;z-index:3;
+    padding:3px 8px;border-radius:10px;
+    background:rgba(14,20,30,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+    border:1px solid rgba(100,170,255,.25);
+    font-size:11px;font-weight:600;color:rgba(180,210,255,.85);letter-spacing:.5px;
+    display:flex;align-items:center;gap:3px;
+  }
+  .att-card-city{
+    font-size:14px;font-weight:700;color:rgba(232,192,104,1);
+    letter-spacing:1.5px;margin-bottom:6px;
+    text-shadow:0 1px 6px rgba(0,0,0,.8),0 0 12px rgba(232,192,104,.3);
+  }
+  .att-card-name{
+    font-size:26px;font-weight:800;line-height:1.25;
+    margin-bottom:7px;overflow:hidden;text-overflow:ellipsis;
+    display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;
+    /* Shiny Text 闪光效果：基础色白 + 高光金色扫过 */
+    background:linear-gradient(110deg,#ffffff 0%,#ffffff 35%,#f5d98a 50%,#ffffff 65%,#ffffff 100%);
+    background-size:200% 100%;
+    -webkit-background-clip:text;background-clip:text;
+    color:transparent;-webkit-text-fill-color:transparent;
+    animation:shinySweep 3s linear infinite;
+    filter:drop-shadow(0 1px 8px rgba(0,0,0,.8));
+  }
+  .att-card-date{
+    font-size:14px;font-weight:600;color:rgba(255,255,255,.95);line-height:1.4;
+    margin-bottom:6px;
+    text-shadow:0 1px 6px rgba(0,0,0,.85);
+  }
+  .att-card-notes{
+    font-size:15px;font-weight:500;color:rgba(255,255,255,.95);line-height:1.5;
+    overflow:hidden;text-overflow:ellipsis;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+    text-shadow:0 1px 6px rgba(0,0,0,.85);
+  }
+  /* 卡片无照片占位 */
+  .att-card-empty{
+    position:absolute;inset:0;display:grid;place-items:center;
+    background:linear-gradient(135deg,#1a1f28,#141821);
+    z-index:1;
+  }
+  .att-card-empty svg{width:40px;height:40px;color:rgba(255,255,255,.2);}
+  /* 空状态 */
+  .att-detail-empty{
+    padding:80px 32px;text-align:center;color:rgba(255,255,255,.5);
+  }
+  .att-detail-empty .big{font-size:18px;font-weight:600;display:block;margin-bottom:8px;color:rgba(255,255,255,.75);}
+  .att-detail-empty .sub{font-size:14px;}
+
+  /* ===== 景点编辑浮层（单击卡片弹出，深色玻璃，字段与原景点管理一致）===== */
+  .att-edit-overlay{
+    position:fixed;inset:0;z-index:10020;display:none;
+    align-items:center;justify-content:center;padding:24px;
+    background:rgba(6,8,12,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  }
+  .att-edit-overlay.show{display:flex;animation:attFadeIn .25s ease;}
+  .att-edit-panel{
+    width:min(560px,100%);max-height:84vh;overflow-y:auto;
+    background:rgba(16,20,26,.82);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    border:1px solid rgba(255,255,255,.14);border-radius:20px;
+    box-shadow:0 20px 60px rgba(0,0,0,.5);
+    padding:28px;
     animation:attCardIn .35s cubic-bezier(.2,.8,.3,1);
   }
   @keyframes attCardIn{from{transform:scale(.96) translateY(10px);opacity:0;}to{transform:scale(1) translateY(0);opacity:1;}}
-  /* 顶部标题栏 */
-  .att-detail-head{
-    display:flex;align-items:center;justify-content:space-between;
-    padding:28px 32px 20px;
-    border-bottom:1px solid rgba(0,0,0,.05);
+  .att-edit-title{font-size:18px;font-weight:700;color:#fff;margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;}
+  .att-edit-title .x{width:30px;height:30px;border-radius:50%;border:none;background:rgba(255,255,255,.08);color:rgba(255,255,255,.7);cursor:pointer;font-size:16px;}
+  .att-edit-title .x:hover{background:rgba(255,255,255,.18);color:#fff;}
+  .att-edit-row{margin-bottom:16px;}
+  .att-edit-row label{display:block;font-size:12px;color:rgba(255,255,255,.5);margin-bottom:6px;letter-spacing:1px;}
+  .att-edit-row input,.att-edit-row textarea{
+    width:100%;padding:10px 14px;border-radius:10px;
+    background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+    color:#fff;font-size:14px;font-family:inherit;outline:none;transition:border-color .2s;
   }
-  .att-detail-head-left{display:flex;align-items:center;gap:12px;}
-  .att-detail-head-left .loc-icon{
-    width:28px;height:28px;display:grid;place-items:center;
-    background:linear-gradient(135deg,#38bdf8,#0ea5e9);border-radius:8px;
-    color:#fff;flex-shrink:0;
-  }
-  .att-detail-head-left .loc-icon svg{width:16px;height:16px;}
-  .att-detail-city-name{
-    font-size:26px;font-weight:800;color:var(--ink);letter-spacing:.5px;
-  }
-  .att-detail-head-right{display:flex;align-items:center;gap:16px;}
-  .att-detail-count{
-    font-size:14px;font-weight:600;color:var(--muted);
-    padding:6px 14px;border-radius:20px;background:rgba(232,148,60,.08);
-    white-space:nowrap;
-  }
-  .att-detail-close{
-    width:38px;height:38px;border-radius:50%;border:none;
-    background:rgba(0,0,0,.04);font-size:18px;cursor:pointer;
-    color:var(--muted);transition:.2s;display:grid;place-items:center;
-  }
-  .att-detail-close:hover{background:rgba(0,0,0,.08);color:var(--ink);transform:rotate(90deg);}
-  /* 景点列表主体 */
-  .att-detail-body{padding:8px 0 20px;}
-  /* 单条景点条目 —— hover 淡色填充，区分可点击区域 */
-  .att-item{
-    display:flex;align-items:center;gap:16px;
-    padding:16px 32px;cursor:pointer;
-    border-bottom:1px solid var(--line-2);
-    transition:background .25s ease;
-  }
-  .att-item:last-child{border-bottom:none;}
-  .att-item:hover{background:rgba(232,148,60,.06);}
-  /* 左侧景点第一张照片（单张缩略图） —— 统一圆角 + 淡色骨架占位 */
-  .att-item-photo{
-    width:72px;height:72px;border-radius:14px;overflow:hidden;flex-shrink:0;
-    background:linear-gradient(135deg,#f5f2ee,#ede8e0);
-    border:2px solid rgba(56,189,248,.25);box-shadow:0 4px 12px rgba(0,0,0,.05);
-  }
-  .att-item-photo img{width:100%;height:100%;object-fit:cover;display:block;}
-  .att-item-photo .att-photo-cell{
-    width:100%;height:100%;display:grid;place-items:center;
-    font-size:22px;color:#c8d4e0;background:linear-gradient(135deg,#f5f2ee,#ede8e0);
-  }
-  /* 中间景点信息容器（名称 + 日期） */
-  .att-item-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;}
-  /* 中间景点名称 —— 大号醒目字体 */
-  .att-item-name{
-    font-size:17px;font-weight:700;color:var(--ink);
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;
-  }
-  /* 景点游玩日期 —— 浅灰色小字 */
-  .att-item-date{
-    font-size:13px;font-weight:500;color:var(--muted);
-  }
-  /* 右侧箭头按钮 —— pointer-events:auto，hover 变色增加点击触感 */
-  .att-item-arrow{
-    width:36px;height:36px;border-radius:50%;border:none;
-    background:rgba(232,148,60,.1);color:var(--accent);
-    cursor:pointer;flex-shrink:0;display:grid;place-items:center;
-    transition:background .25s ease,color .25s ease,transform .25s ease;
-    pointer-events:auto;position:relative;z-index:2;
-  }
-  .att-item-arrow:hover{background:var(--accent);color:#fff;transform:translateX(3px) scale(1.08);}
-  .att-item-arrow:active{transform:translateX(1px) scale(.96);}
-  .att-item-arrow svg{width:16px;height:16px;}
-  /* 空状态 */
-  .att-detail-empty{
-    padding:60px 32px;text-align:center;color:var(--muted);
-  }
-  .att-detail-empty .big{font-size:18px;font-weight:600;display:block;margin-bottom:8px;color:var(--ink);}
-  .att-detail-empty .sub{font-size:14px;}
+  .att-edit-row input:focus,.att-edit-row textarea:focus{border-color:rgba(232,192,104,.5);}
+  .att-edit-row textarea{min-height:64px;resize:vertical;line-height:1.6;}
+  .att-edit-thumbs{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;}
+  .att-edit-thumb{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,.12);}
+  .att-edit-thumb img{width:100%;height:100%;object-fit:cover;}
+  .att-edit-thumb .del{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:none;background:rgba(0,0,0,.65);color:#fff;font-size:13px;cursor:pointer;line-height:1;display:grid;place-items:center;}
+  .att-edit-upload{width:72px;height:72px;border-radius:10px;border:1px dashed rgba(255,255,255,.25);background:rgba(255,255,255,.04);color:rgba(255,255,255,.5);cursor:pointer;display:grid;place-items:center;font-size:24px;transition:.2s;}
+  .att-edit-upload:hover{border-color:rgba(232,192,104,.5);color:rgba(232,192,104,.9);}
+  .att-edit-hint{font-size:12px;color:rgba(255,255,255,.4);margin-top:10px;}
 
   /* ===== 视图切换标签（与顶部切换栏完全统一样式）===== */
   .view-tabs{display:flex;gap:2px;background:#0f0f0f;border-radius:10px;padding:3px;}
@@ -1954,6 +2123,12 @@
   /* 【弹窗尺寸缩小】推荐指数行内边距 14→10px，gap 12→10px */
   .rating-row{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
   .rating-row label{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;}
+  /* 城市简介输入区（星级正下方，编辑态输入） */
+  .city-desc-row{display:flex;align-items:flex-start;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
+  .city-desc-row label{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;padding-top:8px;}
+  .city-desc-input{flex:1;min-height:60px;max-height:120px;resize:vertical;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:13px;line-height:1.6;font-family:inherit;outline:none;transition:border-color .2s;}
+  .city-desc-input:focus{border-color:rgba(56,189,248,.5);}
+  .city-desc-row .btn{flex-shrink:0;align-self:flex-start;margin-top:2px;}
   /* 景点管理 */
   /* 【弹窗尺寸缩小】景点区底部 padding 18→12px */
   .attraction-section{padding:0 0 12px;}
@@ -2271,9 +2446,11 @@
     perspective-origin:50% 50%;
   }
   /* 旋转木马圆环：所有卡片挂载于此，整体 rotateY 旋转
-   * 卡片尺寸缩小为 1.1 倍：300×400 → 330×440，视觉精致 */
+   * 卡片尺寸缩小为 1.1 倍：300×400 → 330×440，视觉精致
+   * 尺寸通过 CSS 变量 --card-w/--card-h 控制，支持 1.5 倍放大模式 */
   .img-viewer.carousel-mode .carousel-ring{
-    position:relative;width:330px;height:440px;
+    position:relative;
+    width:var(--card-w,330px);height:var(--card-h,440px);
     transform-style:preserve-3d;
     transition:transform .8s cubic-bezier(.25,.46,.45,.94);
     will-change:transform;
@@ -2282,10 +2459,25 @@
     transition:none;
   }
 
+  /* 背景图层：默认隐藏，cover-bg-mode 模式下显示虚化封面大图 */
+  .img-viewer.carousel-mode .carousel-bg{
+    position:absolute;inset:0;z-index:0;
+    background-size:cover;background-position:center;
+    filter:blur(40px) brightness(.4);
+    opacity:0;transition:opacity .4s ease;
+    transform:scale(1.1);
+  }
+  .img-viewer.carousel-mode.cover-bg-mode .carousel-bg{opacity:1;}
+  /* cover-bg-mode 下移除纯色遮罩，沿用虚化封面背景 */
+  .img-viewer.carousel-mode.cover-bg-mode{
+    background:transparent;
+  }
+
   /* ===== 照片卡片：3D 旋转木马单卡（仅 .carousel-mode）
-   * 去除白底相纸边框，照片直接铺满卡片，1.1 倍尺寸 */
+   * 去除白底相纸边框，照片直接铺满卡片，尺寸由 CSS 变量控制 */
   .img-viewer.carousel-mode .photo-card{
-    position:absolute;top:0;left:0;width:330px;height:440px;
+    position:absolute;top:0;left:0;
+    width:var(--card-w,330px);height:var(--card-h,440px);
     /* 去除白色相纸背景和 padding，照片直接铺满 */
     background:transparent;
     padding:0;
@@ -2883,6 +3075,12 @@
           <span class="star" data-val="5">★</span>
         </div>
       </div>
+      <!-- 城市简介输入区（星级正下方，编辑弹窗内填写/修改城市简介） -->
+      <div class="city-desc-row">
+        <label>城市简介</label>
+        <textarea id="cityDescInput" class="city-desc-input" placeholder="为这座城市写一段简介…" maxlength="200"></textarea>
+        <button class="btn primary" id="cityDescSaveBtn">保存</button>
+      </div>
       <!-- 游玩年月选择器 -->
       <div class="month-picker">
         <label>游玩年月</label>
@@ -2945,25 +3143,52 @@
     </div>
   </div>
 
-  <!-- 景点详情页（全屏覆盖层，毛玻璃卡片风格） -->
+  <!-- 城市详情页（点击城市卡片后）：虚化封面背景 + 金色标题 + 景点网格卡片 -->
   <div id="attDetailOverlay" class="att-detail-overlay">
-    <div class="att-detail-card">
-      <!-- 顶部标题栏：定位图标 + 城市名 + 景点数量 + 关闭按钮 -->
-      <div class="att-detail-head">
-        <div class="att-detail-head-left">
-          <span class="loc-icon">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5a2.5 2.5 0 010-5 2.5 2.5 0 010 5z"/></svg>
-          </span>
-          <span class="att-detail-city-name" id="attDetailCityName">城市</span>
-        </div>
-        <div class="att-detail-head-right">
-          <span class="att-detail-count" id="attDetailCount">0个景点</span>
-          <button class="att-detail-close" id="attDetailCloseBtn" title="返回总览">✕</button>
-        </div>
-      </div>
-      <!-- 景点列表主体区 -->
-      <div class="att-detail-body" id="attDetailBody"></div>
+    <!-- 底层：虚化城市封面背景（保留不动） -->
+    <div class="att-detail-bg" id="attDetailBg"></div>
+    <button class="att-detail-close" id="attDetailCloseBtn" title="返回总览">✕</button>
+
+    <!-- ===== 全局轻量化科技装饰层（z-index:5，介于背景与内容之间，不遮挡主体）===== -->
+    <div class="att-tech-deco" aria-hidden="true">
+      <div class="att-tech-grid"></div>
+      <div class="att-tech-side att-tech-side-l"></div>
+      <div class="att-tech-side att-tech-side-r"></div>
+      <div class="att-tech-particles" id="attTechParticles"></div>
     </div>
+
+    <!-- 中层：城市标题 + 数据栏 + 简介面板 + 景点网格 + 底部统计 -->
+    <div class="att-detail-inner">
+      <!-- 城市主标题（保留不动） -->
+      <h1 class="att-detail-city-name" id="attDetailCityName">城市</h1>
+
+      <!-- 城市简介（移至数据栏上方，去除玻璃背景边框） -->
+      <div class="att-desc-wrap" id="attDescWrap">
+        <div class="att-detail-desc empty" id="attDetailDesc"></div>
+      </div>
+
+      <!-- 城市基础数据玻璃信息栏（下移至简介下方） -->
+      <div class="att-info-bar" id="attInfoBar">
+        <div class="att-info-item"><span class="att-info-label">游玩年月</span><span class="att-info-value" id="attInfoMonth">-</span></div>
+        <div class="att-info-sep"></div>
+        <div class="att-info-item"><span class="att-info-label">推荐星级</span><span class="att-info-value" id="attInfoRating">-</span></div>
+        <div class="att-info-sep"></div>
+        <div class="att-info-item"><span class="att-info-label">景点总数</span><span class="att-info-value" id="attInfoCount">-</span></div>
+        <div class="att-info-sep"></div>
+        <div class="att-info-item"><span class="att-info-label">相册影像</span><span class="att-info-value" id="attInfoPhotos">-</span></div>
+      </div>
+
+      <!-- 隐藏占位（保留原ID避免JS报错） -->
+      <div class="att-grid-title" id="attGridTitle" style="display:none;"></div>
+
+      <!-- 景点网格（去除玻璃包装边框，直接展示） -->
+      <div class="att-grid" id="attDetailBody"></div>
+    </div>
+  </div>
+
+  <!-- 景点编辑浮层（单击景点卡片弹出，深色玻璃，字段与原景点管理一致） -->
+  <div id="attEditOverlay" class="att-edit-overlay">
+    <div class="att-edit-panel" id="attEditPanel"></div>
   </div>
 
   <!-- Toast -->
@@ -3651,11 +3876,14 @@
   // 封面图 + 星级 + 景点
   const coverUploadBtn=$('coverUploadBtn'), coverFileInput=$('coverFileInput'),
         coverPreview=$('coverPreview'), coverPreviewWrap=$('coverPreviewWrap'), starRatingEl=$('starRating'),
-        attractionListEl=$('attractionList'), attractionAddBtn=$('attractionAddBtn');
+        attractionListEl=$('attractionList'), attractionAddBtn=$('attractionAddBtn'),
+        cityDescInput=$('cityDescInput'), cityDescSaveBtn=$('cityDescSaveBtn');
   // 景点详情页元素
   const attDetailOverlay=$('attDetailOverlay'), attDetailCityName=$('attDetailCityName'),
-        attDetailCount=$('attDetailCount'), attDetailBody=$('attDetailBody'),
-        attDetailCloseBtn=$('attDetailCloseBtn');
+        attDetailBody=$('attDetailBody'), attDetailCloseBtn=$('attDetailCloseBtn'),
+        attDetailBg=$('attDetailBg'), attDetailDesc=$('attDetailDesc'),
+        attGridTitle=$('attGridTitle'),
+        attEditOverlay=$('attEditOverlay'), attEditPanel=$('attEditPanel');
   // 城市卡片列表元素
   const cityCardsListEl=$('cityCardsList'), cityCardsEmptyEl=$('cityCardsEmpty');
   // 视图切换
@@ -4166,9 +4394,37 @@
     });
 
     // 点击散点 → 打开城市弹窗
+    // 【单击/双击冲突解决】已点亮城市延迟 250ms 打开弹窗，为双击跳转留出窗口；
+    // 未点亮城市立即响应单击（无双击需求）
+    let pendingClickTimer=null;
     myChart.on('click',params=>{
       if(params.seriesType==='scatter'||params.seriesType==='effectScatter'){
-        openCityModal(params.data);
+        const ck=params.data&&params.data.cityKey;
+        const isLit=ck&&photoCountByCity&&photoCountByCity.has(ck);
+        if(isLit){
+          // 已点亮城市：延迟打开弹窗，dblclick 期间可被取消
+          clearTimeout(pendingClickTimer);
+          pendingClickTimer=setTimeout(()=>{
+            pendingClickTimer=null;
+            openCityModal(params.data);
+          },250);
+        }else{
+          // 未点亮城市：立即响应
+          openCityModal(params.data);
+        }
+      }
+    });
+
+    // 【新增逻辑】双击已点亮城市散点 → 直接跳转城市详情页（虚化封面背景 + 景点网格）
+    myChart.on('dblclick',params=>{
+      if(params.seriesType==='scatter'||params.seriesType==='effectScatter'){
+        const ck=params.data&&params.data.cityKey;
+        // 仅已点亮城市（有照片记录）才允许双击跳转
+        if(ck&&photoCountByCity&&photoCountByCity.has(ck)){
+          // 取消挂起的单击弹窗，避免弹窗与详情页冲突
+          if(pendingClickTimer){ clearTimeout(pendingClickTimer); pendingClickTimer=null; }
+          openAttractionDetail(params.data);
+        }
       }
     });
 
@@ -5992,6 +6248,9 @@
       if(geoLoaded) updateScatterData();
       // 刷新城市卡片列表
       await getAllCityMeta();
+      // 计算全局景点总数（供城市详情页底部统计「景点占比」使用）
+      window.totalAttractionCount=0;
+      cityMetaCache.forEach(m=>{window.totalAttractionCount+=(m&&m.attractions)?m.attractions.length:0;});
       renderCityCards();
       // 刷新弯曲时间轴（收集已点亮城市并渲染迷你时间轴）
       timelineCities=await collectTimelineCities();
@@ -6011,16 +6270,52 @@
    * 从「全部」网格卡片点击进入，加载城市元数据中的景点列表
    * @param {Object} city - 城市信息 {name,value,cityKey,adcode}
    */
+  // ===== 打开城市详情页（虚化封面背景 + 金色标题 + 景点网格）=====
+  // 缓存当前详情页的城市元数据，供编辑面板复用
+  let attDetailMeta=null;
+  let attDetailCoverUrl='';
   async function openAttractionDetail(city){
     attDetailCity=city;
     attDetailCityName.textContent=city.name;
     attDetailBody.innerHTML='<div class="att-detail-empty"><span class="big">加载中…</span></div>';
     attDetailOverlay.classList.add('show');
+    if(window.PerfScheduler) window.PerfScheduler.markInteract();
     try{
       const meta=await getCityMeta(city.cityKey);
+      attDetailMeta=meta;
       const attractions=meta.attractions||[];
-      attDetailCount.textContent=attractions.length+'个景点';
+      // 封面图：仅读取当前城市的封面图（不再读取景点照片/默认图）
+      let coverUrl=meta.coverImage||'';
+      attDetailCoverUrl=coverUrl;
+      // 设置底层虚化封面背景：有封面图则铺满虚化，无封面则用深色渐变
+      if(coverUrl){
+        attDetailBg.style.backgroundImage='url("'+coverUrl+'")';
+      }else{
+        attDetailBg.style.backgroundImage='linear-gradient(160deg,#161a22,#0a0c10)';
+      }
+      // 城市简介：只读展示已保存内容，缓慢逐字呈现（编辑在城市弹窗内进行）
+      const desc=meta.description||'';
+      if(desc){
+        attDetailDesc.innerHTML='<span class="desc-text">'+desc+'</span>';
+        attDetailDesc.classList.remove('empty');
+        attDetailDesc.classList.remove('revealing');
+        // 触发重排后重新添加，确保动画重新播放
+        void attDetailDesc.offsetWidth;
+        attDetailDesc.classList.add('revealing');
+      }else{
+        attDetailDesc.innerHTML='';
+        attDetailDesc.classList.add('empty');
+        attDetailDesc.classList.remove('revealing');
+      }
+      // 景点标题：已删除「景点 · 数量」字样，仅保留元素占位（隐藏不显示）
+      attGridTitle.innerHTML='';
       renderAttractionDetailList(attractions);
+      // ===== 新增：填充城市基础数据玻璃信息栏（4项实时数据） =====
+      fillCityInfoBar(meta,attractions);
+      // ===== 新增：初始化角落漂浮粒子（每次打开重置） =====
+      initTechParticles();
+      // ===== 新增：GSAP timeline 入场动画（分层渲染，不卡顿） =====
+      playDetailEntrance();
     }catch(e){
       console.error('加载景点数据失败',e);
       attDetailBody.innerHTML='<div class="att-detail-empty"><span class="big">加载失败</span><span class="sub">请稍后重试</span></div>';
@@ -6028,86 +6323,340 @@
   }
 
   /**
-   * 关闭景点详情页，自动回到全屏城市卡片总览页面
+   * 关闭城市详情页
    */
   function closeAttractionDetail(){
     attDetailOverlay.classList.remove('show');
     attDetailCity=null;
+    attDetailMeta=null;
+    attDetailCoverUrl='';
+    attDetailBg.style.backgroundImage='';
+    closeAttEditPanel();
+  }
+
+  /* ================================================================ */
+  /* ===== 新增：城市基础数据玻璃信息栏填充（游玩年月/星级/景点数/照片数）===== */
+  /* ================================================================ */
+  function fillCityInfoBar(meta,attractions){
+    const elMonth=document.getElementById('attInfoMonth');
+    const elRating=document.getElementById('attInfoRating');
+    const elCount=document.getElementById('attInfoCount');
+    const elPhotos=document.getElementById('attInfoPhotos');
+    // 游玩年月（YYYY-MM → YYYY年M月）
+    if(elMonth){
+      const vm=meta.visitMonth||'';
+      if(vm){
+        const p=vm.split('-');
+        elMonth.textContent=p.length===2?(parseInt(p[0])+'年'+parseInt(p[1])+'月'):vm;
+      }else{elMonth.textContent='未记录';}
+    }
+    // 推荐星级（带星符号 + 微光）
+    if(elRating){
+      const r=meta.rating||0;
+      elRating.innerHTML='<span class="att-info-stars">'+'★'.repeat(r)+'<span style="opacity:.25">'+'★'.repeat(5-r)+'</span>'+'</span>';
+    }
+    // 景点总数
+    if(elCount){elCount.textContent=(attractions||[]).length+' 个';}
+    // 相册影像数（该城市所有景点合计照片总数）
+    if(elPhotos){
+      let total=0;
+      (attractions||[]).forEach(a=>{total+=((a&&a.photos)?a.photos.length:0);});
+      elPhotos.textContent=total+' 张';
+    }
+  }
+
+  /* ================================================================ */
+  /* ===== 新增：底部统计光条填充（天数估算/景点占比/照片总量）===== */
+  /* ================================================================ */
+  function fillCityStatsBar(meta,attractions){
+    const elDays=document.getElementById('attStatDays');
+    const elCov=document.getElementById('attStatCoverage');
+    const elTotal=document.getElementById('attStatTotal');
+    // 游玩天数估算：有多个不同 visitDate 的景点则按天数计，否则按景点数估算
+    if(elDays){
+      const dates=new Set();
+      (attractions||[]).forEach(a=>{if(a&&a.visitDate) dates.add(a.visitDate);});
+      const est=dates.size>0?dates.size:Math.max(1,Math.ceil((attractions||[]).length/2));
+      elDays.textContent=est+' 天';
+    }
+    // 累计打卡景点占比：当前城市景点数 / 全部城市景点总数（估算）
+    if(elCov){
+      const allAttCount=window.totalAttractionCount||0;
+      const cur=(attractions||[]).length;
+      const pct=allAttCount>0?Math.round(cur/allAttCount*100):0;
+      elCov.textContent=pct+'%';
+    }
+    // 照片存储总量：该城市所有景点照片合计
+    if(elTotal){
+      let total=0;
+      (attractions||[]).forEach(a=>{total+=((a&&a.photos)?a.photos.length:0);});
+      elTotal.textContent=total+' 张';
+    }
+  }
+
+  /* ================================================================ */
+  /* ===== 新增：角落缓慢漂浮粒子初始化（每次打开详情页重置）===== */
+  /* ================================================================ */
+  function initTechParticles(){
+    const container=document.getElementById('attTechParticles');
+    if(!container) return;
+    container.innerHTML='';
+    // 生成 12 个随机位置粒子，用 GSAP 做缓慢漂浮动画
+    for(let i=0;i<12;i++){
+      const p=document.createElement('div');
+      p.className='att-tech-particle';
+      p.style.left=Math.random()*100+'%';
+      p.style.top=Math.random()*100+'%';
+      container.appendChild(p);
+      if(window.gsap){
+        gsap.to(p,{
+          y:(Math.random()-0.5)*60,
+          x:(Math.random()-0.5)*40,
+          opacity:Math.random()*0.4+0.2,
+          duration:4+Math.random()*4,
+          repeat:-1,yoyo:true,ease:'sine.inOut',
+          delay:Math.random()*2
+        });
+      }
+    }
+  }
+
+  /* ================================================================ */
+  /* ===== 新增：GSAP timeline 入场动画（分层渲染，符合 anti-slop）===== */
+  /* ================================================================ */
+  function playDetailEntrance(){
+    if(!window.gsap) return;
+    // 从上到下依次淡入上浮：标题 → 简介 → 数据栏 → 景点卡片
+    const tl=gsap.timeline({defaults:{ease:'power3.out',duration:.6}});
+    tl.from('#attDetailCityName',{opacity:0,y:-20,duration:.5})
+      .from('#attDescWrap',{opacity:0,y:16,duration:.45},'-=0.2')
+      .from('#attInfoBar',{opacity:0,y:16,duration:.45},'-=0.25')
+      .from('#attDetailBody .att-card',{opacity:0,y:24,stagger:.08,duration:.5},'-=0.2')
+      .from('.att-tech-side',{opacity:0,duration:.8},'-=0.4');
   }
 
   /**
-   * 渲染景点详情页中的景点列表
-   * 每条景点为独立条目：左侧第一张照片 + 中间景点名称 + 右侧箭头按钮
-   * @param {Array} attractions - 景点数组 [{id,name,photos:[{dataUrl}],notes}]
+   * 渲染景点网格卡片（参考图2 城市速览卡片布局）
+   * 单击 → 弹出景点编辑面板；双击 → 唤起 1.5 倍旋转木马（沿用虚化封面背景）
+   * @param {Array} attractions - 景点数组 [{id,name,photos:[{dataUrl}],notes,visitDate}]
    */
   function renderAttractionDetailList(attractions){
     attDetailBody.innerHTML='';
     if(!attractions.length){
-      attDetailBody.innerHTML='<div class="att-detail-empty"><span class="big">暂无景点</span><span class="sub">在城市弹窗中添加景点后，将在此处展示</span></div>';
+      attDetailBody.innerHTML='<div class="att-detail-empty"><span class="big">暂无景点</span><span class="sub">在城市编辑弹窗中添加景点后，将在此处展示</span></div>';
       return;
     }
+    const cityName=attDetailCity?attDetailCity.name:'';
     attractions.forEach((att,idx)=>{
-      const item=document.createElement('div');
-      item.className='att-item';
-
-      // 左侧：景点第一张照片（无照片时显示占位图标）
-      const photoWrap=document.createElement('div');
-      photoWrap.className='att-item-photo';
-      if(att.photos&&att.photos.length){
-        const img=document.createElement('img');
-        img.src=att.photos[0].dataUrl;
-        img.alt=att.name||'景点照片';
-        photoWrap.appendChild(img);
+      const card=document.createElement('div');
+      card.className='att-card';
+      // 卡片背景：景点第一张照片
+      const hasPhoto=att.photos&&att.photos.length;
+      if(hasPhoto){
+        card.style.backgroundImage='url("'+att.photos[0].dataUrl+'")';
       }else{
-        const ph=document.createElement('div');
-        ph.className='att-photo-cell';
-        ph.innerHTML='<svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>';
-        photoWrap.appendChild(ph);
+        // 无照片占位
+        const empty=document.createElement('div');
+        empty.className='att-card-empty';
+        empty.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>';
+        card.appendChild(empty);
       }
-      item.appendChild(photoWrap);
-
-      // 中间：景点名称 + 游玩日期
-      const nameWrap=document.createElement('div');
-      nameWrap.className='att-item-info';
+      // 卡片文字层：顶部城市名 + 主标题景点名 + 游玩年月日 + 底部备注
+      const text=document.createElement('div');
+      text.className='att-card-text';
+      const cityEl=document.createElement('div');
+      cityEl.className='att-card-city';
+      cityEl.textContent=cityName;
       const nameEl=document.createElement('div');
-      nameEl.className='att-item-name';
+      nameEl.className='att-card-name';
       nameEl.textContent=att.name||('景点 '+(idx+1));
-      nameWrap.appendChild(nameEl);
-      // 游玩日期（年月日格式化显示）
+      text.append(cityEl,nameEl);
+      // 游玩年月日（YYYY-MM-DD 格式化为 YYYY年M月D日）
       if(att.visitDate){
         const dateEl=document.createElement('div');
-        dateEl.className='att-item-date';
-        // 将 YYYY-MM-DD 格式化为 YYYY年M月D日
+        dateEl.className='att-card-date';
         const parts=att.visitDate.split('-');
         if(parts.length===3){
-          dateEl.textContent='📅 '+parseInt(parts[0])+'年'+parseInt(parts[1])+'月'+parseInt(parts[2])+'日';
+          dateEl.textContent=parseInt(parts[0])+'年'+parseInt(parts[1])+'月'+parseInt(parts[2])+'日';
         }else{
-          dateEl.textContent='📅 '+att.visitDate;
+          dateEl.textContent=att.visitDate;
         }
-        nameWrap.appendChild(dateEl);
+        text.appendChild(dateEl);
       }
-      item.appendChild(nameWrap);
+      if(att.notes){
+        const notesEl=document.createElement('div');
+        notesEl.className='att-card-notes';
+        notesEl.textContent=att.notes;
+        text.appendChild(notesEl);
+      }
+      card.appendChild(text);
+      // 新增：卡片右上角照片数量小字（单景点照片数点缀）
+      const pcount=document.createElement('div');
+      pcount.className='att-card-photo-count';
+      pcount.innerHTML='<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>'+(hasPhoto?att.photos.length:0);
+      card.appendChild(pcount);
 
-      // 右侧：箭头按钮 → 点击进入该景点的照片浏览页
-      const arrow=document.createElement('button');
-      arrow.className='att-item-arrow';
-      arrow.title='查看景点照片';
-      arrow.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>';
-      // 点击箭头或整条景点 → 打开照片浏览器（3D 旋转木马）
-      const openPhotos=()=>{
+      // 交互：单击 → 编辑面板；双击 → 1.5 倍旋转木马（虚化封面背景）
+      let clickTimer=null;
+      card.addEventListener('click',()=>{
+        if(clickTimer){ return; }  // 双击时屏蔽第一次单击
+        clickTimer=setTimeout(()=>{
+          clickTimer=null;
+          openAttEditPanel(idx);
+        },220);
+      });
+      card.addEventListener('dblclick',()=>{
+        if(clickTimer){ clearTimeout(clickTimer); clickTimer=null; }
         const photos=att.photos||[];
         if(photos.length){
-          openPhotoViewer(photos,0,true);  /* true = 景点照片用 3D 旋转木马 */
+          // 双击唤起无白底、放大 1.1 倍旋转木马，背景沿用当前城市虚化封面
+          openPhotoViewer(photos,0,true,{sizeScale:1.1,bgUrl:attDetailCoverUrl});
         }else{
           toast('该景点暂无照片');
         }
-      };
-      arrow.addEventListener('click',e=>{ e.stopPropagation(); openPhotos(); });
-      item.addEventListener('click',openPhotos);
-      item.appendChild(arrow);
+      });
 
-      attDetailBody.appendChild(item);
+      attDetailBody.appendChild(card);
     });
+  }
+
+  /* ===== 景点编辑浮层（单击卡片弹出，字段与原景点管理完全一致）===== */
+  // 打开编辑面板：景点名称、游玩日期、照片上传/删除、景点备注
+  function openAttEditPanel(idx){
+    if(!attDetailCity||!attDetailMeta) return;
+    const att=(attDetailMeta.attractions||[])[idx];
+    if(!att) return;
+    attEditPanel.innerHTML='';
+    // 标题栏
+    const title=document.createElement('div');
+    title.className='att-edit-title';
+    title.innerHTML='<span>'+(att.name||('景点 '+(idx+1)))+'</span>';
+    const xBtn=document.createElement('button');
+    xBtn.className='x'; xBtn.innerHTML='&times;';
+    xBtn.addEventListener('click',closeAttEditPanel);
+    title.appendChild(xBtn);
+    attEditPanel.appendChild(title);
+    // 景点名称
+    const nameRow=document.createElement('div');
+    nameRow.className='att-edit-row';
+    nameRow.innerHTML='<label>景点名称</label>';
+    const nameInput=document.createElement('input');
+    nameInput.value=att.name||''; nameInput.placeholder='景点名称';
+    nameInput.addEventListener('change',()=>attUpdateField(idx,'name',nameInput.value));
+    nameRow.appendChild(nameInput);
+    attEditPanel.appendChild(nameRow);
+    // 游玩日期
+    const dateRow=document.createElement('div');
+    dateRow.className='att-edit-row';
+    dateRow.innerHTML='<label>游玩日期</label>';
+    const dateInput=document.createElement('input');
+    dateInput.type='date'; dateInput.value=att.visitDate||'';
+    dateInput.addEventListener('change',()=>attUpdateField(idx,'visitDate',dateInput.value));
+    dateRow.appendChild(dateInput);
+    attEditPanel.appendChild(dateRow);
+    // 照片缩略图 + 上传
+    const photoRow=document.createElement('div');
+    photoRow.className='att-edit-row';
+    photoRow.innerHTML='<label>景点照片</label>';
+    const thumbs=document.createElement('div');
+    thumbs.className='att-edit-thumbs';
+    (att.photos||[]).forEach((ph,pi)=>{
+      const t=document.createElement('div');
+      t.className='att-edit-thumb';
+      const img=document.createElement('img');
+      img.src=ph.dataUrl;
+      t.appendChild(img);
+      const d=document.createElement('button');
+      d.className='del'; d.innerHTML='&times;';
+      d.addEventListener('click',e=>{ e.stopPropagation(); attDeletePhoto(idx,pi); });
+      t.appendChild(d);
+      thumbs.appendChild(t);
+    });
+    const uploadBtn=document.createElement('button');
+    uploadBtn.className='att-edit-upload';
+    uploadBtn.textContent='+';
+    uploadBtn.title='上传照片';
+    uploadBtn.addEventListener('click',()=>{
+      const input=document.createElement('input');
+      input.type='file'; input.accept='image/*'; input.multiple=true;
+      input.addEventListener('change',()=>attUploadPhotos(idx,input.files));
+      input.click();
+    });
+    thumbs.appendChild(uploadBtn);
+    photoRow.appendChild(thumbs);
+    const hint=document.createElement('div');
+    hint.className='att-edit-hint';
+    hint.textContent='支持多张同时上传 · 本地永久保存';
+    photoRow.appendChild(hint);
+    attEditPanel.appendChild(photoRow);
+    // 景点备注
+    const notesRow=document.createElement('div');
+    notesRow.className='att-edit-row';
+    notesRow.innerHTML='<label>景点备注</label>';
+    const notesInput=document.createElement('textarea');
+    notesInput.value=att.notes||''; notesInput.placeholder='景点备注…';
+    notesInput.addEventListener('change',()=>attUpdateField(idx,'notes',notesInput.value));
+    notesRow.appendChild(notesInput);
+    attEditPanel.appendChild(notesRow);
+
+    attEditOverlay.classList.add('show');
+  }
+  function closeAttEditPanel(){
+    attEditOverlay.classList.remove('show');
+  }
+  // 点击遮罩外区域关闭编辑面板
+  attEditOverlay.addEventListener('click',e=>{ if(e.target===attEditOverlay) closeAttEditPanel(); });
+  // 景点字段更新（基于 attDetailCity，与原 updateAttraction 并行，互不影响城市弹窗逻辑）
+  async function attUpdateField(idx,field,val){
+    if(!attDetailCity) return;
+    const meta=await getCityMeta(attDetailCity.cityKey);
+    if(!meta.attractions||!meta.attractions[idx]) return;
+    meta.attractions[idx][field]=val;
+    await saveCityMeta(meta);
+    attDetailMeta=meta;
+    renderAttractionDetailList(meta.attractions||[]);
+    renderCityCards();
+  }
+  // 删除景点照片（基于 attDetailCity）
+  async function attDeletePhoto(idx,pi){
+    if(!attDetailCity) return;
+    const meta=await getCityMeta(attDetailCity.cityKey);
+    if(!meta.attractions||!meta.attractions[idx]) return;
+    meta.attractions[idx].photos.splice(pi,1);
+    await saveCityMeta(meta);
+    attDetailMeta=meta;
+    openAttEditPanel(idx);
+    renderAttractionDetailList(meta.attractions||[]);
+    renderCityCards();
+  }
+  // 上传景点照片（基于 attDetailCity，同步写入城市主相册）
+  async function attUploadPhotos(idx,files){
+    if(!attDetailCity||!files.length) return;
+    const meta=await getCityMeta(attDetailCity.cityKey);
+    if(!meta.attractions||!meta.attractions[idx]) return;
+    const existing=await getPhotosByCity(attDetailCity.cityKey);
+    let baseOrder=existing.length?Math.max(...existing.map(p=>p.order||0)):0;
+    let ok=0,fail=0;
+    for(const f of files){
+      try{
+        const dataUrl=await compressImage(f,1200,0.82);
+        meta.attractions[idx].photos.push({id:Date.now()+Math.random(),dataUrl});
+        baseOrder+=1;
+        await addPhoto({cityKey:attDetailCity.cityKey,cityName:attDetailCity.name,adcode:attDetailCity.adcode,name:f.name,dataUrl:dataUrl,timestamp:Date.now(),order:baseOrder});
+        ok++;
+      }catch(err){ console.error(err); fail++; }
+    }
+    await saveCityMeta(meta);
+    attDetailMeta=meta;
+    // 更新封面背景（若首张照片变化）
+    if(!attDetailCoverUrl&&meta.attractions[idx].photos.length){
+      attDetailCoverUrl=meta.attractions[idx].photos[0].dataUrl;
+      attDetailBg.style.backgroundImage='url("'+attDetailCoverUrl+'")';
+    }
+    openAttEditPanel(idx);
+    renderAttractionDetailList(meta.attractions||[]);
+    renderCityCards();
+    if(ok) toast('已上传 '+ok+' 张照片'+(fail?('，'+fail+' 张失败'):''));
   }
 
   /* ---------- 模态框 ---------- */
@@ -6138,7 +6687,7 @@
     loadCityPhotos(city.cityKey);
     loadCityMeta(city.cityKey);
   }
-  // 加载城市元数据（年月+标签+封面+星级+景点）到弹窗
+  // 加载城市元数据（年月+标签+封面+星级+简介+景点）到弹窗
   async function loadCityMeta(cityKey){
     try{
       const meta=await getCityMeta(cityKey);
@@ -6151,6 +6700,8 @@
       }
       // 星级
       setStarRating(meta.rating||0);
+      // 城市简介
+      cityDescInput.value=meta.description||'';
       // 景点
       renderAttractions(meta.attractions||[]);
     }catch(e){ console.error(e); }
@@ -7185,12 +7736,15 @@
   /* ---------- 全屏图片预览器 ---------- */
   // 传入照片列表和起始索引，支持左右切换、滚轮缩放
   // useCarousel=true 时使用 3D 旋转木马（仅景点照片），否则使用原堆叠相册
-  function openPhotoViewer(photos,startIdx,useCarousel){
+  // 打开照片查看器
+  // photos: 照片数组；startIdx: 起始索引；useCarousel: 是否 3D 旋转木马
+  // opts.sizeScale: 卡片尺寸倍数（1.5=放大）；opts.bgUrl: 虚化封面背景图
+  function openPhotoViewer(photos,startIdx,useCarousel,opts){
     const list=photos.map(p=>({dataUrl:p.dataUrl,name:p.name||''}));
     // 景点照片 → 3D 旋转木马；其他 → 原堆叠相册
     const viewer = useCarousel ? window.__imgViewerCarousel : window.__imgViewer;
     if(viewer){
-      viewer.open(list,startIdx||0);
+      viewer.open(list,startIdx||0,opts);
     }else if(window.__imgViewer){
       window.__imgViewer.open(list,startIdx||0);
     }else{
@@ -7230,6 +7784,15 @@
       setStarRating(meta.rating);
       renderCityCards();
     });
+  });
+  // 城市简介保存按钮：保存到城市元数据，详情展示页同步渲染
+  cityDescSaveBtn.addEventListener('click',async ()=>{
+    if(!currentCity) return;
+    const meta=await getCityMeta(currentCity.cityKey);
+    meta.description=cityDescInput.value;
+    await saveCityMeta(meta);
+    toast('城市简介已保存');
+    renderCityCards();
   });
   // 封面上传
   coverUploadBtn.addEventListener('click',()=>coverFileInput.click());
@@ -7553,6 +8116,7 @@
     <button class="close-btn" title="关闭">&times;</button>
     <button class="download-btn" title="下载原图">&#11015;</button>
     <div class="counter" id="viewerCounter"></div>
+    <div class="carousel-bg" id="carouselBg"></div>
     <div class="stage" id="viewerStage">
       <div class="carousel-ring" id="carouselRing"></div>
       <button class="nav-btn nav-prev" title="上一张">&#8249;</button>
@@ -7565,6 +8129,7 @@
 
   const vStage=viewer.querySelector('#viewerStage');
   const vRing=viewer.querySelector('#carouselRing');
+  const vBg=viewer.querySelector('#carouselBg');
   const vCounter=viewer.querySelector('#viewerCounter');
   const vPrev=viewer.querySelector('.nav-prev');
   const vNext=viewer.querySelector('.nav-next');
@@ -7582,6 +8147,7 @@
   let ringRotation=0;        // 圆环当前旋转角度（度）
   let angleStep=0;           // 每张卡片之间的角度间隔
   let radius=0;              // 圆环半径
+  let curCardW=330;          // 当前卡片宽度（尺寸缩放后）
 
   // 根据照片数量计算圆环参数
   function computeRingParams(){
@@ -7592,17 +8158,33 @@
     // 半径：根据卡片宽度和角度间隔计算，保证卡片不重叠且视觉间距舒适
     // 公式：r = (cardWidth/2) / tan(angleStep/2)，最小 420
     // 系数 1.20：照片间空隙适中，侧边照片与主照片保持舒适呼吸距离
-    const cardW=330;
+    const cardW=curCardW;
     const baseRadius=(cardW/2)/Math.tan((angleStep*Math.PI/180)/2);
     radius=Math.max(420, baseRadius*1.20);
   }
 
   // ===== 打开预览器 =====
-  function openViewer(photos, startIdx){
+  // opts.sizeScale: 卡片尺寸缩放倍数（1=330×440, 1.5=495×660）
+  // opts.bgUrl: 背景虚化封面图 URL（启用 cover-bg-mode）
+  function openViewer(photos, startIdx, opts){
     if(!photos||!photos.length) return;
     photoList=photos;
     currentIdx=Math.min(startIdx||0, photos.length-1);
     zoomScale=1; isZoomed=false;
+    // 尺寸缩放：通过 CSS 变量控制卡片宽高
+    const scale=(opts&&opts.sizeScale)?opts.sizeScale:1;
+    curCardW=Math.round(330*scale);
+    const cardH=Math.round(440*scale);
+    vRing.style.setProperty('--card-w',curCardW+'px');
+    vRing.style.setProperty('--card-h',cardH+'px');
+    // 背景图：启用 cover-bg-mode 时显示虚化封面
+    if(opts&&opts.bgUrl){
+      vBg.style.backgroundImage='url("'+opts.bgUrl+'")';
+      viewer.classList.add('cover-bg-mode');
+    }else{
+      vBg.style.backgroundImage='';
+      viewer.classList.remove('cover-bg-mode');
+    }
     // 清空旧卡片
     vRing.innerHTML='';
     cards=[];
@@ -7637,6 +8219,11 @@
   // ===== 关闭预览器 =====
   function closeViewer(){
     viewer.classList.remove('show');
+    viewer.classList.remove('cover-bg-mode');
+    vBg.style.backgroundImage='';
+    vRing.style.removeProperty('--card-w');
+    vRing.style.removeProperty('--card-h');
+    curCardW=330;
     photoList=[];
     vRing.innerHTML='';
     cards=[];
@@ -7854,6 +8441,7 @@
   }
 
   // ===== 暴露给外部使用（3D 旋转木马版本，仅景点照片使用）=====
+  // open(photos, startIdx, opts) — opts.sizeScale 尺寸倍数, opts.bgUrl 背景虚化封面
   window.__imgViewerCarousel={open:openViewer, close:closeViewer};
 
   // ===== 事件绑定 =====
