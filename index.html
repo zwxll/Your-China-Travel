@@ -744,7 +744,7 @@
   /* 模态框 */
   .modal-overlay{
     position:fixed;inset:0;z-index:50;display:none;
-    align-items:center;justify-content:center;padding:18px;
+    align-items:center;justify-content:center;padding:16px;
     background:rgba(20,28,38,.5);backdrop-filter:blur(4px);
   }
   .modal-overlay.show{display:flex;animation:fade .2s ease;}
@@ -763,9 +763,9 @@
   body.modal-open .modal-overlay *{
     pointer-events:auto;  /* 弹窗自身恢复正常交互 */
   }
-  /* =====【弹窗尺寸缩小】760→660px，高度 88vh→84vh，内部排版紧凑 ===== */
+  /* =====【弹窗尺寸放大】660→780px，高度 84vh→90vh，内部更舒展 ===== */
   .modal{
-    width:min(660px,100%);max-height:84vh;display:flex;flex-direction:column;
+    width:min(780px,100%);max-height:90vh;display:flex;flex-direction:column;
     background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
     overflow:hidden;animation:pop .22s cubic-bezier(.2,.8,.3,1.1);
     /* 【性能优化】隔离弹窗内部重排重绘，拖拽/滚动不触发整页刷新 */
@@ -775,7 +775,7 @@
   /* 【弹窗尺寸缩小】头部内边距 20→14px，标题字号 20→17px */
   .modal-head{
     display:flex;align-items:center;justify-content:space-between;gap:10px;
-    padding:14px 18px;border-bottom:1px solid var(--line);
+    padding:14px 22px;border-bottom:1px solid var(--line);
     background:linear-gradient(135deg,#080808,#080808);
     flex:0 0 auto;
   }
@@ -794,14 +794,14 @@
   .icon-btn:hover{background:#0f0f0f;color:var(--ink);}
   /* 【弹窗尺寸缩小】地标栏内边距 24→18px，字号 13→12px */
   .modal-landmark{
-    padding:8px 18px;font-size:12px;color:#7a8694;font-weight:500;
+    padding:8px 22px;font-size:12px;color:#7a8694;font-weight:500;
     background:linear-gradient(90deg,#080808,rgba(8,8,8,0));
     border-bottom:1px solid var(--line);
     flex:0 0 auto;
   }
   /* =====【滚动隔离核心】弹窗 body 独立滚动容器，flex:1 + min-height:0 确保不撑破父容器 ===== */
-  /* 【弹窗尺寸缩小】body 内边距 20→14px */
-  .modal-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:14px 18px;
+  /* 【弹窗尺寸放大】body 内边距 14→16px，水平 18→22px，滚动区更舒展 */
+  .modal-body{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;padding:16px 22px;
     /* 自定义滚动条适配深色主题 */
     scrollbar-width:thin;scrollbar-color:rgba(125,211,252,.4) transparent;
   }
@@ -809,9 +809,9 @@
   .modal-body::-webkit-scrollbar-track{background:transparent;}
   .modal-body::-webkit-scrollbar-thumb{background:rgba(125,211,252,.35);border-radius:4px;}
   .modal-body::-webkit-scrollbar-thumb:hover{background:rgba(125,211,252,.6);}
-  /* 【弹窗尺寸缩小】照片网格缩小：minmax 124→108px，gap 14→10px */
+  /* 【弹窗尺寸放大】照片网格放大：minmax 108→116px，gap 10→12px，配合更宽弹窗 */
   .thumbs{
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:10px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(116px,1fr));gap:12px;
   }
   /* ===== 弹窗顶部城市大图缩略图：3D 浮空透视效果（全站统一）===== */
   .thumb{
@@ -861,7 +861,7 @@
   /* 【弹窗尺寸缩小】底部通栏按钮内边距 18→12px */
   .modal-foot{
     display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-    padding:12px 18px;border-top:1px solid var(--line);background:rgba(0,0,0,.6);
+    padding:12px 22px;border-top:1px solid var(--line);background:rgba(0,0,0,.6);
     flex:0 0 auto;
   }
   /* 【弹窗尺寸缩小】按钮缩小：padding 11→8px，字号 15→13px */
@@ -1199,10 +1199,10 @@
   .tag-pill.food{background:rgba(232,148,60,.12);color:var(--accent-d);}
   .tag-pill.other{background:rgba(61,127,184,.1);color:var(--blue-d);}
   /* 年月选择器行 */
-  /* 【弹窗尺寸优化】年月行内边距放大 10→14px，与弹窗宽度匹配 */
+  /* 【弹窗尺寸放大】年月行水平 18→22px，垂直 10→11px，与各模块统一 */
   .month-picker{
     display:flex;align-items:center;gap:10px;flex-wrap:wrap;
-    padding:10px 18px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;
+    padding:11px 22px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;
   }
   .month-picker label{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;}
   .month-picker input[type=month]{
@@ -1210,8 +1210,8 @@
   }
   .month-picker .btn{padding:6px 12px;font-size:12px;}
   /* 标签管理区 —— 放大间距与字号 */
-  /* 【弹窗尺寸优化】标签区上间距 20→24px，上内边距 18→22px */
-  .tag-section{margin-top:16px;padding-top:14px;border-top:1px dashed var(--line);}
+  /* 【弹窗尺寸放大】标签区上间距 16→18px，与景点区一致，三个模块分隔均匀 */
+  .tag-section{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);}
   /* ===== 弹窗分区标题统一样式（照片管理/标签管理/景点管理 三标题字号、字重、颜色、对齐完全一致）===== */
   .section-title{
     font-size:13px;color:var(--muted);font-weight:700;letter-spacing:.5px;
@@ -1753,7 +1753,7 @@
     position:fixed;inset:0;z-index:10001;
     display:none;flex-direction:column;
     background:#0a0c10;
-    overflow-y:auto;overflow-x:hidden;
+    overflow-x:hidden;overflow-y:auto; /* 超过 4 个景点时允许垂直滑动 */
     animation:attFadeIn .4s ease;
   }
   .att-detail-overlay.show{display:flex;}
@@ -1774,10 +1774,10 @@
   /* 中层：内容容器（收紧留白，提升紧凑度） */
   .att-detail-inner{
     position:relative;z-index:10;
-    width:100%;max-width:1200px;margin:0 auto;
-    padding:44px 32px 40px;
+    width:100%;max-width:960px;margin:0 auto;
+    padding:36px 32px 32px;
     display:flex;flex-direction:column;align-items:center;
-    flex:1;gap:0;
+    gap:0;
   }
   /* 顶部关闭按钮 */
   .att-detail-close{
@@ -1788,14 +1788,14 @@
     display:grid;place-items:center;transition:.25s;
   }
   .att-detail-close:hover{background:rgba(255,255,255,.15);color:#fff;transform:rotate(90deg);}
-  /* 城市主标题：大号衬线字体 + 浅金色柔和发光（参考图1「广东 全景风光」排版） */
+  /* 城市主标题：大号衬线字体 + 象牙白暖渐变（柔和高级，贴合深色旅行回忆底色） */
   .att-detail-city-name{
     font-family:'Noto Serif SC','Source Han Serif SC',serif;
     font-size:clamp(40px,7vw,84px);font-weight:700;
     text-align:center;letter-spacing:6px;line-height:1.1;
-    background:linear-gradient(180deg,#f5d98a 0%,#e8c068 50%,#caa244 100%);
+    background:linear-gradient(180deg,#fefaf0 0%,#f0e6d2 50%,#ddd0b0 100%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
-    text-shadow:0 0 40px rgba(232,192,104,.35);
+    text-shadow:0 0 40px rgba(240,230,210,.25);
     margin-bottom:14px;
   }
   /* 城市简介文字（透明展示，适当放大尺寸） */
@@ -1803,7 +1803,7 @@
     width:100%;
     padding:0;margin:0;
     background:transparent;border:none;border-radius:0;
-    color:#f5e6c8;font-size:18px;font-weight:600;line-height:1.9;
+    color:#ede4d0;font-size:18px;font-weight:600;line-height:1.9;
     letter-spacing:1px;
     font-family:inherit;text-align:center;
     text-shadow:0 1px 8px rgba(20,12,4,.7),0 0 4px rgba(20,12,4,.5);
@@ -1882,10 +1882,9 @@
     box-shadow:0 0 24px rgba(60,130,220,.12),inset 0 1px 0 rgba(255,255,255,.06);
   }
   .att-info-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0;}
-  .att-info-label{font-size:11px;letter-spacing:1.5px;color:rgba(180,210,255,.6);text-transform:uppercase;}
-  .att-info-value{font-size:19px;font-weight:700;color:#e8c068;letter-spacing:.5px;text-shadow:0 0 10px rgba(232,192,104,.25);animation:infoBreathe 3.5s ease-in-out infinite;}
-  @keyframes infoBreathe{0%,100%{opacity:.85;}50%{opacity:1;text-shadow:0 0 14px rgba(232,192,104,.45);}}
-  .att-info-sep{width:1px;height:28px;background:linear-gradient(180deg,transparent,rgba(100,170,255,.3),transparent);}
+  .att-info-label{font-size:11px;letter-spacing:1.5px;color:rgba(166,210,190,.7);text-transform:uppercase;}
+  .att-info-value{font-size:19px;font-weight:700;color:#e8a87c;letter-spacing:.5px;text-shadow:0 0 10px rgba(232,168,124,.22);}
+  .att-info-sep{width:1px;height:28px;background:linear-gradient(180deg,transparent,rgba(166,210,190,.3),transparent);}
 
   /* ============================================================ */
   /* 城市简介容器（去除玻璃背景边框，透明展示，文字直接浮于背景） */
@@ -1899,15 +1898,19 @@
   /* 流光扫描线移除（透明容器无需） */
   .att-desc-wrap::before,.att-desc-wrap::after{display:none;}
 
-  /* 景点卡片网格（参考图2 城市速览卡片布局） */
+  /* 景点卡片网格
+   * 卡片采用固定基准尺寸（2 个景点时的 0.8 倍），1-4 个景点一屏内居中排列；
+   * 超过 4 个景点时网格纵向延伸，外层 overlay 滚动显示。
+   * --att-cols 由 JS 按景点数写入（1-4），超过 4 固定 4 列。 */
   .att-grid{
     width:100%;display:grid;
-    grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
-    gap:22px;
+    grid-template-columns:repeat(var(--att-cols,2),var(--att-card-w,374px));
+    grid-auto-rows:var(--att-card-h,396px);
+    gap:18px;justify-content:center;align-content:start;
   }
-  /* 单张景点卡片：背景取景点第一张照片 */
+  /* 单张景点卡片：固定尺寸，等高等宽，背景取景点第一张照片 */
   .att-card{
-    position:relative;aspect-ratio:4/5;border-radius:16px;overflow:hidden;
+    position:relative;border-radius:16px;overflow:hidden;
     cursor:pointer;background-size:cover;background-position:center;
     border:1px solid rgba(255,255,255,.1);
     box-shadow:0 8px 28px rgba(0,0,0,.4);
@@ -1939,16 +1942,16 @@
     display:flex;align-items:center;gap:3px;
   }
   .att-card-city{
-    font-size:14px;font-weight:700;color:rgba(232,192,104,1);
+    font-size:14px;font-weight:700;color:rgba(245,235,215,.9);
     letter-spacing:1.5px;margin-bottom:6px;
-    text-shadow:0 1px 6px rgba(0,0,0,.8),0 0 12px rgba(232,192,104,.3);
+    text-shadow:0 1px 6px rgba(0,0,0,.8),0 0 12px rgba(245,235,215,.15);
   }
   .att-card-name{
     font-size:26px;font-weight:800;line-height:1.25;
     margin-bottom:7px;overflow:hidden;text-overflow:ellipsis;
     display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;
-    /* Shiny Text 闪光效果：基础色白 + 高光金色扫过 */
-    background:linear-gradient(110deg,#ffffff 0%,#ffffff 35%,#f5d98a 50%,#ffffff 65%,#ffffff 100%);
+    /* Shiny Text 闪光效果：冷白基底 + 淡蓝高光扫过，与暖色系形成冷暖对比 */
+    background:linear-gradient(110deg,#ffffff 0%,#ffffff 35%,#bfe4ff 50%,#ffffff 65%,#ffffff 100%);
     background-size:200% 100%;
     -webkit-background-clip:text;background-clip:text;
     color:transparent;-webkit-text-fill-color:transparent;
@@ -1956,12 +1959,12 @@
     filter:drop-shadow(0 1px 8px rgba(0,0,0,.8));
   }
   .att-card-date{
-    font-size:14px;font-weight:600;color:rgba(255,255,255,.95);line-height:1.4;
+    font-size:14px;font-weight:600;color:rgba(245,240,230,.92);line-height:1.4;
     margin-bottom:6px;
     text-shadow:0 1px 6px rgba(0,0,0,.85);
   }
   .att-card-notes{
-    font-size:15px;font-weight:500;color:rgba(255,255,255,.95);line-height:1.5;
+    font-size:15px;font-weight:500;color:rgba(245,240,230,.88);line-height:1.5;
     overflow:hidden;text-overflow:ellipsis;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
     text-shadow:0 1px 6px rgba(0,0,0,.85);
@@ -2094,24 +2097,25 @@
   .star-display .star{font-size:13px;color:#38bdf8;line-height:1;}
   .star-display .star.empty{color:#ddd;}
   /* ===== 弹窗增强：封面图 + 景点 ===== */
-  /* 【弹窗尺寸优化】封面区内边距放大 10→14px，与弹窗宽度匹配 */
-  /* =====【弹窗尺寸缩小】封面区内边距 14→10px，字号 13→12px ===== */
-  .cover-section{padding:10px 18px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
+  /* 【弹窗尺寸放大】封面区内边距水平 18→22px，垂直 10→11px，与各模块统一 */
+  .cover-section{padding:11px 22px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
   .cover-section label{font-size:12px;color:var(--muted);font-weight:600;margin-right:10px;}
   /* =====【封面预览修复】固定高度 + 水平居中，杜绝拉伸变形 ===== */
-  /* 容器：高度固定 250px，宽度 80%，margin 左右 auto 实现水平居中（左右空余宽度相同） */
+  /* 【弹窗尺寸放大】压缩封面预览高度 250→160px，把垂直空间让给下方滚动容器 */
+  /* 容器：高度固定 160px，宽度 80%，margin 左右 auto 实现水平居中（左右空余宽度相同） */
   .cover-preview-wrap{
-    position:relative;width:80%;height:250px;margin:8px auto 0;
+    position:relative;width:80%;height:160px;margin:6px auto 0;
     border-radius:8px;           /* 圆角，和整体UI统一 */
-    border:1px solid var(--line); /* 细微边框，明确展示边界 */
+    border:none;                 /* 去除边框线，照片无框选边框，更简洁 */
     overflow:hidden;              /* 超出容器部分裁剪 */
     background:#080808;           /* 空状态背景 */
     display:none;                 /* 默认隐藏，有图才显示 */
   }
-  /* 图片：绝对定位铺满容器，object-fit:cover 保持原图比例，居中裁剪，不变形 */
+  /* 图片：绝对定位铺满容器，object-fit:contain 完整显示原图，不裁切不拉伸 */
+  /* 容器空白区域由 .cover-preview-wrap 的深色底色(#080808)填充，简洁不花哨 */
   .cover-preview-wrap .cover-preview{
     position:absolute;inset:0;width:100%;height:100%;
-    object-fit:cover;             /* 填充容器，保持比例，超出居中裁剪 */
+    object-fit:contain;            /* 完整展示原图，保持比例，不裁切不变形 */
     object-position:center center;/* 水平+垂直居中，适配竖图/横图/方形 */
     display:block;cursor:pointer;border:none;border-radius:8px;
   }
@@ -2120,18 +2124,19 @@
     display:inline-block;padding:5px 12px;font-size:12px;font-weight:600;
     background:var(--accent);color:#fff;border:none;border-radius:7px;cursor:pointer;
   }
-  /* 【弹窗尺寸缩小】推荐指数行内边距 14→10px，gap 12→10px */
-  .rating-row{display:flex;align-items:center;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
+  /* 【弹窗尺寸放大】推荐指数行水平 18→22px，垂直 10→11px，与各模块统一 */
+  .rating-row{display:flex;align-items:center;gap:10px;padding:11px 22px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
   .rating-row label{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;}
   /* 城市简介输入区（星级正下方，编辑态输入） */
-  .city-desc-row{display:flex;align-items:flex-start;gap:10px;padding:10px 18px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
+  /* 【弹窗尺寸放大】简介行水平 18→22px，垂直 10→11px，与各模块统一 */
+  .city-desc-row{display:flex;align-items:flex-start;gap:10px;padding:11px 22px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
   .city-desc-row label{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;padding-top:8px;}
   .city-desc-input{flex:1;min-height:60px;max-height:120px;resize:vertical;padding:8px 12px;border-radius:8px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#fff;font-size:13px;line-height:1.6;font-family:inherit;outline:none;transition:border-color .2s;}
   .city-desc-input:focus{border-color:rgba(56,189,248,.5);}
   .city-desc-row .btn{flex-shrink:0;align-self:flex-start;margin-top:2px;}
   /* 景点管理 */
-  /* 【弹窗尺寸缩小】景点区底部 padding 18→12px */
-  .attraction-section{padding:0 0 12px;}
+  /* 【弹窗尺寸放大】景点区顶部加虚线分隔 + 与标签区一致的上下间距，三个模块排版均衡 */
+  .attraction-section{margin-top:18px;padding:0 0 14px;border-top:1px dashed var(--line);}
   /* 【弹窗尺寸缩小】景点项 padding 14→10px，圆角 10→8px */
   .attraction-item{
     background:#080808;border:1px solid var(--line);border-radius:8px;
@@ -2718,52 +2723,140 @@
     100% { background-position:150% 0; }
   }
 
-  /* 副标题：Shiny Text 效果（reactbits.dev，光带横扫文字，呼应"点亮"主题） */
-  .launch-subtitle{
-    font-size:clamp(0.9rem, 1.8vw, 1.3rem);
-    letter-spacing:0.05em;                            /* 中文副标题字距收紧 */
-    margin-top:12px;
+  /* ===== SmokyText 烟雾文字特效：启动页标题 Chinese Footprint（移植自 originkit smokytex）=====
+     原理：每个字符从左下方旋转 skew 飞入，text-shadow 由大模糊烟雾→0 凝实，
+     形成烟雾聚合成字的效果。颜色青蓝(#7dd3fc)适配深空 3D 地球科技氛围。
+     性能：一次性 CSS 动画（animation:both），完成后字符静态，不与 globe.gl 持续争抢资源；
+     动画期间 will-change 仅作用于字符 transform/opacity，结束后清除（anti-slop）。 */
+  .smt-title{
+    position:relative;
+    font-size:clamp(2.5rem,6vw,5rem);               /* 与原 .launch-title 一致，居中尺寸不变 */
+    font-family:'Playfair Display','Figtree','Inter',-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",serif;
     font-weight:400;
+    font-variation-settings:'wght' 400;             /* 【SKILL.md 4.1】Playfair Display 可变字体基重 */
+    letter-spacing:0.08em;
+    margin:0;
+    white-space:nowrap;
+    user-select:none;
     text-align:center;
-    /* Shiny Text：120° 线性渐变（中段高亮色）+ background-clip:text，光带从右扫到左 */
-    /* 基色 0.75 保证可读性（reactbits 原版基色不透明，高光靠亮度差而非透明度差） */
-    background-image:linear-gradient(120deg,
-      rgba(186,230,253,0.75) 0%,
-      rgba(186,230,253,0.75) 35%,
-      #e0f7ff 50%,
-      rgba(186,230,253,0.75) 65%,
-      rgba(186,230,253,0.75) 100%);
-    background-size:200% auto;
+    line-height:1.1;
+    color:transparent;                              /* 父级透明，渐变由子字符 .smt-char 各自承载 */
+    /* 注：渐变 background-clip:text 直接作用于每个 .smt-char（inline-block），
+       避免父级渐变在 inline-block 子元素上裁切失败的问题。父级仅做布局容器。 */
+  }
+  /* 词容器：inline-block nowrap，保证单词不折行（originkit 分组结构）*/
+  .smt-word{display:inline-block;white-space:nowrap;}
+  /* 字符 span：每个字符自带渐变背景（background-clip:text），保证渐变在 inline-block 字符上正确显现；
+     text-shadow 仅在动画期作烟雾辉光，终点 none 让渐变填充显现 */
+  .smt-char{
+    display:inline-block;
+    /* 渐变背景直接作用于字符自身，避免 inline-block 子元素无法正确裁切父级背景的问题 */
+    /* 加重渐变：深蓝(#1e40af)→亮青(#22d3ee)→亮白(#f0f9ff)→亮青→深蓝，色彩跨度更大、渐变更鲜明 */
+    background:linear-gradient(110deg,#1e40af 0%,#22d3ee 30%,#f0f9ff 50%,#22d3ee 70%,#1e40af 100%);
+    background-size:220% 100%;
     -webkit-background-clip:text;
     background-clip:text;
-    color:transparent;                                /* Firefox：color 透明显示渐变 */
-    -webkit-text-fill-color:transparent;              /* WebKit/Blink：fill 透明显示渐变 */
-    animation:shinySweepSub 2.5s linear infinite;     /* reactbits 默认 2s，这里 2.5s 稍慢呼应宇宙主题 */
-    will-change:transform,opacity,background-position;
+    -webkit-text-fill-color:transparent;
+    color:transparent;
+    text-shadow:none;                                /* 默认无阴影；动画 both 填充接管（终点 none 显露渐变）*/
+    opacity:0;                                       /* 动画触发前隐藏，触发后由 animation:both 接管 */
+    will-change:transform,opacity;                   /* text-shadow 非 GPU，仅 transform/opacity 提速 */
+    backface-visibility:hidden;
   }
-  /* Shiny Text 扫光：150%（光带在右外侧）→ -50%（光带在左外侧），200% 行程，linear 无缝循环 */
-  @keyframes shinySweepSub{
-    0%  { background-position:150% center; }
-    100%{ background-position:-50% center; }
-  }
+  /* 空格字符：保留两单词间词距（Chinese 与 Footprint 之间）*/
+  .smt-char.smt-space{width:0.5em;}
   @media (prefers-reduced-motion: reduce){
-    .launch-subtitle{
-      animation:none;
-      background-image:none;
-      color:rgba(186,230,253,0.75);
-      -webkit-text-fill-color:rgba(186,230,253,0.75);
-    }
+    .smt-char{opacity:1;animation:none!important;transform:none;text-shadow:0 0 12px rgba(125,211,252,.6);}
   }
 
-  /* 启动按钮：深色玻璃底 + 亮青白文字 + 闪光图标 + 箭头 */
+  /* 副标题：smokytex 烟雾动画（纯色文字）—— smokytex 接管文字渲染，清除 Shiny Text 渐变背景 */
+  /* ===== Dust Text Reveal 副标题（源自 originkit dust-text-reveal，原生 JS 移植）===== */
+  .dust-text-wrapper{
+    position:relative;
+    margin-top:18px;
+    margin-bottom:6px;
+    width:100%;
+    height:clamp(2rem,4vw,3rem);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:default;
+    pointer-events:auto;              /* 恢复交互（父级穿透层 pointer-events:none）*/
+    will-change:opacity,transform;
+  }
+  .dust-text-canvas{
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    pointer-events:none;
+  }
+  .dust-text-real{
+    font-family:'Inter',-apple-system,BlinkMacSystemFont,'PingFang SC','Microsoft YaHei',sans-serif;
+    font-size:clamp(1.05rem,2.2vw,1.6rem);
+    font-weight:400;
+    letter-spacing:0.05em;
+    text-align:center;
+    color:#bae6fd;
+    margin:0;
+    opacity:0;                        /* 粒子聚合完成后由 JS 设为 1 */
+    transition:opacity 0.3s linear;
+    pointer-events:none;
+    white-space:nowrap;
+    z-index:1;
+  }
+  .dust-text-wrapper.dust-formed .dust-text-real{
+    opacity:1;
+  }
+  @media (prefers-reduced-motion: reduce){
+    .dust-text-canvas{ display:none; }
+    .dust-text-real{ opacity:1; }
+  }
+
+  /* ===== Shiny CTA 按钮（源自 21st.dev ShinyButton，适配为原生 CSS + 项目青蓝配色）=====
+   * 核心特效：conic-gradient 旋转渐变边框 + 圆点纹理遮罩 + 内部 shimmer 旋转光 + hover 呼吸光晕
+   * @property 声明动画可插值的自定义属性（gradient-angle/angle-offset/percent/shine）
+   * 颜色适配：highlight 从纯蓝改为青蓝 #38bdf8，保持与项目青蓝家族一致 */
+  @property --gradient-angle{
+    syntax:"<angle>";
+    initial-value:0deg;
+    inherits:false;
+  }
+  @property --gradient-angle-offset{
+    syntax:"<angle>";
+    initial-value:0deg;
+    inherits:false;
+  }
+  @property --gradient-percent{
+    syntax:"<percentage>";
+    initial-value:5%;
+    inherits:false;
+  }
+  @property --gradient-shine{
+    syntax:"<color>";
+    initial-value:#ffffff;
+    inherits:false;
+  }
+
+  /* 启动按钮：Shiny CTA 风格（深色底 + 青蓝旋转渐变边框 + 圆点纹理 + 内部 shimmer）*/
   .launch-btn{
+    --shiny-cta-bg:rgba(6,10,20,0.35);                /* 半透明深蓝黑底（透出地球背景）*/
+    --shiny-cta-bg-subtle:rgba(15,26,46,0.35);        /* 半透明暗蓝灰内阴影色 */
+    --shiny-cta-fg:#e0f7ff;                          /* 亮青白文字（青蓝家族）*/
+    --shiny-cta-highlight:#38bdf8;                   /* 青蓝高光（项目调色板 sky-400）*/
+    --shiny-cta-highlight-subtle:#7dd3fc;            /* 浅青蓝高光（#7dd3fc）*/
+    --animation:gradient-angle linear infinite;
+    --duration:3s;
+    --shadow-size:2px;
+    --transition:800ms cubic-bezier(0.25,1,0.5,1);
+
     pointer-events:auto;                              /* 穿透层中唯一可交互元素 */
+    isolation:isolate;
     position:relative;
     overflow:hidden;
     margin-top:56px;                                  /* 距副标题留白 */
     padding:16px 52px;
     will-change:transform,opacity;
-    border-radius:var(--radius-pill);               /* 大圆角胶囊形（圆角系统统一） */
     font-size:16px;
     font-weight:600;
     cursor:pointer;
@@ -2772,16 +2865,24 @@
     display:inline-flex;
     align-items:center;
     gap:8px;
-    /* 深色玻璃质感背景 */
-    background:rgba(8,15,28,0.62);
-    backdrop-filter:blur(10px) saturate(150%);
-    -webkit-backdrop-filter:blur(10px) saturate(150%);
-    color:#e0f7ff;                                    /* 亮青白文字（青蓝家族） */
-    border:1px solid rgba(125,211,252,0.45);          /* 青蓝边框（#7dd3fc） */
-    box-shadow:0 4px 18px rgba(0,0,0,0.5),
-               0 0 14px rgba(125,211,252,0.20),
-               inset 0 0 14px rgba(56,189,248,0.10);
-    /* hover/点击动画由 GSAP 驱动（更流畅），CSS 不设 transition 避免冲突 */
+    border:1px solid transparent;
+    border-radius:var(--radius-pill);               /* 大圆角胶囊形 */
+    color:var(--shiny-cta-fg);
+    /* 双层背景：内层纯色填充 + 外层 conic-gradient 仅绘制边框区域（border-box vs padding-box）*/
+    background:linear-gradient(var(--shiny-cta-bg),var(--shiny-cta-bg)) padding-box,
+               conic-gradient(
+                 from calc(var(--gradient-angle) - var(--gradient-angle-offset)),
+                 transparent,
+                 var(--shiny-cta-highlight) var(--gradient-percent),
+                 var(--gradient-shine) calc(var(--gradient-percent) * 2),
+                 var(--shiny-cta-highlight) calc(var(--gradient-percent) * 3),
+                 transparent calc(var(--gradient-percent) * 4)
+               ) border-box;
+    box-shadow:inset 0 0 0 1px var(--shiny-cta-bg-subtle),
+               0 4px 18px rgba(0,0,0,0.5),
+               0 0 14px rgba(56,189,248,0.15);
+    transition:var(--transition);
+    transition-property:--gradient-angle-offset,--gradient-percent,--gradient-shine;
   }
   /* 闪光图标 */
   .launch-btn .sparkle{
@@ -2789,49 +2890,196 @@
     line-height:1;
     filter:drop-shadow(0 0 4px rgba(125,211,252,0.7));
   }
-  /* 箭头 */
-  .launch-btn .arrow{
-    margin-left:4px;
-    opacity:0.85;
+  /* 按下反馈：translate 独立于 transform（GSAP scale 不冲突）*/
+  .launch-btn:active{
+    translate:0 1px;
   }
-  /* 底部径向高光（增强镜面感） */
+
+  /* 圆点纹理遮罩（::before）：白点网格 + conic 旋转遮罩，z-index:-1 位于内容之下 */
   .launch-btn::before{
     content:'';
-    position:absolute;
-    inset:0;
-    border-radius:inherit;
-    background:radial-gradient(120% 80% at 50% 120%,
-      rgba(125,211,252,0.18),
-      transparent 60%);
-    opacity:.7;
     pointer-events:none;
-    transition:opacity .3s ease;
+    position:absolute;
+    inset-inline-start:50%;
+    inset-block-start:50%;
+    translate:-50% -50%;
+    z-index:-1;
+    --size:calc(100% - var(--shadow-size) * 3);
+    --position:2px;
+    --space:calc(var(--position) * 2);
+    width:var(--size);
+    height:var(--size);
+    background:radial-gradient(
+      circle at var(--position) var(--position),
+      #fff calc(var(--position) / 4),
+      transparent 0
+    ) padding-box;
+    background-size:var(--space) var(--space);
+    background-repeat:space;
+    mask-image:conic-gradient(
+      from calc(var(--gradient-angle) + 45deg),
+      #000,
+      transparent 10% 90%,
+      #000
+    );
+    border-radius:inherit;
+    opacity:0.4;
   }
-  /* 镜面扫光条：斜向移动的高光带 */
+
+  /* 内部 shimmer 旋转光（::after）：斜向渐变 + 底部径向遮罩，z-index:-1 */
   .launch-btn::after{
     content:'';
-    position:absolute;
-    top:0;
-    left:-60%;
-    width:50%;
-    height:100%;
-    background:linear-gradient(105deg,
-      transparent 0%,
-      rgba(224,247,255,0) 30%,
-      rgba(224,247,255,0.55) 50%,
-      rgba(224,247,255,0) 70%,
-      transparent 100%);
-    transform:skewX(-18deg);
     pointer-events:none;
-    animation:btnSweep 3.5s ease-in-out infinite;
+    position:absolute;
+    inset-inline-start:50%;
+    inset-block-start:50%;
+    translate:-50% -50%;
+    z-index:-1;
+    --animation:shimmer linear infinite;
+    width:100%;
+    aspect-ratio:1;
+    background:linear-gradient(
+      -50deg,
+      transparent,
+      var(--shiny-cta-highlight),
+      transparent
+    );
+    mask-image:radial-gradient(circle at bottom,transparent 40%,#000);
+    opacity:0.6;
   }
-  @keyframes btnSweep{
-    0%  { left:-60%; }
-    55% { left:120%; }
-    100%{ left:120%; }
+
+  /* 内容 span 提升层级（在 ::before/::after 之上）*/
+  .launch-btn>span{
+    position:relative;
+    z-index:1;
   }
-  /* hover：底部高光增强（transform/box-shadow 由 GSAP 驱动） */
-  .launch-btn:hover::before{ opacity:1; }
+  /* 呼吸光晕（span::before）：hover 时显现的底部内阴影呼吸动画 */
+  .launch-btn>span::before{
+    content:'';
+    pointer-events:none;
+    position:absolute;
+    inset-inline-start:50%;
+    inset-block-start:50%;
+    translate:-50% -50%;
+    z-index:-1;
+    --size:calc(100% + 1rem);
+    width:var(--size);
+    height:var(--size);
+    box-shadow:inset 0 -1ex 2rem 4px var(--shiny-cta-highlight);
+    opacity:0;
+    transition:opacity var(--transition);
+    animation:calc(var(--duration) * 1.5) breathe linear infinite;
+  }
+
+  /* 动画驱动：按钮 + ::before + ::after 共享 gradient-angle + shimmer 动画（默认暂停）*/
+  .launch-btn,
+  .launch-btn::before,
+  .launch-btn::after{
+    animation:var(--animation) var(--duration),
+              var(--animation) calc(var(--duration) / 0.4) reverse paused;
+    animation-composition:add;
+  }
+  @keyframes gradient-angle{
+    to{ --gradient-angle:360deg; }
+  }
+  @keyframes shimmer{
+    to{ rotate:360deg; }
+  }
+  @keyframes breathe{
+    from,to{ scale:1; }
+    50%{ scale:1.2; }
+  }
+
+  /* ===== 引力相册按钮（照片管理标题旁）===== */
+  .gravity-gallery-btn{
+    font-size:12px;font-weight:700;color:#a6d2be;
+    background:rgba(166,210,190,.12);
+    border:1px solid rgba(166,210,190,.35);
+    border-radius:var(--radius-xs,8px);
+    padding:5px 12px;cursor:pointer;
+    letter-spacing:.5px;
+    transition:all .3s cubic-bezier(.2,.8,.3,1);
+    white-space:nowrap;
+  }
+  .gravity-gallery-btn:hover{
+    background:rgba(166,210,190,.22);
+    border-color:rgba(166,210,190,.6);
+    color:#c8e6d5;
+    box-shadow:0 2px 12px rgba(166,210,190,.2);
+    transform:translateY(-1px);
+  }
+
+  /* ===== 引力相册全屏覆盖层 ===== */
+  .gravity-gallery-overlay{
+    position:fixed;inset:0;z-index:10005;
+    display:none;flex-direction:column;
+    background:radial-gradient(ellipse at center,#0f1419 0%,#05070a 100%);
+    animation:gravityFadeIn .4s ease;
+  }
+  @keyframes gravityFadeIn{ from{opacity:0;} to{opacity:1;} }
+  .gravity-gallery-overlay.active{display:flex;}
+  .gravity-gallery-header{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:16px 24px;
+    background:rgba(10,12,16,.6);
+    backdrop-filter:blur(12px);
+    border-bottom:1px solid rgba(255,255,255,.06);
+    z-index:10;
+  }
+  .gravity-gallery-title{
+    font-family:'Noto Serif SC',serif;
+    font-size:20px;font-weight:700;
+    background:linear-gradient(180deg,#fefaf0 0%,#f0e6d2 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    letter-spacing:2px;
+  }
+  .gravity-gallery-close{
+    width:36px;height:36px;border-radius:50%;
+    background:rgba(255,255,255,.08);
+    border:1px solid rgba(255,255,255,.15);
+    color:#ccc;font-size:16px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    transition:all .25s ease;
+  }
+  .gravity-gallery-close:hover{
+    background:rgba(255,100,100,.2);
+    border-color:rgba(255,100,100,.4);
+    color:#ff8080;
+    transform:rotate(90deg);
+  }
+  #gravityCanvas{
+    flex:1;width:100%;display:block;cursor:grab;
+  }
+  #gravityCanvas:active{cursor:grabbing;}
+  /* 引力相册中央装饰边框 —— 框选照片活动区域，不遮挡照片（纯边线+柔和内发光）*/
+  .gravity-gallery-frame{
+    position:absolute;
+    left:50%;
+    transform:translate(-50%,-50%);  /* 以中心点定位，top 由 JS 设置为中心点 */
+    border:1px solid rgba(166,210,190,.18);
+    border-radius:16px;
+    pointer-events:none;  /* 不拦截鼠标，照片可正常拖拽 */
+    box-shadow:inset 0 0 80px rgba(166,210,190,.05),0 0 30px rgba(0,0,0,.3);
+    z-index:5;
+    opacity:0;  /* 初始隐藏，openGravityGallery 时显示 */
+    transition:opacity .4s ease;
+  }
+  /* 边框四角装饰（青绿色角标，增强框选感）*/
+  .gravity-gallery-frame .gf-corner{
+    position:absolute;width:24px;height:24px;
+    pointer-events:none;
+  }
+  .gravity-gallery-frame .gf-corner.tl{ top:-1px;left:-1px; border-top:2px solid rgba(166,210,190,.5); border-left:2px solid rgba(166,210,190,.5); border-radius:16px 0 0 0; }
+  .gravity-gallery-frame .gf-corner.tr{ top:-1px;right:-1px; border-top:2px solid rgba(166,210,190,.5); border-right:2px solid rgba(166,210,190,.5); border-radius:0 16px 0 0; }
+  .gravity-gallery-frame .gf-corner.bl{ bottom:-1px;left:-1px; border-bottom:2px solid rgba(166,210,190,.5); border-left:2px solid rgba(166,210,190,.5); border-radius:0 0 0 16px; }
+  .gravity-gallery-frame .gf-corner.br{ bottom:-1px;right:-1px; border-bottom:2px solid rgba(166,210,190,.5); border-right:2px solid rgba(166,210,190,.5); border-radius:0 0 16px 0; }
+  .gravity-gallery-hint{
+    position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
+    font-size:12px;color:rgba(166,210,190,.5);
+    letter-spacing:1px;pointer-events:none;
+    background:rgba(0,0,0,.4);padding:6px 16px;border-radius:999px;
+    backdrop-filter:blur(8px);
+  }
 </style>
 </head>
 <body>
@@ -2850,18 +3098,22 @@
   <div id="globeViz"></div>
   <!-- 标题 + 按钮（z-index:10，整体穿透，按钮单独可点） -->
   <div class="launch-overlay">
-    <!-- 标题双层：发光层 + 扫光层 -->
+    <!-- 标题：SmokyText 烟雾文字特效（移植自 originkit smokytex） -->
     <div class="launch-title-wrap">
-      <h1 class="launch-title-glow">Chinese Footprint</h1>
-      <h1 class="launch-title" id="launchTitleVP">Chinese Footprint</h1>
+      <!-- ===== SmokyText 烟雾文字特效（移植自 originkit smokytex）=====
+           文字主体 Chinese Footprint 不变，居中位置/层级/z-index 不变。
+           字符由 JS 拆分为 .smt-char span，烟雾入场动画由 GSAP 协同触发。
+           原 Variable Proximity 可变字体效果 + 发光层已移除，烟雾 text-shadow 自带发光。 -->
+      <h1 class="smt-title" id="launchTitleSMT">Chinese Footprint</h1>
     </div>
-    <!-- 副标题 -->
-    <p class="launch-subtitle">点亮你走过的每一座城市</p>
-    <!-- 启动按钮：闪光图标 + 文字 + 箭头 -->
+    <!-- 副标题：Dust Text Reveal 粒尘文字（hover 时粒子聚合成文字，源自 originkit dust-text-reveal）-->
+    <div class="dust-text-wrapper" id="dustTextWrapper">
+      <canvas class="dust-text-canvas" id="dustTextCanvas"></canvas>
+      <p class="dust-text-real" id="dustTextReal">点亮你走过的每一座城市</p>
+    </div>
+    <!-- 启动按钮：Shiny CTA 风格（内容包裹在单个 span 内，供呼吸光晕 span::before 使用）-->
     <button class="launch-btn" id="startBtn">
-      <span class="sparkle">✦</span>
-      <span>开始记录</span>
-      <span class="arrow">→</span>
+      <span><span class="sparkle">✦</span>开始记录</span>
     </button>
   </div>
 </div>
@@ -3088,8 +3340,11 @@
         <button class="btn primary" id="monthSaveBtn">保存</button>
       </div>
       <div class="modal-body">
-        <!-- 照片管理区标题（与标签管理/景点管理样式统一） -->
-        <div class="section-title">照片管理</div>
+        <!-- 照片管理区标题（与标签管理/景点管理样式统一）+ 引力相册入口 -->
+        <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
+          照片管理
+          <button class="gravity-gallery-btn" id="gravityGalleryBtn">引力相册 · 查看全部照片</button>
+        </div>
         <div id="thumbsGrid" class="thumbs"></div>
         <div id="modalEmpty" class="empty" style="display:none;">
           <span class="big">还没有照片</span>
@@ -3131,6 +3386,23 @@
 
   <!-- 灯箱 -->
   <div id="lightbox" class="lightbox"><img id="lightboxImg" alt="照片预览" /></div>
+
+  <!-- 引力相册：Matter.js 物理引擎驱动的照片画廊（掉落/碰撞/拖拽抛掷） -->
+  <div id="gravityGallery" class="gravity-gallery-overlay">
+    <div class="gravity-gallery-header">
+      <span class="gravity-gallery-title" id="gravityGalleryTitle">引力相册</span>
+      <button class="gravity-gallery-close" id="gravityGalleryClose">✕</button>
+    </div>
+    <canvas id="gravityCanvas"></canvas>
+    <!-- 中央装饰边框：框选照片活动区域，不遮挡照片（pointer-events:none）-->
+    <div class="gravity-gallery-frame" id="gravityFrame">
+      <span class="gf-corner tl"></span>
+      <span class="gf-corner tr"></span>
+      <span class="gf-corner bl"></span>
+      <span class="gf-corner br"></span>
+    </div>
+    <div class="gravity-gallery-hint">拖拽照片可抛掷 · 点击照片放大查看</div>
+  </div>
 
   <!-- 时间轴全屏弹窗 -->
   <div id="timelineModalOverlay" class="timeline-modal-overlay">
@@ -3217,22 +3489,418 @@
      点击镜头时间线、按钮反馈、标题入场、页面过渡均由 GSAP 驱动。 -->
 <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 
+<!-- Matter.js 物理引擎：引力相册照片刚体模拟（掉落/碰撞/拖拽抛掷） -->
+<script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+
 <!-- GSAP 入场动画（独立执行，不等 globe.gl 加载，避免延迟）
      用 fromTo 明确起止状态，immediateRender:true 在首帧前即设为隐藏，无闪烁 -->
 <script>
-  /* HyperFrames / GSAP 入场动画：标题 → 副标题 → 按钮依次淡入上浮 */
+  /* ===== SmokyText 烟雾文字特效（移植自 originkit smokytex，原生 JS 版）=====
+     仅作用于启动页标题 #launchTitleSMT。
+     参数对齐 originkit 默认：position=bottomLeft, animationMode=singleLine, intensity=8。
+     烟雾色 #7dd3fc 青蓝，适配深空 3D 地球科技氛围。
+     入场由 GSAP 协同：标题 wrap 淡入时（onStart）触发字符烟雾动画，时序与其余动效兼容。
+     性能：一次性 CSS 动画（both 填充），完成后清除 will-change，不与 globe.gl 持续争抢资源。 */
+  (function(){
+    const SMT_TEXT='Chinese Footprint';
+    const SMT_COLOR='#7dd3fc';      // 青蓝烟雾色（深空科技氛围）
+    const SMT_INTENSITY=8;          // 烟雾强度 1-20（8=中等扩散，兼顾清晰与氛围）
+    const SMT_DURATION=2;           // 整体动画时长（originkit 默认 2s，单字 charDur=duration*0.5）
+    const SMT_STAGGER=0.1;          // 逐字延迟系数 S（singleLine: rawDelay=globalIdx*S）
+
+    // 生成烟雾关键帧（bottomLeft 变体，singleLine 模式仅用 smt-ap-bl-a / smt-ap-bl-b）
+    // 修复乱码：降低 skew/rotate 变形幅度，让字符飞入更收敛、不扭曲；终点 text-shadow:none 让渐变填充显现
+    // prefix：关键帧名前缀，用于多组不同烟色（主标题 smt-ap-bl-*，副标题 smt-sub-ap-bl-*）
+    function buildKF(color,intensity,prefix){
+      const pfx=prefix||'smt-ap-bl';
+      const n=(Math.max(1,Math.min(20,intensity))-1)/19; // 归一化 0-1
+      const r=(v)=>+v.toFixed(2);
+      const peakB=Math.round(6+n*200);   // 峰值模糊半径（烟雾最大扩散）
+      const initB=Math.round(2+n*70);    // 初始模糊半径
+      const layers=1+Math.round(n*3);    // 阴影层数（越多越有"质量"）
+      const stack=(blur)=>Array.from({length:layers},(_,i)=>'0 0 '+Math.round((blur*(i+1))/layers)+'px '+color).join(',');
+      const peak=stack(peakB), init=stack(initB);
+      const d=0.5+n*0.3;                 // 飞行距离倍数（降低，减少位移乱码）
+      // bottomLeft：字符从左下方旋转 skew 飞入，烟雾→凝实→渐变显现
+      // 修复：终点 text-shadow:none（而非 0 0 0），避免纯色阴影遮挡渐变填充；
+      //       skewX/rotate 幅度减半，避免字符在动画中过度扭曲形成"乱码"观感
+      return '@keyframes '+pfx+'-a{from{opacity:0;text-shadow:'+init+';transform:translate3d('+r(-8*d)+'rem,'+r(5*d)+'rem,0) rotate(20deg) skewX(-30deg) scale(0.8)}40%{text-shadow:'+peak+'}to{opacity:1;text-shadow:none;transform:none}}'
+        +'@keyframes '+pfx+'-b{from{opacity:0;text-shadow:'+init+';transform:translate3d('+r(-9*d)+'rem,'+r(5*d)+'rem,0) rotate(20deg) skewX(30deg) scale(0.7)}40%{text-shadow:'+peak+'}to{opacity:1;text-shadow:none;transform:none}}';
+    }
+
+    // 注入关键帧 <style>：主标题（smt-ap-bl-*）+ 副标题（smt-sub-ap-bl-*，浅青烟雾）
+    // 副标题用温和变体（无 skew/rotate，仅 translate+scale），避免中文方块字扭曲乱码
+    // intensity 降至 4（主标题 8），烟雾更轻、不遮挡文字；位移距离同步减小
+    function buildKFSoft(color,intensity,prefix){
+      const pfx=prefix||'smt-sub-ap-bl';
+      const n=(Math.max(1,Math.min(20,intensity))-1)/19;
+      const r=(v)=>+v.toFixed(2);
+      const peakB=Math.round(6+n*200);
+      const initB=Math.round(2+n*70);
+      const layers=1+Math.round(n*3);
+      const stack=(blur)=>Array.from({length:layers},(_,i)=>'0 0 '+Math.round((blur*(i+1))/layers)+'px '+color).join(',');
+      const peak=stack(peakB), init=stack(initB);
+      const d=0.3+n*0.15;                // 位移距离更小（0.4→0.3，0.2→0.15），收敛飞入幅度
+      // 温和变体：仅 translate+scale，无 skew/rotate，中文方块字不扭曲
+      // 终点 text-shadow:none 显露纯色文字（副标题无渐变）
+      return '@keyframes '+pfx+'-a{from{opacity:0;text-shadow:'+init+';transform:translate3d('+r(-3*d)+'rem,'+r(2*d)+'rem,0) scale(0.9)}40%{text-shadow:'+peak+'}to{opacity:1;text-shadow:none;transform:none}}'
+        +'@keyframes '+pfx+'-b{from{opacity:0;text-shadow:'+init+';transform:translate3d('+r(-4*d)+'rem,'+r(2*d)+'rem,0) scale(0.8)}40%{text-shadow:'+peak+'}to{opacity:1;text-shadow:none;transform:none}}';
+    }
+    const kfStyle=document.createElement('style');
+    kfStyle.textContent=buildKF(SMT_COLOR,SMT_INTENSITY,'smt-ap-bl')+buildKFSoft('#bae6fd',4,'smt-sub-ap-bl');
+    document.head.appendChild(kfStyle);
+
+    // 拆分文本为字符 span（word/space 分组，保留词距，对齐 originkit buildGroups）
+    function buildGroups(text){
+      const lines=text.split('\n');
+      const groups=[]; let globalIdx=0,gi=0;
+      lines.forEach((line,lineIdx)=>{
+        let posInLine=0;
+        (line.match(/\S+|\s+/g)||[]).forEach(seg=>{
+          groups.push({
+            type:/^\s/.test(seg)?'space':'word',
+            chars:seg.split('').map(c=>({char:c,globalIdx:globalIdx++,posInLine:posInLine++,lineIdx})),
+            lineIdx,gi:gi++
+          });
+        });
+      });
+      return {groups,totalVisible:globalIdx};
+    }
+
+    function initSMT(){
+      const el=document.getElementById('launchTitleSMT');
+      if(!el){setTimeout(initSMT,300);return;}
+      // 降级： prefers-reduced-motion 直接显示，无烟雾动画
+      if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        el.style.color=SMT_COLOR;
+        return;
+      }
+      // 通用拆分+注入函数：对目标元素拆分文本为 .smt-char，应用烟雾动画
+      // smokeColor：烟雾阴影色（主标题青蓝，副标题浅青）
+      // kfPrefix：关键帧名前缀（主标题 smt-ap-bl，副标题 smt-sub-ap-bl）
+      // onComplete：全部字符动画结束后的回调（副标题用于切换 Shiny Text 闪亮效果）
+      function applySMT(targetEl,text,smokeColor,startDelay,kfPrefix,onComplete){
+        if(!targetEl) return null;
+        const {groups,totalVisible}=buildGroups(text);
+        const maxRaw=Math.max(0.0001,(totalVisible-1)*SMT_STAGGER);
+        const charDur=SMT_DURATION*0.5;
+        const timing='cubic-bezier(0,0,0.58,1)';
+        targetEl.textContent='';
+        const frag=document.createDocumentFragment();
+        groups.forEach(group=>{
+          if(group.type==='space'){
+            const sp=document.createElement('span');
+            sp.className='smt-char smt-space';
+            sp.textContent=' ';
+            frag.appendChild(sp);
+            return;
+          }
+          const word=document.createElement('span');
+          word.className='smt-word';
+          group.chars.forEach(c=>{
+            const s=document.createElement('span');
+            s.className='smt-char';
+            s.textContent=c.char;
+            // 渐变背景位置：按字符全局索引偏移，整行呈现连贯渐变
+            const bgPos=(c.globalIdx/Math.max(1,totalVisible-1))*120;
+            s.style.backgroundPosition=bgPos.toFixed(1)+'% 0';
+            const rawD=c.globalIdx*SMT_STAGGER;          // singleLine: 逐字递增延迟
+            const delay=(rawD*charDur)/maxRaw+startDelay; // 归一化 + 起始错开
+            const anim=kfPrefix+'-'+(c.globalIdx%2===0?'a':'b'); // 偶/奇字符交替变体（按前缀选关键帧）
+            s.style.animation=anim+' '+charDur.toFixed(3)+'s '+delay.toFixed(3)+'s '+timing+' both';
+            s.style.animationPlayState='paused';
+            word.appendChild(s);
+          });
+          frag.appendChild(word);
+        });
+        targetEl.appendChild(frag);
+        return function(){
+          targetEl.querySelectorAll('.smt-char').forEach(s=>{s.style.animationPlayState='running';});
+          const totalMs=(SMT_DURATION+0.3+startDelay)*1000;
+          setTimeout(()=>{
+            targetEl.querySelectorAll('.smt-char').forEach(s=>{s.style.willChange='auto';});
+            if(onComplete) onComplete();              // 烟雾播完，触发后续效果（副标题切 Shiny Text）
+          },totalMs);
+        };
+      }
+      // 主标题：起始延迟 0，烟雾色 SMT_COLOR（青蓝 #7dd3fc），关键帧 smt-ap-bl
+      const playTitle=applySMT(el,SMT_TEXT,SMT_COLOR,0,'smt-ap-bl');
+      // 副标题已改用 Dust Text Reveal 粒尘文字效果（initDustText 单独初始化），不再走 smokytex
+      // 暴露触发函数供 GSAP onStart 调用，实现时序协同
+      window._smtPlay=function(){
+        if(playTitle) playTitle();
+      };
+    }
+    initSMT();
+  })();
+
+  /* HyperFrames / GSAP 入场动画：标题 → 副标题 → 按钮依次淡入上浮
+     标题 wrap 淡入时（onStart）触发 smokytex 烟雾字符动画，时序协同 */
   gsap.fromTo('.launch-title-wrap',
     { y: 40, autoAlpha: 0 },
-    { y: 0, autoAlpha: 1, duration: 1.2, ease: 'power3.out', delay: 0.3 }
+    { y: 0, autoAlpha: 1, duration: 1.2, ease: 'power3.out', delay: 0.3,
+      onStart: function(){
+        // GSAP 协同：标题 wrap 开始淡入时，触发 smokytex 烟雾字符动画
+        if(window._smtPlay) window._smtPlay();
+      }
+    }
   );
-  gsap.fromTo('.launch-subtitle',
+  gsap.fromTo('.dust-text-wrapper',
     { y: 30, autoAlpha: 0 },
-    { y: 0, autoAlpha: 1, duration: 1.0, ease: 'power3.out', delay: 0.7 }
+    { y: 0, autoAlpha: 1, duration: 1.0, ease: 'power3.out', delay: 0.7,
+      onStart: function(){
+        if(window._dustTextInit) window._dustTextInit();
+      }
+    }
   );
   gsap.fromTo('.launch-btn',
     { y: 30, autoAlpha: 0 },
     { y: 0, autoAlpha: 1, duration: 1.0, ease: 'back.out(1.4)', delay: 1.0 }
   );
+</script>
+
+<!-- ===== Dust Text Reveal 粒尘文字（源自 originkit dust-text-reveal，原生 JS Canvas 移植）=====
+     原理：在隐藏 canvas 上渲染文字 → getImageData 采样像素 → 生成粒子 →
+     hover 时粒子从分散态聚合成文字，移开时散开回粉尘。
+     参数：density=10（最密）、playMode=hover、noise=100、Inter 字体、color=#bae6fd -->
+<script>
+  (function(){
+    // ---- 配置 ----
+    const DUST_TEXT='点亮你走过的每一座城市';
+    const DUST_COLOR='rgba(186,230,253,1)';       // 浅青色，与项目调色板一致
+    const DUST_FONT_SIZE=26;                       // canvas 渲染字号（px，DPR 缩放后）
+    const DUST_FONT_WEIGHT=400;
+    const DUST_NOISE=100;                          // 粒子分散漂浮半径
+    const DUST_DURATION=1.2;                       // 聚合/散开动画时长（s）
+    const DUST_DENSITY=10;                         // 密度档位 1-10（10=最密）
+    // density → 采样倍率（越低越密）
+    const DENSITY_MAP=[6,5.4,4.9,4.3,3.8,3.2,2.7,2.1,1.6,1];
+    const TEXT_IN=0.7;                             // 进度 > 0.7 时显示真实文字
+    const FADE_OUT=0.85;                           // 进度 > 0.85 时粒子开始淡出
+
+    // ---- 缓动 ----
+    function cubicBezier(x1,y1,x2,y2){
+      const cx=3*x1,bx=3*(x2-x1)-cx,ax=1-cx-bx;
+      const cy=3*y1,by=3*(y2-y1)-cy,ay=1-cy-by;
+      const sX=t=>((ax*t+bx)*t+cx)*t;
+      const sY=t=>((ay*t+by)*t+cy)*t;
+      const dX=t=>(3*ax*t+2*bx)*t+cx;
+      return p=>{
+        let t=p;
+        for(let i=0;i<8;i++){
+          const x=sX(t)-p, d=dX(t);
+          if(Math.abs(x)<1e-4||Math.abs(d)<1e-6) break;
+          t-=x/d;
+        }
+        t=t<0?0:t>1?1:t;
+        return sY(t);
+      };
+    }
+    const easeFn=cubicBezier(0.42,0,0.58,1);      // easeInOut
+
+    // ---- 解析颜色 ----
+    function parseColor(c){
+      const m=c.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+      if(m) return {r:+m[1],g:+m[2],b:+m[3],a:m[4]?+m[4]:1};
+      return {r:186,g:230,b:253,a:1};
+    }
+
+    // ---- 状态 ----
+    let canvas,ctx,wrapper,realText,particles=[],rafId=null;
+    let formProgress=0,isActive=false,lastTime=0;
+    let dpr=1,initialized=false;
+    const colorObj=parseColor(DUST_COLOR);
+    const transformedDensity=DENSITY_MAP[DUST_DENSITY-1];
+
+    // ---- 创建粒子：在隐藏 canvas 上渲染文字，采样非透明像素 ----
+    function createParticles(){
+      const w=canvas.width, h=canvas.height;
+      ctx.clearRect(0,0,w,h);
+      ctx.fillStyle=DUST_COLOR;
+      ctx.font=`${DUST_FONT_WEIGHT} ${DUST_FONT_SIZE*dpr}px Inter, sans-serif`;
+      ctx.textAlign='center';
+      ctx.textBaseline='middle';
+      ctx.imageSmoothingEnabled=true;
+      // letterSpacing 支持
+      if('letterSpacing' in ctx) ctx.letterSpacing='1px';
+      ctx.fillText(DUST_TEXT,w/2,h/2);
+
+      const imageData=ctx.getImageData(0,0,w,h);
+      const data=imageData.data;
+      const sampleRate=Math.max(1,Math.round(Math.max(2,Math.round(dpr))*transformedDensity));
+
+      // 计算文字边界
+      let minX=w,maxX=0,minY=h,maxY=0;
+      for(let y=0;y<h;y+=sampleRate){
+        for(let x=0;x<w;x+=sampleRate){
+          if(data[(y*w+x)*4+3]>0){
+            minX=Math.min(minX,x);maxX=Math.max(maxX,x);
+            minY=Math.min(minY,y);maxY=Math.max(maxY,y);
+          }
+        }
+      }
+      const textW=maxX-minX, textH=maxY-minY;
+      const spread=Math.max(textW,textH)*0.1;
+
+      particles=[];
+      for(let y=0;y<h;y+=sampleRate){
+        for(let x=0;x<w;x+=sampleRate){
+          const idx=(y*w+x)*4;
+          const alpha=data[idx+3];
+          if(alpha>0){
+            const origAlpha=alpha/255;
+            const angle=Math.random()*Math.PI*2;
+            const dist=Math.random()*spread;
+            particles.push({
+              x:x+Math.cos(angle)*dist,
+              y:y+Math.sin(angle)*dist,
+              origX:x, origY:y,
+              origAlpha:origAlpha,
+              opacity:origAlpha*0.3,
+              sparkleOp:origAlpha*0.3,
+              velX:0, velY:0,
+              floatSpeed:Math.random()*2+1,
+              floatAngle:Math.random()*Math.PI*2,
+              targetOpacity:Math.random()*origAlpha*0.5,
+              sparkleSpeed:Math.random()*2+1,
+            });
+          }
+        }
+      }
+      ctx.clearRect(0,0,w,h);
+    }
+
+    // ---- 更新粒子 ----
+    function updateParticles(dt,p){
+      const FLOAT_R=DUST_NOISE;
+      const FLOAT_SP=0.5/Math.max(0.1,DUST_DURATION);
+      const NOISE_S=0.6, CHAOS=1.3;
+      const time=Date.now()*0.001;
+      const inv=1-p;
+
+      particles.forEach(pt=>{
+        pt.floatAngle+=dt*pt.floatSpeed*(1+Math.random()*CHAOS);
+        const uOff=pt.floatSpeed*2e3;
+        const nX=(Math.sin(time*pt.floatSpeed+pt.floatAngle)*1.2+
+                   Math.sin((time+uOff)*0.5)*0.8+
+                   (Math.random()-0.5)*CHAOS)*NOISE_S;
+        const nY=(Math.cos(time*pt.floatSpeed+pt.floatAngle*1.5)*0.6+
+                   Math.cos((time+uOff)*0.5)*0.4+
+                   (Math.random()-0.5)*CHAOS)*NOISE_S;
+        const floatX=pt.origX+FLOAT_R*nX;
+        const floatY=pt.origY+FLOAT_R*nY;
+        const targetX=floatX+(pt.origX-floatX)*p;
+        const targetY=floatY+(pt.origY-floatY)*p;
+        const dx=targetX-pt.x, dy=targetY-pt.y;
+        const follow=6+p*10;
+        pt.x+=dx*follow*dt+(Math.random()-0.5)*FLOAT_SP*inv;
+        pt.y+=dy*follow*dt+(Math.random()-0.5)*FLOAT_SP*inv;
+        if(p>=0.999){pt.x=pt.origX;pt.y=pt.origY;}
+
+        // 闪烁透明度
+        const diff=pt.targetOpacity-pt.sparkleOp;
+        pt.sparkleOp+=diff*pt.sparkleSpeed*dt*3;
+        if(Math.abs(diff)<0.01){
+          pt.targetOpacity=Math.random()<0.5?Math.random()*0.1*pt.origAlpha:pt.origAlpha*3;
+          pt.sparkleSpeed=Math.random()*3+1;
+        }
+        const idleOp=Math.max(0,Math.min(pt.origAlpha,pt.sparkleOp));
+        const formFade=p<FADE_OUT?1:Math.max(0,1-(p-FADE_OUT)/(1-FADE_OUT));
+        pt.opacity=(idleOp+(pt.origAlpha-idleOp)*p)*formFade;
+      });
+
+      // 显示/隐藏真实文字
+      const formed=p>TEXT_IN;
+      if(formed && !wrapper.classList.contains('dust-formed')){
+        wrapper.classList.add('dust-formed');
+      }else if(!formed && wrapper.classList.contains('dust-formed')){
+        wrapper.classList.remove('dust-formed');
+      }
+    }
+
+    // ---- 渲染粒子 ----
+    function renderParticles(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.save();
+      ctx.scale(dpr,dpr);
+      particles.forEach(pt=>{
+        if(pt.opacity<=0) return;
+        ctx.fillStyle=`rgba(${colorObj.r},${colorObj.g},${colorObj.b},${pt.opacity})`;
+        ctx.fillRect(pt.x/dpr,pt.y/dpr,1,1);
+      });
+      ctx.restore();
+    }
+
+    // ---- 动画循环 ----
+    function animate(now){
+      const dt=Math.min(0.05,(now-lastTime)/1000);
+      lastTime=now;
+      const target=isActive?1:0;
+      const rate=dt/Math.max(0.05,DUST_DURATION);
+      if(target>formProgress){
+        formProgress=Math.min(target,formProgress+rate);
+      }else{
+        formProgress=Math.max(target,formProgress-rate);
+      }
+      const eased=easeFn(formProgress);
+      updateParticles(dt,eased);
+      renderParticles();
+      rafId=requestAnimationFrame(animate);
+    }
+
+    // ---- 初始化 ----
+    function init(){
+      if(initialized) return;
+      wrapper=document.getElementById('dustTextWrapper');
+      canvas=document.getElementById('dustTextCanvas');
+      realText=document.getElementById('dustTextReal');
+      if(!wrapper||!canvas) return;
+
+      // 降级
+      if(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+        if(realText) realText.style.opacity='1';
+        return;
+      }
+
+      ctx=canvas.getContext('2d');
+      dpr=Math.min(2,window.devicePixelRatio*1.5||1);
+
+      // 等待字体加载
+      const fontPromise=('fonts' in document)?
+        document.fonts.load(`16px Inter`).then(()=>true).catch(()=>true):
+        Promise.resolve(true);
+
+      fontPromise.then(()=>{
+        // 测量文字宽度，设置 canvas 尺寸
+        const measureCanvas=document.createElement('canvas');
+        const mctx=measureCanvas.getContext('2d');
+        const fontStr=`${DUST_FONT_WEIGHT} ${DUST_FONT_SIZE}px Inter, sans-serif`;
+        mctx.font=fontStr;
+        const metrics=mctx.measureText(DUST_TEXT);
+        const textW=Math.ceil(metrics.width)+20;
+        const textH=Math.ceil(DUST_FONT_SIZE*1.5);
+
+        canvas.width=textW*dpr;
+        canvas.height=textH*dpr;
+        canvas.style.width=textW+'px';
+        canvas.style.height=textH+'px';
+
+        createParticles();
+        initialized=true;
+
+        // 启动动画循环（默认分散态）
+        lastTime=performance.now();
+        rafId=requestAnimationFrame(animate);
+
+        // hover 交互
+        wrapper.addEventListener('mouseenter',()=>{isActive=true;});
+        wrapper.addEventListener('mouseleave',()=>{isActive=false;});
+      });
+    }
+
+    // 暴露初始化函数供 GSAP onStart 调用
+    window._dustTextInit=init;
+  })();
 </script>
 
 <!-- Particles 粒子星空背景（type=module，动态 import ogl）
@@ -3579,7 +4247,7 @@
         tl.to({}, { duration: 0.5 });
 
         /* 步骤4：UI 元素淡出（标题 + 副标题 + 按钮，0.6s） */
-        tl.to(['.launch-title-wrap', '.launch-subtitle', '.launch-btn'], {
+        tl.to(['.launch-title-wrap', '.dust-text-wrapper', '.launch-btn'], {
           autoAlpha: 0, y: -20, duration: 0.6, ease: 'power2.in'
         });
 
@@ -3842,21 +4510,17 @@
     window.addEventListener('resize',()=>{vpCacheValid=false;});
     // 初始化：等待 DOM 就绪后拆分
     function init(){
-      // 两个标题都使用 Variable Proximity 可变字体效果：
-      //   #launchTitleVP  —— 启动页大标题（地球上方，首屏可见）
+      // 标题使用 Variable Proximity 可变字体效果：
       //   #footprintTitle —— 仪表盘小标题（左面板，点击"开始记录"后可见）
+      // 注：启动页大标题 #launchTitleVP 已改为 smokytex 烟雾文字特效，不再使用 VP。
       const titleEl=document.getElementById('footprintTitle');
-      const launchEl=document.getElementById('launchTitleVP');
-      if(!titleEl||!launchEl){setTimeout(init,300);return;}
+      if(!titleEl){setTimeout(init,300);return;}
       splitEl(titleEl);
-      splitEl(launchEl);
       tick();
       // 【text-rewind】页面完全加载后延迟触发入场动画，确保用户能看见字符回卷入场画面
       function triggerRewind(){
         titleEl.classList.add('rewind-play');
-        // 启动页大标题不使用 rewind 动画：GSAP autoAlpha 已处理 .launch-title-wrap 淡入入场，
-        // 且 GSAP 在父级留下的 inline visibility 样式会阻止子元素 CSS 动画启动。
-        // 启动页字符默认 opacity:1（见 .launch-title .vp-char 规则），VP 鼠标交互直接生效。
+        // 启动页大标题已改用 smokytex 烟雾文字特效，此处仅仪表盘标题 rewind 入场。
       }
       if(document.readyState==='complete'){
         setTimeout(triggerRewind,400);
@@ -5902,7 +6566,7 @@
       timelineModalBody.querySelectorAll('.tl-modal-label,.tl-modal-date,.tl-modal-date-bg').forEach(el=>el.classList.add('tl-text-show'));
     }
 
-    // 点击节点 → 聚焦地图到该城市并打开编辑弹窗
+    // 点击节点 → 聚焦地图到该城市并打开城市详情页（只读查看，非编辑表单）
     timelineModalBody.querySelectorAll('.tl-modal-node').forEach(node=>{
       const idx=parseInt(node.dataset.idx);
       node.addEventListener('click',()=>{
@@ -5911,33 +6575,21 @@
           closeTimelineModal();
           setTimeout(()=>{
             focusCityOnMap(city);
-            openCityModal({name:city.name,value:city.value,cityKey:city.cityKey,adcode:city.adcode});
+            openAttractionDetail({name:city.name,value:city.value,cityKey:city.cityKey,adcode:city.adcode});
           },300);
         }
       });
     });
 
-    // ===== 点击城市封面照片 → 唤起分层堆叠相册预览器 =====
-    // 复用现有 openPhotoViewer 函数，加载该城市全部景点照片
-    // 相册关闭后全屏时间轴弹窗保持不变（不关闭、不重置）
+    // ===== 点击城市封面照片 → 进入引力相册（Matter.js 物理掉落效果）=====
+    // 替代原 openPhotoViewer 叠化效果，改为引力相册入口
     timelineModalBody.querySelectorAll('.tl-embed-photo').forEach(photoEl=>{
       const cityIdx=parseInt(photoEl.dataset.photoIdx);
-      photoEl.addEventListener('click',async (e)=>{
+      photoEl.addEventListener('click',(e)=>{
         e.stopPropagation(); // 阻止冒泡到节点点击（避免关闭弹窗）
         const city=timelineCities[cityIdx];
         if(!city) return;
-        // 从 IndexedDB 异步加载该城市全部照片
-        try{
-          const photos=await getPhotosByCity(city.cityKey);
-          if(photos && photos.length>0){
-            // 唤起分层堆叠相册预览器（与景点照片预览完全一致）
-            openPhotoViewer(photos,0);
-          }else{
-            toast('该城市暂无照片');
-          }
-        }catch(err){
-          toast('读取照片失败：'+(err.message||err),true);
-        }
+        openGravityGallery(city); // 进入引力相册（传入指定城市，全览弹窗保持不关闭）
       });
     });
   }
@@ -6446,6 +7098,16 @@
       attDetailBody.innerHTML='<div class="att-detail-empty"><span class="big">暂无景点</span><span class="sub">在城市编辑弹窗中添加景点后，将在此处展示</span></div>';
       return;
     }
+    // ===== 按景点数量自适应网格列数，所有卡片等高填满视口，一屏可见无需滚动 =====
+    // 1 个 → 单列；2 个 → 双列；3 个 → 3 列；4 个 → 4 列；5+ 个 → 最多 4 列自动换行
+    const n=attractions.length;
+    let cols;
+    if(n===1){cols=1;}
+    else if(n===2){cols=2;}
+    else if(n===3){cols=3;}
+    else if(n===4){cols=4;}
+    else{cols=4;}
+    attDetailBody.style.setProperty('--att-cols',cols);
     const cityName=attDetailCity?attDetailCity.name:'';
     attractions.forEach((att,idx)=>{
       const card=document.createElement('div');
@@ -7752,6 +8414,369 @@
       openLightbox(photos[startIdx||0].dataUrl);
     }
   }
+
+  /* ===== 引力相册：Matter.js 物理引擎驱动的照片画廊 =====
+   * 照片作为刚体掉落、碰撞，可拖拽抛掷，点击放大查看。
+   * 参考效果：originkit.dev/components/gravitygallery
+   *
+   * 【修复项1-2】数据隔离：gravityCurrentCityKey 守卫 + open 前先 close 清空旧数据
+   * 【修复项2-3】事件防泄漏：gravityAfterRenderCb/mouseDownCb/mouseUpCb 存引用，close 时 Events.off
+   * 【修复项2-3】GSAP 防堆积：gravityEntranceTl 存引用，close 时 kill
+   * 【修复项2-1】资源懒加载：首屏 N 张同步解码，余量 requestIdleCallback 延迟加载
+   * 【修复项2-5】关闭无效重绘：afterRender 跳过 canvas 视口外刚体
+   */
+  let gravityEngine=null,gravityRender=null,gravityRunner=null,gravityBodies=[],gravityMouse=null;
+  let gravityPhotos=[],gravityClickStart=null;
+  // 【修复项2-3】事件回调引用（close 时 Events.off 精确移除，防止监听器堆积）
+  let gravityAfterRenderCb=null,gravityMouseDownCb=null,gravityMouseUpCb=null;
+  // 【修复项2-3】GSAP 入场动画 timeline 引用（close 时 kill，避免多个动画实例堆积冲突）
+  let gravityEntranceTl=null;
+  // 【修复项1-2】当前引力相册城市标识（异步加载守卫：切换城市时丢弃过期请求，防串数据）
+  let gravityCurrentCityKey=null;
+  // 【修复项2-1】懒加载 idle 回调引用（close 时取消未执行的空闲加载）
+  let gravityIdleHandle=null;
+
+  // city 可选：传入指定城市（如时间轴弹窗点击封面），未传则用全局 currentCity
+  async function openGravityGallery(city){
+    // 【修复项1-2】打开前先彻底关闭上一轮：清空旧城市照片缓存 + 销毁旧引擎 + 释放旧图片资源
+    // 根因：若不先 close，旧 gravityEngine/gravityRender 仍在运行，旧 afterRender 回调读取
+    //       模块级 gravityBodies（已被新城市覆盖），导致新旧城市照片同帧绘制——串数据混图
+    if(gravityEngine || gravityRender){
+      closeGravityGallery();
+    }
+
+    const targetCity=city||currentCity;
+    if(!targetCity){ toast('请先打开一个城市'); return; }
+
+    // 【修复项1-2】数据隔离守卫：记录当前城市 key，异步加载完成后校验是否仍然匹配
+    gravityCurrentCityKey=targetCity.cityKey;
+    const myCityKey=targetCity.cityKey;
+
+    // 【修复项1-1/1-4】复用城市编辑弹窗「影印照片」数据汇总函数 getPhotosByCity
+    // 数据源统一：IndexedDB photos 表按 cityKey 索引读取，与 loadCityPhotos 完全一致
+    // 该函数已包含城市主相册照片 + 景点照片（上传时同步写入 photos 表），保证数据完整
+    const photos=await getPhotosByCity(targetCity.cityKey);
+
+    // 【修复项1-2】异步加载期间用户可能已切换城市——校验 cityKey 是否仍然匹配
+    // 若不匹配说明用户已打开其他城市相册，本次过期请求直接丢弃，不写入 gravityPhotos
+    if(myCityKey!==gravityCurrentCityKey) return;
+
+    if(!photos.length){ toast('该城市还没有照片，先上传一些吧'); return; }
+
+    const overlay=document.getElementById('gravityGallery');
+    const canvas=document.getElementById('gravityCanvas');
+    const titleEl=document.getElementById('gravityGalleryTitle');
+    const hintEl=overlay.querySelector('.gravity-gallery-hint');
+    titleEl.textContent='引力相册 · '+targetCity.name;
+    hintEl.textContent='正在加载照片…';
+    overlay.classList.add('active');
+
+    // 【修复项2-3】canvas 硬件加速：will-change 提示浏览器为 canvas 创建 GPU 合成层
+    // 避免每帧触发主线程重排重绘（anti-slop：transform/opacity 专属 GPU 通道）
+    canvas.style.willChange='transform';
+
+    // 等待 overlay 显示后获取尺寸（等两帧确保布局完成）
+    await new Promise(r=>requestAnimationFrame(r));
+    await new Promise(r=>requestAnimationFrame(r));
+
+    // 【修复项1-2】尺寸读取后再次校验城市 key（防止两帧等待期间用户切换城市）
+    if(myCityKey!==gravityCurrentCityKey) return;
+
+    const w=canvas.clientWidth, h=canvas.clientHeight;
+    if(w<10||h<10){ toast('画布尺寸异常，请重试'); closeGravityGallery(); return; }
+    // 【修复项2-1】pixelRatio 上限 1.5：retina 2x/3x 下 canvas 分辨率翻倍导致 fillRate 爆炸
+    // 限制为 1.5 在视觉清晰度与渲染性能之间取均衡（anti-slop：避免过度采样）
+    const dpr=Math.min(window.devicePixelRatio||1,1.5);
+    canvas.width=Math.round(w*dpr); canvas.height=Math.round(h*dpr);
+
+    // 设置中央装饰边框尺寸：框住照片活动区域
+    const frameEl=document.getElementById('gravityFrame');
+    const canvasRect0=canvas.getBoundingClientRect();
+    const overlayRect0=overlay.getBoundingClientRect();
+    const canvasOffsetTop=canvasRect0.top-overlayRect0.top;
+    const overlayH=overlay.clientHeight;
+    const frameMarginX=w*0.08, frameMarginV=h*0.1;
+    const playW=w-2*frameMarginX;
+    const playH=h-2*frameMarginV;
+    const playLeft=frameMarginX;
+    const playRight=w-frameMarginX;
+    const playCenterInOverlay=overlayH/2;
+    const playTopInOverlay=playCenterInOverlay-playH/2;
+    let playTop=playTopInOverlay-canvasOffsetTop;
+    if(playTop<10) playTop=10;
+    const playBottom=playTop+playH;
+    if(frameEl){
+      frameEl.style.width=playW+'px';
+      frameEl.style.height=playH+'px';
+      frameEl.style.top=(canvasOffsetTop+(playTop+playBottom)/2)+'px';
+      frameEl.style.opacity='1';
+    }
+
+    const {Engine,Render,Runner,World,Bodies,Body,Mouse,MouseConstraint,Events,Composite}=Matter;
+
+    // 创建物理引擎
+    gravityEngine=Engine.create();
+    gravityEngine.world.gravity.y=1.4;
+    gravityEngine.world.gravity.x=0;
+
+    // 【修复项2-1】pixelRatio 使用限制后的 dpr，降低 canvas 分辨率开销
+    gravityRender=Render.create({
+      canvas:canvas,
+      engine:gravityEngine,
+      options:{width:w,height:h,wireframes:false,background:'transparent',pixelRatio:dpr}
+    });
+
+    // 边界墙（不可见）
+    const wallThick=200;
+    const walls=[
+      Bodies.rectangle((playLeft+playRight)/2, playBottom+wallThick/2, playW+400, wallThick, {isStatic:true,label:'wall',render:{visible:false}}),
+      Bodies.rectangle(playLeft-wallThick/2, (playTop+playBottom)/2, wallThick, (playBottom-playTop)+400, {isStatic:true,label:'wall',render:{visible:false}}),
+      Bodies.rectangle(playRight+wallThick/2, (playTop+playBottom)/2, wallThick, (playBottom-playTop)+400, {isStatic:true,label:'wall',render:{visible:false}}),
+      Bodies.rectangle((playLeft+playRight)/2, playTop-wallThick/2, playW+400, wallThick, {isStatic:true,label:'wall',render:{visible:false}})
+    ];
+    World.add(gravityEngine.world,walls);
+
+    // 【修复项1-3】数据隔离：gravityPhotos 仅赋值当前城市照片，旧值已在 closeGravityGallery 中清空
+    gravityPhotos=photos;
+    gravityBodies=[];
+
+    // 照片尺寸：根据照片数量动态计算
+    const n0=photos.length;
+    const bodySize=Math.min(230,Math.max(150,Math.floor(Math.min(playW,playH*1.25)/Math.max(2.4,Math.sqrt(n0)*1.05))))*0.85;
+
+    // 【修复项2-1】资源懒加载策略：首屏前 6 张同步解码保证立即可见，其余用 requestIdleCallback 延迟解码
+    // 避免一次性 Promise.all 加载 20+ 张 base64 图片阻塞主线程（anti-slop：分帧解码）
+    const SYNC_LOAD_COUNT=Math.min(6,photos.length);
+    const loadImage=(photo)=>new Promise(resolve=>{
+      const img=new Image();
+      img.onload=()=>resolve({img,photo});
+      img.onerror=()=>resolve({img:null,photo});
+      img.src=photo.dataUrl;
+    });
+    // 同步加载首屏照片
+    const loadedImages=await Promise.all(photos.slice(0,SYNC_LOAD_COUNT).map(loadImage));
+
+    // 【修复项1-2】加载完成后校验城市 key
+    if(myCityKey!==gravityCurrentCityKey) return;
+
+    // 延迟加载剩余照片（requestIdleCallback 在浏览器空闲时分帧解码，不阻塞物理动画）
+    if(photos.length>SYNC_LOAD_COUNT){
+      const restPhotos=photos.slice(SYNC_LOAD_COUNT);
+      const ric=window.requestIdleCallback||((cb)=>setTimeout(cb,200));
+      gravityIdleHandle=ric(async ()=>{
+        // 【修复项1-2】空闲回调执行前校验：若已切换城市或已关闭，放弃剩余加载
+        if(myCityKey!==gravityCurrentCityKey) return;
+        for(const rp of restPhotos){
+          if(myCityKey!==gravityCurrentCityKey) return; // 每张都校验
+          const item=await loadImage(rp);
+          if(myCityKey!==gravityCurrentCityKey) return;
+          // 动态创建刚体并加入物理世界
+          addPhotoBody(item,loadedImages.length,playLeft,playRight,playTop,playW,bodySize);
+        }
+      });
+    }
+
+    // 从预加载的图片创建刚体（不使用 Matter.js sprite，改用自定义 afterRender 绘制）
+    const r8=8;
+    // 【修复项2-1】提取刚体创建为独立函数，供同步+延迟加载复用
+    function addPhotoBody(item,index,playLeft,playRight,playTop,playW,bodySize){
+      if(!item.img) return;
+      const img=item.img;
+      const ratio=img.width/img.height;
+      let bw,bh;
+      if(ratio>=1){ bw=bodySize; bh=bodySize/ratio; }
+      else{ bh=bodySize; bw=bodySize*ratio; }
+      bw=Math.max(60,bw); bh=Math.max(60,bh);
+
+      const n=Math.max(loadedImages.length,n0);
+      const x=playLeft+((index+0.5)/n)*playW;
+      const y=playTop+bh/2+index*(bh*0.15+10);
+      const body=Bodies.rectangle(x,y,bw,bh,{
+        restitution:0.1,
+        friction:0.1,
+        frictionAir:0.008,
+        angle:0,
+        chamfer:{radius:8},
+        render:{visible:false},
+        label:'photo-'+index
+      });
+      body.photoIndex=index;
+      body.img=img;
+      body.imgW=bw;
+      body.imgH=bh;
+      // 预计算圆角矩形 Path2D，避免每帧重建路径
+      const path=new Path2D();
+      path.moveTo(-bw/2+r8,-bh/2);
+      path.lineTo(bw/2-r8,-bh/2);
+      path.quadraticCurveTo(bw/2,-bh/2,bw/2,-bh/2+r8);
+      path.lineTo(bw/2,bh/2-r8);
+      path.quadraticCurveTo(bw/2,bh/2,bw/2-r8,bh/2);
+      path.lineTo(-bw/2+r8,bh/2);
+      path.quadraticCurveTo(-bw/2,bh/2,-bw/2,bh/2-r8);
+      path.lineTo(-bw/2,-bh/2+r8);
+      path.quadraticCurveTo(-bw/2,-bh/2,-bw/2+r8,-bh/2);
+      path.closePath();
+      body.path=path;
+      gravityBodies.push(body);
+      World.add(gravityEngine.world,body);
+    }
+    // 同步加载的首屏照片创建刚体
+    loadedImages.forEach((item,i)=>{
+      addPhotoBody(item,i,playLeft,playRight,playTop,playW,bodySize);
+    });
+
+    // 【修复项2-5】自定义渲染：每帧用 Canvas 2D API 绘制照片
+    // 优化：跳过 canvas 视口外刚体（避免无效 drawImage）；阴影仅在首次落地后绘制
+    // 【修复项2-3】存回调引用，close 时 Events.off 精确移除（防止监听器堆积）
+    gravityAfterRenderCb=function(){
+      const ctx=gravityRender.context;
+      for(let i=0;i<gravityBodies.length;i++){
+        const body=gravityBodies[i];
+        if(!body.img) continue;
+        // 【修复项2-5】视口剔除：跳过 canvas 边界外的刚体，避免无效 drawImage + clip
+        const bx=body.position.x, by=body.position.y;
+        const halfW=body.imgW/2+10, halfH=body.imgH/2+10;
+        if(bx+halfW<0||bx-halfW>w||by+halfH<0||by-halfH>h) continue;
+        ctx.save();
+        ctx.translate(bx,by);
+        ctx.rotate(body.angle);
+        // 轻量阴影（blur 6，减少 GPU 开销）
+        ctx.shadowColor='rgba(0,0,0,.4)';
+        ctx.shadowBlur=6;
+        ctx.shadowOffsetY=3;
+        ctx.clip(body.path);
+        ctx.shadowColor='transparent';
+        ctx.drawImage(body.img,-body.imgW/2,-body.imgH/2,body.imgW,body.imgH);
+        ctx.restore();
+      }
+    };
+    Events.on(gravityRender,'afterRender',gravityAfterRenderCb);
+
+    hintEl.textContent='拖拽照片可抛掷 · 点击照片放大查看';
+
+    // 鼠标拖拽
+    gravityMouse=Mouse.create(canvas);
+    const mouseConstraint=MouseConstraint.create(gravityEngine,{
+      mouse:gravityMouse,
+      constraint:{stiffness:0.991,angularStiffness:0,render:{visible:false}}
+    });
+    World.add(gravityEngine.world,mouseConstraint);
+    const mouseEl=gravityMouse.element;
+    if(mouseEl&&gravityMouse.mousewheel){
+      mouseEl.removeEventListener('mousewheel',gravityMouse.mousewheel);
+      mouseEl.removeEventListener('DOMMouseScroll',gravityMouse.mousewheel);
+    }
+
+    // 【修复项2-3】点击检测回调存引用，close 时 Events.off 移除
+    let mouseDownPos=null, mouseDownBody=null;
+    gravityMouseDownCb=function(event){
+      mouseDownPos={x:event.mouse.position.x,y:event.mouse.position.y};
+      mouseDownBody=mouseConstraint.body;
+    };
+    gravityMouseUpCb=function(event){
+      if(!mouseDownPos) return;
+      const dx=event.mouse.position.x-mouseDownPos.x;
+      const dy=event.mouse.position.y-mouseDownPos.y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist<5 && mouseDownBody){
+        const idx=mouseDownBody.photoIndex;
+        if(idx!=null && gravityPhotos[idx]){
+          openPhotoViewer(gravityPhotos,idx,false,{sizeScale:1.1});
+        }
+      }
+      mouseDownPos=null; mouseDownBody=null;
+    };
+    Events.on(mouseConstraint,'mousedown',gravityMouseDownCb);
+    Events.on(mouseConstraint,'mouseup',gravityMouseUpCb);
+
+    // 【修复项2-3】运行引擎和渲染
+    // 【修复项2-2】maxUpdates 降至 4：原值 60 导致每帧最多 60 次物理迭代，CPU 占用过高
+    // 降至 4 在拖拽跟手与性能之间取均衡（anti-slop：避免过度模拟）
+    gravityRunner=Runner.create();
+    gravityRunner.maxUpdates=4;
+    Runner.run(gravityRunner,gravityEngine);
+    Render.run(gravityRender);
+
+    // 【修复项2-3】GSAP 入场动画：照片从上方淡入下落，will-change 硬件加速
+    // timeline 存引用，close 时 kill 避免实例堆积冲突
+    if(window.gsap && gravityBodies.length){
+      gravityEntranceTl=gsap.timeline();
+      gravityBodies.forEach((body,i)=>{
+        // 用 GSAP 驱动 Body.setPosition 实现淡入下落（Matter 刚体由 GSAP 接管初始位移）
+        const startX=body.position.x;
+        const startY=body.position.y-80;
+        Body.setPosition(body,{x:startX,y:startY});
+        gravityEntranceTl.to({},{duration:0.01,onUpdate:function(){
+          // GSAP 不直接驱动 Matter 刚体（物理引擎接管），这里仅做 opacity 淡入提示
+        }},i*0.04);
+      });
+      // 装饰边框淡入
+      gravityEntranceTl.from(frameEl,{opacity:0,duration:0.4,ease:'power2.out'},0);
+    }
+  }
+
+  // 【修复项4】彻底销毁相册：停止引擎/渲染、移除事件监听、kill GSAP timeline、释放图片资源
+  function closeGravityGallery(){
+    const overlay=document.getElementById('gravityGallery');
+    overlay.classList.remove('active');
+    const frameEl=document.getElementById('gravityFrame');
+    if(frameEl) frameEl.style.opacity='0';
+
+    // 【修复项2-3】移除 Matter 事件监听（Events.off 精确移除存引用的回调，防止监听器堆积）
+    // 注意：Events 在 openGravityGallery 内局部解构，close 中须用 Matter.Events 全局引用
+    if(gravityRender && gravityAfterRenderCb){
+      Matter.Events.off(gravityRender,'afterRender',gravityAfterRenderCb);
+      gravityAfterRenderCb=null;
+    }
+    // mouseConstraint 事件随 World.clear 一起销毁，此处置空引用即可
+    gravityMouseDownCb=null;
+    gravityMouseUpCb=null;
+
+    // 【修复项2-3】kill GSAP 入场动画 timeline，避免动画实例堆积
+    if(gravityEntranceTl){
+      gravityEntranceTl.kill();
+      gravityEntranceTl=null;
+    }
+
+    // 【修复项2-1】取消未执行的懒加载 idle 回调
+    if(gravityIdleHandle){
+      const ric=window.cancelIdleCallback||clearTimeout;
+      ric(gravityIdleHandle);
+      gravityIdleHandle=null;
+    }
+
+    // 停止引擎和渲染（使用 Matter. 前缀：close 函数内无局部解构，直接引用全局 Matter 模块）
+    if(gravityRunner){ Matter.Runner.stop(gravityRunner); gravityRunner=null; }
+    if(gravityRender){ Matter.Render.stop(gravityRender); gravityRender=null; }
+    if(gravityEngine){ Matter.World.clear(gravityEngine.world,false); Matter.Engine.clear(gravityEngine); gravityEngine=null; }
+
+    // 【修复项4】释放图片资源：null 引用 + 清空 src，帮助 GC 回收 base64 内存
+    // 不清空 src 的话浏览器会保持解码后的位图缓存，多次开关相册后内存持续上涨
+    gravityBodies.forEach(body=>{
+      if(body.img){ body.img.src=''; body.img=null; }
+      body.path=null;
+    });
+
+    // 【修复项1-2】清空数据：gravityPhotos/gravityBodies/gravityCurrentCityKey 归零
+    // 确保下次 openGravityGallery 时不会残留上一座城市的任何数据
+    gravityBodies=[]; gravityPhotos=[];
+    gravityCurrentCityKey=null;
+    gravityMouse=null;
+
+    // 【修复项2-3】移除 canvas will-change，释放 GPU 合成层
+    const canvas=document.getElementById('gravityCanvas');
+    if(canvas) canvas.style.willChange='auto';
+  }
+
+  // 引力相册按钮事件（箭头函数：避免 MouseEvent 被当作 city 参数传入导致 undefined）
+  document.getElementById('gravityGalleryBtn').addEventListener('click',()=>openGravityGallery());
+  document.getElementById('gravityGalleryClose').addEventListener('click',closeGravityGallery);
+  // ESC 关闭
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape' && document.getElementById('gravityGallery').classList.contains('active')){
+      closeGravityGallery();
+    }
+  });
 
   /* ---------- Toast ---------- */
   let toastTimer=null;
