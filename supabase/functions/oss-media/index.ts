@@ -64,7 +64,9 @@ export default {
       if (payload.action === "put" || payload.action === "get") {
         if (!ownsPath(payload.path, userId)) return json(request, { error: "无权访问该照片" }, 403);
         const method = payload.action === "put" ? "PUT" : "GET";
-        const headers = payload.action === "put" ? { "content-type": payload.contentType || "application/octet-stream" } : {};
+        const extension = payload.path.split(".").pop()?.toLowerCase();
+        const inferredContentType = extension === "png" ? "image/png" : extension === "webp" ? "image/webp" : extension === "gif" ? "image/gif" : "image/jpeg";
+        const headers = payload.action === "put" ? { "content-type": payload.contentType || inferredContentType } : {};
         const url = await client.signatureUrlV4(method, 300, { headers }, payload.path);
         return json(request, { url, expiresIn: 300 });
       }
