@@ -52,7 +52,8 @@
 | GSAP 3.12.5 | 入场动画 / 过渡时间轴 |
 | Matter.js 0.20.0 | 引力相册物理引擎 |
 | IndexedDB | 照片与城市数据浏览器本地持久化 |
-| Supabase Auth / Database / Storage | 账号注册登录、旅行数据与私有照片跨设备同步 |
+| Supabase Auth / Database / Edge Functions | 账号登录、旅行数据同步与 OSS 安全签名 |
+| 阿里云 OSS | 私有照片文件存储与跨设备读取 |
 | 可变字体 | Inter / Figtree / Playfair Display（self-host） |
 
 ## 项目结构
@@ -70,7 +71,9 @@ Your-China-Travel/
 ├── china-geo.json
 ├── china-provinces-geo.js
 ├── supabase-config.js            # Supabase 浏览器端公开配置
-├── supabase-setup.sql            # 云端数据表、照片桶及账号隔离策略
+├── supabase-setup.sql            # 云端数据表及旧照片桶兼容配置
+├── supabase/
+│   └── functions/oss-media/      # 登录鉴权与 OSS 临时签名函数
 ├── vercel.json                 # Vercel 云端部署配置
 ├── nginx.conf                  # Nginx 服务器配置
 ├── Dockerfile                  # Docker 容器化部署
@@ -111,7 +114,7 @@ docker-compose up -d
 
 ## 数据存储说明
 
-未登录时，照片与城市记录使用 **IndexedDB** 存储在当前浏览器。登录账号后，旅行数据会同步到 Supabase，照片保存在私有 Storage 中；在另一台设备登录同一账号即可恢复。每个账号只能访问自己的内容。
+未登录时，照片与城市记录使用 **IndexedDB** 存储在当前浏览器。登录账号后，旅行数据同步到 Supabase，照片文件保存在私有阿里云 OSS；IndexedDB 继续作为本机缓存。在另一台设备登录同一账号后，页面会自动恢复云端内容。每个账号只能访问自己的内容。
 
 ### 首次配置账号云端
 
@@ -119,6 +122,9 @@ docker-compose up -d
 2. 新建查询，完整粘贴 `supabase-setup.sql` 并运行一次。
 3. 在 **Authentication → URL Configuration** 中，把正式网站地址设为 Site URL，并加入 Redirect URLs。
 4. `supabase-config.js` 只能填写 Project URL 与 Publishable key，禁止填写 Secret key 或 service_role key。
+5. 创建私有阿里云 OSS Bucket，并配置网站来源的 CORS；给专用 RAM 用户授予该 Bucket 中 `users/*` 的读取、上传和删除权限。
+6. 在 Supabase **Edge Functions → Secrets** 中配置 `ALIYUN_OSS_ACCESS_KEY_ID`、`ALIYUN_OSS_ACCESS_KEY_SECRET`、`ALIYUN_OSS_BUCKET`、`ALIYUN_OSS_REGION` 和 `ALIYUN_OSS_ENDPOINT`。密钥只能保存在 Secrets，禁止写入前端或 Git 仓库。
+7. 部署 `supabase/functions/oss-media/index.ts` 为 `oss-media`，并关闭该函数的 **Verify JWT with legacy secret**。函数内部仍会验证 Supabase 登录用户，只为当前账号签发短时 OSS 地址。
 
 当前浏览器已有本机资料时，首次登录空账号会自动上传迁移；若账号云端和设备本机同时已有资料，页面会让用户选择保留哪一份。
 
@@ -144,7 +150,7 @@ A：`nginx.conf` 已配置 `try_files $uri $uri/ /index.html` 回退；Vercel �
 A：检查网络能否访问 `geo.datav.aliyun.com`（中国地图数据 CDN）。项目含本地 GeoJSON 回退，但首次加载仍需网络。
 
 **Q：照片在另一台电脑看不到？**
-A：照片存 IndexedDB（浏览器本地），属设计如此。换电脑需重新添加。
+A：登录同一账号后，页面会从阿里云 OSS 自动恢复照片。首次启用 OSS 时，请先在照片最完整的设备刷新并等待“已同步”，再打开其他设备；若仍未出现，请查看 `oss-media` 的 Edge Function Logs。
 
 **Q：ECharts 加载失败？**
 A：4 个 CDN 均已配置回退。若全失败（极端网络环境），可将 ECharts 下载到本地并改用相对路径引用。

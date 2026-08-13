@@ -5144,13 +5144,14 @@
   }
 
   /* ---------- Supabase 账号与云端同步 ---------- */
-  const CLOUD_TABLE='travel_snapshots',CLOUD_BUCKET='travel-media';
-  const CLOUD_OWNER_KEY='travelCloudOwner',CLOUD_DIRTY_KEY='travelCloudDirty';
+  const CLOUD_TABLE='travel_snapshots',CLOUD_BUCKET='travel-media',OSS_PATH_PREFIX='oss:';
+  const CLOUD_OWNER_KEY='travelCloudOwner',CLOUD_DIRTY_KEY='travelCloudDirty',CLOUD_UPDATED_KEY='travelCloudUpdatedAt';
   const cloudConfig=window.TRAVEL_SUPABASE_CONFIG||{};
   const cloudClient=(window.supabase&&cloudConfig.url&&cloudConfig.publishableKey)
     ?window.supabase.createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})
     :null;
   let cloudUser=null,cloudSyncTimer=null,cloudSyncPromise=null,cloudPreparePromise=null,cloudPrepareUserId='';
+  let cloudCheckPromise=null,cloudWatchStarted=false;
   let cloudSuppressDirty=false,cloudReady=false,cloudSigningOut=false,cloudMutationVersion=0;
   const accountBtn=$('accountBtn'),accountLabel=$('accountLabel'),syncStatus=$('syncStatus');
   const authOverlay=$('authOverlay'),authClose=$('authClose'),authGuestView=$('authGuestView'),authUserView=$('authUserView');
@@ -5245,16 +5246,31 @@
   function newCloudId(){
     return (typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():(Date.now().toString(36)+Math.random().toString(36).slice(2));
   }
+  async function invokeOssMedia(body){
+    const {data,error}=await cloudClient.functions.invoke('oss-media',{body});
+    if(error) throw error;
+    if(!data||data.error) throw new Error(data&&data.error?data.error:'OSS 服务未返回有效结果');
+    return data;
+  }
+  function isOssPath(path){return typeof path==='string'&&path.startsWith(OSS_PATH_PREFIX);}
+  function ossObjectKey(path){return path.slice(OSS_PATH_PREFIX.length);}
   async function uploadCloudImage(dataUrl,kind,cloudId){
     const blob=dataUrlToBlob(dataUrl);
     const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':blob.type==='image/gif'?'gif':'jpg';
-    const path=cloudUser.id+'/'+kind+'/'+cloudId+'.'+ext;
-    const {error}=await cloudClient.storage.from(CLOUD_BUCKET).upload(path,blob,{contentType:blob.type,upsert:true,cacheControl:'3600'});
-    if(error) throw error;
-    return path;
+    const objectKey='users/'+cloudUser.id+'/'+kind+'/'+cloudId+'.'+ext;
+    const {url}=await invokeOssMedia({action:'put',path:objectKey});
+    const response=await fetch(url,{method:'PUT',headers:{'Content-Type':blob.type},body:blob});
+    if(!response.ok) throw new Error('阿里云 OSS 上传失败（'+response.status+'）');
+    return OSS_PATH_PREFIX+objectKey;
   }
   async function downloadCloudImage(path){
     if(!path) return '';
+    if(isOssPath(path)){
+      const {url}=await invokeOssMedia({action:'get',path:ossObjectKey(path)});
+      const response=await fetch(url);
+      if(!response.ok) throw new Error('阿里云 OSS 下载失败（'+response.status+'）');
+      return blobToDataUrl(await response.blob());
+    }
     const {data,error}=await cloudClient.storage.from(CLOUD_BUCKET).download(path);
     if(error) throw error;
     return blobToDataUrl(data);
@@ -5296,7 +5312,7 @@
     const totalImages=photos.length;
     for(const photo of photos){
       if(!photo.cloudId) photo.cloudId=newCloudId();
-      if(photo.dataUrl&&!photo.storagePath) photo.storagePath=await uploadCloudImage(photo.dataUrl,'photos',photo.cloudId);
+      if(photo.dataUrl&&!isOssPath(photo.storagePath)) photo.storagePath=await uploadCloudImage(photo.dataUrl,'photos',photo.cloudId);
       await putLocalPhoto(photo);
       completedImages+=1;
       if(totalImages) setSyncStatus('同步 '+completedImages+'/'+totalImages,'syncing');
@@ -5306,7 +5322,7 @@
     }
     const cloudMetas=[];
     for(const meta of metas){
-      if(meta.coverImage&&!meta.coverStoragePath){
+      if(meta.coverImage&&!isOssPath(meta.coverStoragePath)){
         meta.coverCloudId=meta.coverCloudId||newCloudId();
         meta.coverStoragePath=await uploadCloudImage(meta.coverImage,'covers',meta.coverCloudId);
       }
@@ -5316,7 +5332,7 @@
           ph.cloudId=ph.cloudId||newCloudId();
           const shared=ph.dataUrl?photoPathByDataUrl.get(ph.dataUrl):null;
           if(shared){ph.storagePath=shared.storagePath;ph.cloudId=shared.cloudId;}
-          else if(ph.dataUrl&&!ph.storagePath) ph.storagePath=await uploadCloudImage(ph.dataUrl,'attractions',ph.cloudId);
+          else if(ph.dataUrl&&!isOssPath(ph.storagePath)) ph.storagePath=await uploadCloudImage(ph.dataUrl,'attractions',ph.cloudId);
         }
       }
       await putLocalMeta(meta);
@@ -5339,14 +5355,24 @@
           const passVersion=cloudMutationVersion;
           const previous=await readCloudSnapshot();
           const snapshot=await buildCloudSnapshot();
-          const {error}=await cloudClient.from(CLOUD_TABLE).upsert({user_id:cloudUser.id,data:snapshot,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+          const updatedAt=new Date().toISOString();
+          const {data:updatedRow,error}=await cloudClient.from(CLOUD_TABLE)
+            .upsert({user_id:cloudUser.id,data:snapshot,updated_at:updatedAt},{onConflict:'user_id'})
+            .select('updated_at').single();
           if(error) throw error;
           const previousPaths=collectSnapshotPaths(previous),currentPaths=collectSnapshotPaths(snapshot);
           const unusedPaths=[...previousPaths].filter(path=>!currentPaths.has(path));
-          for(let i=0;i<unusedPaths.length;i+=100){
-            const {error:removeError}=await cloudClient.storage.from(CLOUD_BUCKET).remove(unusedPaths.slice(i,i+100));
+          const legacyPaths=unusedPaths.filter(path=>!isOssPath(path));
+          const ossPaths=unusedPaths.filter(isOssPath).map(ossObjectKey);
+          for(let i=0;i<legacyPaths.length;i+=100){
+            const {error:removeError}=await cloudClient.storage.from(CLOUD_BUCKET).remove(legacyPaths.slice(i,i+100));
             if(removeError) console.warn('清理云端旧照片失败',removeError);
           }
+          for(let i=0;i<ossPaths.length;i+=50){
+            try{await invokeOssMedia({action:'delete',paths:ossPaths.slice(i,i+50)});}
+            catch(removeError){console.warn('清理 OSS 旧照片失败',removeError);}
+          }
+          localStorage.setItem(CLOUD_UPDATED_KEY,updatedRow&&updatedRow.updated_at?updatedRow.updated_at:updatedAt);
           needsAnotherPass=cloudMutationVersion!==passVersion;
           if(needsAnotherPass) setSyncStatus('继续同步','syncing');
         }
@@ -5365,10 +5391,13 @@
     return cloudSyncPromise;
   }
 
-  async function readCloudSnapshot(){
+  async function readCloudRecord(){
     const {data,error}=await cloudClient.from(CLOUD_TABLE).select('data,updated_at').eq('user_id',cloudUser.id).maybeSingle();
     if(error) throw error;
-    return data&&data.data?data.data:null;
+    return {snapshot:data&&data.data?data.data:null,updatedAt:data&&data.updated_at?data.updated_at:''};
+  }
+  async function readCloudSnapshot(){
+    return (await readCloudRecord()).snapshot;
   }
   function collectSnapshotPaths(snapshot){
     const paths=new Set();
@@ -5379,7 +5408,7 @@
     });
     return paths;
   }
-  async function restoreCloudSnapshot(snapshot){
+  async function restoreCloudSnapshot(snapshot,updatedAt){
     setSyncStatus('下载中','syncing');
     cloudSuppressDirty=true;
     try{
@@ -5406,6 +5435,7 @@
       cityMetaCache.clear();
       localStorage.setItem(CLOUD_OWNER_KEY,cloudUser.id);
       localStorage.setItem(CLOUD_DIRTY_KEY,'0');
+      if(updatedAt) localStorage.setItem(CLOUD_UPDATED_KEY,updatedAt);
       await refreshState();
       setSyncStatus('已同步','');
     }finally{cloudSuppressDirty=false;}
@@ -5419,29 +5449,30 @@
       const owner=localStorage.getItem(CLOUD_OWNER_KEY),dirty=localStorage.getItem(CLOUD_DIRTY_KEY)==='1';
       try{
         if(owner&&owner!==user.id){
-          cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;
+          cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;localStorage.removeItem(CLOUD_UPDATED_KEY);
         }
-        const remote=await readCloudSnapshot();
+        const remoteRecord=await readCloudRecord(),remote=remoteRecord.snapshot;
         const localHas=await hasLocalTravelData();
         const localPhotoCount=(await getAllPhotos()).length;
         const remotePhotoCount=remote&&remote.photos?remote.photos.length:0;
+        const lastUpdated=localStorage.getItem(CLOUD_UPDATED_KEY)||'';
         if(owner===user.id&&dirty){
           await syncToCloud();
-        }else if(owner===user.id&&remote&&localPhotoCount>remotePhotoCount){
+        }else if(owner===user.id&&remote&&!lastUpdated&&localPhotoCount>remotePhotoCount){
           cloudMutationVersion+=1;
           localStorage.setItem(CLOUD_DIRTY_KEY,'1');
           await syncToCloud();
           toast('已保留本机较完整的资料并重新同步');
         }else if(remote&&localHas&&owner!==user.id){
           const useLocal=confirm('检测到这台设备有尚未绑定账号的旅行资料，同时该账号已有云端资料。\n\n按“确定”：用这台设备的资料替换云端资料。\n按“取消”：使用账号的云端资料替换这台设备的资料。');
-          if(useLocal) await syncToCloud(); else await restoreCloudSnapshot(remote);
+          if(useLocal) await syncToCloud(); else await restoreCloudSnapshot(remote,remoteRecord.updatedAt);
         }else if(remote){
-          await restoreCloudSnapshot(remote);
+          await restoreCloudSnapshot(remote,remoteRecord.updatedAt);
         }else if(localHas){
           await syncToCloud();
           toast('本机旅行资料已迁移到你的云端账号');
         }else{
-          localStorage.setItem(CLOUD_OWNER_KEY,user.id);localStorage.setItem(CLOUD_DIRTY_KEY,'0');setSyncStatus('已同步','');
+          localStorage.setItem(CLOUD_OWNER_KEY,user.id);localStorage.setItem(CLOUD_DIRTY_KEY,'0');localStorage.removeItem(CLOUD_UPDATED_KEY);setSyncStatus('已同步','');
         }
         cloudBlocker.classList.remove('show');cloudBlocker.textContent='';
       }catch(error){
@@ -5454,6 +5485,26 @@
     })();
     try{return await cloudPreparePromise;}
     finally{cloudPreparePromise=null;cloudPrepareUserId='';}
+  }
+
+  async function checkCloudUpdates(){
+    if(!cloudClient||!cloudUser||cloudSyncPromise||cloudPreparePromise||document.hidden||localStorage.getItem(CLOUD_DIRTY_KEY)==='1') return;
+    if(cloudCheckPromise) return cloudCheckPromise;
+    cloudCheckPromise=(async ()=>{
+      const remote=await readCloudRecord();
+      if(!remote.snapshot||!remote.updatedAt||remote.updatedAt===localStorage.getItem(CLOUD_UPDATED_KEY)) return;
+      if(localStorage.getItem(CLOUD_DIRTY_KEY)==='1') return;
+      await restoreCloudSnapshot(remote.snapshot,remote.updatedAt);
+      toast('已自动更新其他设备的旅行资料');
+    })().catch(error=>console.warn('检查云端更新失败',error)).finally(()=>{cloudCheckPromise=null;});
+    return cloudCheckPromise;
+  }
+  function startCloudWatcher(){
+    if(cloudWatchStarted) return;
+    cloudWatchStarted=true;
+    setInterval(checkCloudUpdates,15000);
+    window.addEventListener('focus',checkCloudUpdates);
+    document.addEventListener('visibilitychange',()=>{if(!document.hidden) checkCloudUpdates();});
   }
 
   authForm.addEventListener('submit',async e=>{
@@ -5496,7 +5547,7 @@
       cloudSigningOut=true;
       const {error}=await cloudClient.auth.signOut();if(error) throw error;
       cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;
-      localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_DIRTY_KEY);
+      localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_DIRTY_KEY);localStorage.removeItem(CLOUD_UPDATED_KEY);
       cloudUser=null;await refreshState();updateAccountUI();closeAuth();toast('已安全退出账号');
     }catch(error){toast('退出失败：'+friendlyAuthError(error),true);}
     finally{cloudSigningOut=false;signOutBtn.disabled=false;}
@@ -5506,6 +5557,7 @@
     if(cloudReady) return;
     cloudReady=true;updateAccountUI();
     if(!cloudClient){setSyncStatus('云端不可用','error');return;}
+    startCloudWatcher();
     cloudClient.auth.onAuthStateChange((event,session)=>{
       if(event==='PASSWORD_RECOVERY'){
         setTimeout(()=>{cloudUser=session&&session.user?session.user:cloudUser;setAuthMode('recovery');openAuth();},0);
@@ -5514,7 +5566,7 @@
       }else if(event==='SIGNED_OUT'&&!cloudSigningOut&&cloudUser){
         setTimeout(async ()=>{
           cloudSuppressDirty=true;
-          try{await clearLocalTravelData();cloudUser=null;localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_DIRTY_KEY);await refreshState();updateAccountUI();}
+          try{await clearLocalTravelData();cloudUser=null;localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_DIRTY_KEY);localStorage.removeItem(CLOUD_UPDATED_KEY);await refreshState();updateAccountUI();}
           finally{cloudSuppressDirty=false;}
         },0);
       }
