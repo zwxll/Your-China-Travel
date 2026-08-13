@@ -5258,7 +5258,7 @@
     const blob=dataUrlToBlob(dataUrl);
     const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':blob.type==='image/gif'?'gif':'jpg';
     const objectKey='users/'+cloudUser.id+'/'+kind+'/'+cloudId+'.'+ext;
-    const {url}=await invokeOssMedia({action:'put',path:objectKey});
+    const {url}=await invokeOssMedia({action:'put',path:objectKey,contentType:blob.type});
     const response=await fetch(url,{method:'PUT',headers:{'Content-Type':blob.type},body:blob});
     if(!response.ok) throw new Error('阿里云 OSS 上传失败（'+response.status+'）');
     return OSS_PATH_PREFIX+objectKey;
