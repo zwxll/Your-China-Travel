@@ -57,7 +57,6 @@ export default {
         accessKeySecret: Deno.env.get("ALIYUN_OSS_ACCESS_KEY_SECRET") || "",
         bucket: Deno.env.get("ALIYUN_OSS_BUCKET") || "",
         region: Deno.env.get("ALIYUN_OSS_REGION") || "",
-        endpoint: Deno.env.get("ALIYUN_OSS_ENDPOINT") || "",
         authorizationV4: true,
         secure: true,
       });

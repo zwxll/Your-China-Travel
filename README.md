@@ -123,7 +123,7 @@ docker-compose up -d
 3. 在 **Authentication → URL Configuration** 中，把正式网站地址设为 Site URL，并加入 Redirect URLs。
 4. `supabase-config.js` 只能填写 Project URL 与 Publishable key，禁止填写 Secret key 或 service_role key。
 5. 创建私有阿里云 OSS Bucket，并配置网站来源的 CORS；给专用 RAM 用户授予该 Bucket 中 `users/*` 的读取、上传和删除权限。
-6. 在 Supabase **Edge Functions → Secrets** 中配置 `ALIYUN_OSS_ACCESS_KEY_ID`、`ALIYUN_OSS_ACCESS_KEY_SECRET`、`ALIYUN_OSS_BUCKET`、`ALIYUN_OSS_REGION` 和 `ALIYUN_OSS_ENDPOINT`。密钥只能保存在 Secrets，禁止写入前端或 Git 仓库。
+6. 在 Supabase **Edge Functions → Secrets** 中配置 `ALIYUN_OSS_ACCESS_KEY_ID`、`ALIYUN_OSS_ACCESS_KEY_SECRET`、`ALIYUN_OSS_BUCKET` 和 `ALIYUN_OSS_REGION`。密钥只能保存在 Secrets，禁止写入前端或 Git 仓库；OSS 外网地址由 Region 自动生成。
 7. 部署 `supabase/functions/oss-media/index.ts` 为 `oss-media`，并关闭该函数的 **Verify JWT with legacy secret**。函数内部仍会验证 Supabase 登录用户，只为当前账号签发短时 OSS 地址。
 
 当前浏览器已有本机资料时，首次登录空账号会自动上传迁移；若账号云端和设备本机同时已有资料，页面会让用户选择保留哪一份。
