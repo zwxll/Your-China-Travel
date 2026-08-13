@@ -5345,7 +5345,7 @@
   }
 
   async function syncToCloud(options){
-    if(!cloudClient||!cloudUser) return;
+    if(!cloudClient||!cloudUser||cloudSuppressDirty) return;
     if(cloudSyncPromise) return cloudSyncPromise;
     cloudSyncPromise=(async ()=>{
       setSyncStatus('同步中','syncing');
@@ -5363,14 +5363,9 @@
           const previousPaths=collectSnapshotPaths(previous),currentPaths=collectSnapshotPaths(snapshot);
           const unusedPaths=[...previousPaths].filter(path=>!currentPaths.has(path));
           const legacyPaths=unusedPaths.filter(path=>!isOssPath(path));
-          const ossPaths=unusedPaths.filter(isOssPath).map(ossObjectKey);
           for(let i=0;i<legacyPaths.length;i+=100){
             const {error:removeError}=await cloudClient.storage.from(CLOUD_BUCKET).remove(legacyPaths.slice(i,i+100));
             if(removeError) console.warn('清理云端旧照片失败',removeError);
-          }
-          for(let i=0;i<ossPaths.length;i+=50){
-            try{await invokeOssMedia({action:'delete',paths:ossPaths.slice(i,i+50)});}
-            catch(removeError){console.warn('清理 OSS 旧照片失败',removeError);}
           }
           localStorage.setItem(CLOUD_UPDATED_KEY,updatedRow&&updatedRow.updated_at?updatedRow.updated_at:updatedAt);
           needsAnotherPass=cloudMutationVersion!==passVersion;
@@ -5412,26 +5407,31 @@
     setSyncStatus('下载中','syncing');
     cloudSuppressDirty=true;
     try{
-      await clearLocalTravelData();
+      clearTimeout(cloudSyncTimer);cloudSyncTimer=null;
       const downloadedImages=new Map();
       async function cachedCloudImage(path){
         if(!path) return '';
         if(!downloadedImages.has(path)) downloadedImages.set(path,downloadCloudImage(path));
         return downloadedImages.get(path);
       }
+      const preparedPhotos=[];
       for(const remote of (snapshot.photos||[])){
         const dataUrl=await cachedCloudImage(remote.storagePath);
         const rec={...remote,dataUrl};delete rec.id;
-        await addPhoto(rec);
+        preparedPhotos.push(rec);
       }
+      const preparedMetas=[];
       for(const remoteMeta of (snapshot.cityMeta||[])){
         const meta=JSON.parse(JSON.stringify(remoteMeta));
         meta.coverImage=await cachedCloudImage(meta.coverStoragePath);
         for(const att of (meta.attractions||[])){
           for(const ph of (att.photos||[])) ph.dataUrl=await cachedCloudImage(ph.storagePath);
         }
-        await putLocalMeta(meta);
+        preparedMetas.push(meta);
       }
+      await clearLocalTravelData();
+      for(const rec of preparedPhotos) await addPhoto(rec);
+      for(const meta of preparedMetas) await putLocalMeta(meta);
       cityMetaCache.clear();
       localStorage.setItem(CLOUD_OWNER_KEY,cloudUser.id);
       localStorage.setItem(CLOUD_DIRTY_KEY,'0');
