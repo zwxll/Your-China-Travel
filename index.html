@@ -5151,7 +5151,7 @@
     ?window.supabase.createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})
     :null;
   let cloudUser=null,cloudSyncTimer=null,cloudSyncPromise=null,cloudPreparePromise=null,cloudPrepareUserId='';
-  let cloudSuppressDirty=false,cloudReady=false,cloudSigningOut=false;
+  let cloudSuppressDirty=false,cloudReady=false,cloudSigningOut=false,cloudMutationVersion=0;
   const accountBtn=$('accountBtn'),accountLabel=$('accountLabel'),syncStatus=$('syncStatus');
   const authOverlay=$('authOverlay'),authClose=$('authClose'),authGuestView=$('authGuestView'),authUserView=$('authUserView');
   const loginTab=$('loginTab'),registerTab=$('registerTab'),authForm=$('authForm'),authEmail=$('authEmail'),authEmailField=$('authEmailField');
@@ -5225,6 +5225,7 @@
 
   function markCloudDirty(){
     if(cloudSuppressDirty) return;
+    cloudMutationVersion+=1;
     localStorage.setItem(CLOUD_DIRTY_KEY,'1');
     if(!cloudUser){setSyncStatus('仅本机','');return;}
     setSyncStatus('待同步','syncing');
@@ -5290,40 +5291,41 @@
 
   async function buildCloudSnapshot(){
     const photos=await getAllPhotos(),metas=await getAllCityMeta();
-    cloudSuppressDirty=true;
-    try{
-      const cloudPhotos=[],photoPathByDataUrl=new Map();
-      for(const photo of photos){
-        if(!photo.cloudId) photo.cloudId=newCloudId();
-        if(photo.dataUrl&&!photo.storagePath) photo.storagePath=await uploadCloudImage(photo.dataUrl,'photos',photo.cloudId);
-        await putLocalPhoto(photo);
-        if(photo.dataUrl) photoPathByDataUrl.set(photo.dataUrl,{storagePath:photo.storagePath,cloudId:photo.cloudId});
-        const clean={...photo};delete clean.id;delete clean.dataUrl;
-        cloudPhotos.push(clean);
+    const cloudPhotos=[],photoPathByDataUrl=new Map();
+    let completedImages=0;
+    const totalImages=photos.length;
+    for(const photo of photos){
+      if(!photo.cloudId) photo.cloudId=newCloudId();
+      if(photo.dataUrl&&!photo.storagePath) photo.storagePath=await uploadCloudImage(photo.dataUrl,'photos',photo.cloudId);
+      await putLocalPhoto(photo);
+      completedImages+=1;
+      if(totalImages) setSyncStatus('同步 '+completedImages+'/'+totalImages,'syncing');
+      if(photo.dataUrl) photoPathByDataUrl.set(photo.dataUrl,{storagePath:photo.storagePath,cloudId:photo.cloudId});
+      const clean={...photo};delete clean.id;delete clean.dataUrl;
+      cloudPhotos.push(clean);
+    }
+    const cloudMetas=[];
+    for(const meta of metas){
+      if(meta.coverImage&&!meta.coverStoragePath){
+        meta.coverCloudId=meta.coverCloudId||newCloudId();
+        meta.coverStoragePath=await uploadCloudImage(meta.coverImage,'covers',meta.coverCloudId);
       }
-      const cloudMetas=[];
-      for(const meta of metas){
-        if(meta.coverImage&&!meta.coverStoragePath){
-          meta.coverCloudId=meta.coverCloudId||newCloudId();
-          meta.coverStoragePath=await uploadCloudImage(meta.coverImage,'covers',meta.coverCloudId);
+      const attractions=meta.attractions||[];
+      for(const att of attractions){
+        for(const ph of (att.photos||[])){
+          ph.cloudId=ph.cloudId||newCloudId();
+          const shared=ph.dataUrl?photoPathByDataUrl.get(ph.dataUrl):null;
+          if(shared){ph.storagePath=shared.storagePath;ph.cloudId=shared.cloudId;}
+          else if(ph.dataUrl&&!ph.storagePath) ph.storagePath=await uploadCloudImage(ph.dataUrl,'attractions',ph.cloudId);
         }
-        const attractions=meta.attractions||[];
-        for(const att of attractions){
-          for(const ph of (att.photos||[])){
-            ph.cloudId=ph.cloudId||newCloudId();
-            const shared=ph.dataUrl?photoPathByDataUrl.get(ph.dataUrl):null;
-            if(shared){ph.storagePath=shared.storagePath;ph.cloudId=shared.cloudId;}
-            else if(ph.dataUrl&&!ph.storagePath) ph.storagePath=await uploadCloudImage(ph.dataUrl,'attractions',ph.cloudId);
-          }
-        }
-        await putLocalMeta(meta);
-        const clean=JSON.parse(JSON.stringify(meta));
-        delete clean.coverImage;
-        (clean.attractions||[]).forEach(att=>(att.photos||[]).forEach(ph=>delete ph.dataUrl));
-        cloudMetas.push(clean);
       }
-      return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,savedAt:new Date().toISOString()};
-    }finally{cloudSuppressDirty=false;}
+      await putLocalMeta(meta);
+      const clean=JSON.parse(JSON.stringify(meta));
+      delete clean.coverImage;
+      (clean.attractions||[]).forEach(att=>(att.photos||[]).forEach(ph=>delete ph.dataUrl));
+      cloudMetas.push(clean);
+    }
+    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,savedAt:new Date().toISOString()};
   }
 
   async function syncToCloud(options){
@@ -5332,15 +5334,21 @@
     cloudSyncPromise=(async ()=>{
       setSyncStatus('同步中','syncing');
       try{
-        const previous=await readCloudSnapshot();
-        const snapshot=await buildCloudSnapshot();
-        const {error}=await cloudClient.from(CLOUD_TABLE).upsert({user_id:cloudUser.id,data:snapshot,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-        if(error) throw error;
-        const previousPaths=collectSnapshotPaths(previous),currentPaths=collectSnapshotPaths(snapshot);
-        const unusedPaths=[...previousPaths].filter(path=>!currentPaths.has(path));
-        for(let i=0;i<unusedPaths.length;i+=100){
-          const {error:removeError}=await cloudClient.storage.from(CLOUD_BUCKET).remove(unusedPaths.slice(i,i+100));
-          if(removeError) console.warn('清理云端旧照片失败',removeError);
+        let needsAnotherPass=true;
+        while(needsAnotherPass&&cloudUser){
+          const passVersion=cloudMutationVersion;
+          const previous=await readCloudSnapshot();
+          const snapshot=await buildCloudSnapshot();
+          const {error}=await cloudClient.from(CLOUD_TABLE).upsert({user_id:cloudUser.id,data:snapshot,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+          if(error) throw error;
+          const previousPaths=collectSnapshotPaths(previous),currentPaths=collectSnapshotPaths(snapshot);
+          const unusedPaths=[...previousPaths].filter(path=>!currentPaths.has(path));
+          for(let i=0;i<unusedPaths.length;i+=100){
+            const {error:removeError}=await cloudClient.storage.from(CLOUD_BUCKET).remove(unusedPaths.slice(i,i+100));
+            if(removeError) console.warn('清理云端旧照片失败',removeError);
+          }
+          needsAnotherPass=cloudMutationVersion!==passVersion;
+          if(needsAnotherPass) setSyncStatus('继续同步','syncing');
         }
         localStorage.setItem(CLOUD_OWNER_KEY,cloudUser.id);
         localStorage.setItem(CLOUD_DIRTY_KEY,'0');
@@ -5348,6 +5356,7 @@
         if(options&&options.notify) toast('旅行资料已同步到云端');
       }catch(error){
         console.error('云端同步失败',error);
+        localStorage.setItem(CLOUD_DIRTY_KEY,'1');
         setSyncStatus('同步失败','error');
         if(options&&options.notify) toast('同步失败：'+friendlyAuthError(error),true);
         throw error;
@@ -5414,8 +5423,15 @@
         }
         const remote=await readCloudSnapshot();
         const localHas=await hasLocalTravelData();
+        const localPhotoCount=(await getAllPhotos()).length;
+        const remotePhotoCount=remote&&remote.photos?remote.photos.length:0;
         if(owner===user.id&&dirty){
           await syncToCloud();
+        }else if(owner===user.id&&remote&&localPhotoCount>remotePhotoCount){
+          cloudMutationVersion+=1;
+          localStorage.setItem(CLOUD_DIRTY_KEY,'1');
+          await syncToCloud();
+          toast('已保留本机较完整的资料并重新同步');
         }else if(remote&&localHas&&owner!==user.id){
           const useLocal=confirm('检测到这台设备有尚未绑定账号的旅行资料，同时该账号已有云端资料。\n\n按“确定”：用这台设备的资料替换云端资料。\n按“取消”：使用账号的云端资料替换这台设备的资料。');
           if(useLocal) await syncToCloud(); else await restoreCloudSnapshot(remote);
