@@ -52,6 +52,7 @@
 | GSAP 3.12.5 | 入场动画 / 过渡时间轴 |
 | Matter.js 0.20.0 | 引力相册物理引擎 |
 | IndexedDB | 照片与城市数据浏览器本地持久化 |
+| Supabase Auth / Database / Storage | 账号注册登录、旅行数据与私有照片跨设备同步 |
 | 可变字体 | Inter / Figtree / Playfair Display（self-host） |
 
 ## 项目结构
@@ -68,6 +69,8 @@ Your-China-Travel/
 ├── china-geo.js                # 中国 GeoJSON 数据（本地回退）
 ├── china-geo.json
 ├── china-provinces-geo.js
+├── supabase-config.js            # Supabase 浏览器端公开配置
+├── supabase-setup.sql            # 云端数据表、照片桶及账号隔离策略
 ├── vercel.json                 # Vercel 云端部署配置
 ├── nginx.conf                  # Nginx 服务器配置
 ├── Dockerfile                  # Docker 容器化部署
@@ -108,7 +111,16 @@ docker-compose up -d
 
 ## 数据存储说明
 
-照片与城市记录使用 **IndexedDB** 存储在浏览器本地。不同电脑 / 浏览器数据独立，换设备需重新添加。清除浏览器数据会删除所有记录，建议定期导出备份。
+未登录时，照片与城市记录使用 **IndexedDB** 存储在当前浏览器。登录账号后，旅行数据会同步到 Supabase，照片保存在私有 Storage 中；在另一台设备登录同一账号即可恢复。每个账号只能访问自己的内容。
+
+### 首次配置账号云端
+
+1. 在 Supabase 项目中打开 **SQL Editor**。
+2. 新建查询，完整粘贴 `supabase-setup.sql` 并运行一次。
+3. 在 **Authentication → URL Configuration** 中，把正式网站地址设为 Site URL，并加入 Redirect URLs。
+4. `supabase-config.js` 只能填写 Project URL 与 Publishable key，禁止填写 Secret key 或 service_role key。
+
+当前浏览器已有本机资料时，首次登录空账号会自动上传迁移；若账号云端和设备本机同时已有资料，页面会让用户选择保留哪一份。
 
 ## 外部依赖（运行时 CDN）
 

@@ -171,6 +171,21 @@
     animation-play-state:paused;
   }
   .stats{display:flex;gap:10px;flex:0 0 auto;}
+  .header-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto;}
+  .account-btn{
+    min-height:38px;max-width:220px;padding:0 15px;border:1px solid rgba(125,211,252,.28);
+    border-radius:var(--radius-pill);background:rgba(14,165,233,.08);color:var(--ink);
+    display:flex;align-items:center;gap:9px;font:600 12px/1 inherit;letter-spacing:.2px;
+    cursor:pointer;transition:border-color .2s ease,background .2s ease,transform .2s ease;
+  }
+  .account-btn:hover{border-color:rgba(125,211,252,.65);background:rgba(14,165,233,.14);}
+  .account-btn:active{transform:scale(.98);}
+  .account-btn .account-dot{width:7px;height:7px;border-radius:50%;background:#64748b;box-shadow:0 0 0 4px rgba(100,116,139,.12);}
+  .account-btn.signed-in .account-dot{background:var(--accent);box-shadow:0 0 0 4px rgba(56,189,248,.14),0 0 12px rgba(56,189,248,.5);}
+  .account-btn .account-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .sync-status{min-width:58px;color:var(--muted);font-size:11px;text-align:right;white-space:nowrap;}
+  .sync-status.syncing{color:var(--accent-l);}
+  .sync-status.error{color:#fca5a5;}
   .stat{
     background:#080808;border:1px solid var(--line);border-radius:12px;
     padding:6px 14px;text-align:center;box-shadow:var(--shadow-sm);
@@ -895,6 +910,63 @@
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
   .toast.error{background:rgba(197,48,48,.95);}
+
+  /* 账号与云端同步 */
+  .auth-overlay{
+    position:fixed;inset:0;z-index:var(--z-top);display:none;place-items:center;padding:20px;
+    background:rgba(0,0,0,.76);backdrop-filter:blur(18px) saturate(120%);
+    -webkit-backdrop-filter:blur(18px) saturate(120%);
+  }
+  .auth-overlay.show{display:grid;}
+  .auth-panel{
+    width:min(430px,100%);border:1px solid rgba(125,211,252,.22);border-radius:var(--radius);
+    background:linear-gradient(145deg,rgba(12,19,28,.98),rgba(5,8,12,.98));
+    box-shadow:0 28px 90px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.07);
+    overflow:hidden;
+  }
+  .auth-panel-head{padding:28px 28px 18px;position:relative;}
+  .auth-kicker{margin:0 0 8px;color:var(--accent-l);font:700 11px/1.2 'Inter',sans-serif;letter-spacing:1.6px;text-transform:uppercase;}
+  .auth-title{margin:0;color:var(--ink);font:750 25px/1.2 'Inter',sans-serif;letter-spacing:-.5px;}
+  .auth-desc{margin:10px 0 0;color:#a8b6c7;font-size:13px;line-height:1.65;}
+  .auth-close{position:absolute;right:16px;top:16px;width:34px;height:34px;border:0;border-radius:var(--radius-xs);background:rgba(255,255,255,.06);color:#cbd5e1;font-size:22px;cursor:pointer;}
+  .auth-close:hover{background:rgba(255,255,255,.1);color:#fff;}
+  .auth-tabs{display:grid;grid-template-columns:1fr 1fr;margin:0 28px;border-bottom:1px solid rgba(255,255,255,.09);}
+  .auth-tab{padding:12px;border:0;border-bottom:2px solid transparent;background:transparent;color:#94a3b8;font:650 13px/1 'Inter',sans-serif;cursor:pointer;}
+  .auth-tab.active{border-bottom-color:var(--accent);color:#e0f7ff;}
+  .auth-form{display:grid;gap:15px;padding:23px 28px 28px;}
+  .auth-field{display:grid;gap:7px;}
+  .auth-field label{color:#d7e1ec;font-size:12px;font-weight:650;}
+  .auth-field input{
+    width:100%;height:44px;border:1px solid rgba(148,163,184,.24);border-radius:var(--radius-sm);
+    background:#080d13;color:#f8fafc;padding:0 13px;font:500 14px/1 'Inter',sans-serif;outline:none;
+  }
+  .auth-field input::placeholder{color:#718096;}
+  .auth-field input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.12);}
+  .auth-submit{height:44px;border:0;border-radius:var(--radius-pill);background:linear-gradient(135deg,var(--accent-l),var(--accent));color:#03131d;font-weight:800;cursor:pointer;}
+  .auth-submit:hover{filter:brightness(1.06);}
+  .auth-submit:active{transform:scale(.98);}
+  .auth-submit:disabled{cursor:wait;opacity:.62;}
+  .auth-link{justify-self:center;border:0;background:transparent;color:var(--accent-l);font-size:12px;cursor:pointer;padding:2px 8px;}
+  .auth-message{display:none;margin:0;padding:10px 12px;border-radius:var(--radius-sm);font-size:12px;line-height:1.55;background:rgba(56,189,248,.09);color:#bae6fd;}
+  .auth-message.show{display:block;}
+  .auth-message.error{background:rgba(239,68,68,.1);color:#fecaca;}
+  .account-panel{padding:25px 28px 28px;display:grid;gap:18px;}
+  .account-email{font-size:15px;color:#f8fafc;overflow-wrap:anywhere;}
+  .account-note{color:#94a3b8;font-size:12px;line-height:1.65;}
+  .account-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .account-action{height:42px;border-radius:var(--radius-pill);border:1px solid rgba(148,163,184,.25);background:rgba(255,255,255,.04);color:#dbeafe;font-weight:700;cursor:pointer;}
+  .account-action.primary{border-color:rgba(56,189,248,.45);background:rgba(56,189,248,.12);color:#e0f7ff;}
+  .account-action:hover{background:rgba(255,255,255,.08);}
+  .cloud-blocker{display:none;padding:0 28px 25px;color:#fca5a5;font-size:12px;line-height:1.6;}
+  .cloud-blocker.show{display:block;}
+  @media(max-width:720px){
+    header{flex-wrap:nowrap;padding:10px 12px;}
+    .header-actions{gap:6px;}
+    .sync-status,.stats{display:none;}
+    .account-btn{max-width:126px;padding:0 11px;}
+    .auth-panel-head,.auth-form,.account-panel{padding-left:20px;padding-right:20px;}
+    .auth-tabs{margin-left:20px;margin-right:20px;}
+  }
 
   /* 移动端适配 */
   @media (max-width:640px){
@@ -3147,9 +3219,16 @@
         <p class="sub">点亮你走过的每一座城市</p>
       </div>
     </div>
-    <div class="stats">
-      <div class="stat"><span id="cityStat">0</span><label>座城市</label></div>
-      <div class="stat"><span id="photoStat">0</span><label>张照片</label></div>
+    <div class="header-actions">
+      <div class="stats">
+        <div class="stat"><span id="cityStat">0</span><label>座城市</label></div>
+        <div class="stat"><span id="photoStat">0</span><label>张照片</label></div>
+      </div>
+      <span class="sync-status" id="syncStatus" aria-live="polite">仅本机</span>
+      <button class="account-btn" id="accountBtn" type="button" aria-haspopup="dialog">
+        <span class="account-dot" aria-hidden="true"></span>
+        <span class="account-label" id="accountLabel">登录账号</span>
+      </button>
     </div>
   </header>
 
@@ -3470,6 +3549,50 @@
   <!-- Toast -->
   <div id="toast" class="toast"></div>
 
+  <!-- 账号弹窗：Supabase Auth + 云端同步 -->
+  <div class="auth-overlay" id="authOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitle">
+    <section class="auth-panel">
+      <div class="auth-panel-head">
+        <p class="auth-kicker">Travel Cloud</p>
+        <h2 class="auth-title" id="authTitle">登录旅行账号</h2>
+        <p class="auth-desc" id="authDesc">登录后，城市记录和照片会同步到云端，并可在其他设备查看。</p>
+        <button class="auth-close" id="authClose" type="button" aria-label="关闭">&times;</button>
+      </div>
+      <div id="authGuestView">
+        <div class="auth-tabs" role="tablist">
+          <button class="auth-tab active" id="loginTab" type="button" role="tab" aria-selected="true">登录</button>
+          <button class="auth-tab" id="registerTab" type="button" role="tab" aria-selected="false">创建账号</button>
+        </div>
+        <form class="auth-form" id="authForm">
+          <div class="auth-field" id="authEmailField">
+            <label for="authEmail">邮箱</label>
+            <input id="authEmail" name="email" type="email" autocomplete="email" placeholder="name@example.com" required>
+          </div>
+          <div class="auth-field">
+            <label for="authPassword">密码</label>
+            <input id="authPassword" name="password" type="password" autocomplete="current-password" placeholder="至少 6 位字符" minlength="6" required>
+          </div>
+          <p class="auth-message" id="authMessage" aria-live="polite"></p>
+          <button class="auth-submit" id="authSubmit" type="submit">登录</button>
+          <button class="auth-link" id="resetPasswordBtn" type="button">忘记密码</button>
+        </form>
+      </div>
+      <div id="authUserView" hidden>
+        <div class="account-panel">
+          <div>
+            <div class="account-email" id="accountEmail"></div>
+            <div class="account-note">你的旅行资料已绑定此账号。上传或修改后会自动同步，也可以手动立即同步。</div>
+          </div>
+          <div class="account-actions">
+            <button class="account-action primary" id="syncNowBtn" type="button">立即同步</button>
+            <button class="account-action" id="signOutBtn" type="button">退出账号</button>
+          </div>
+        </div>
+      </div>
+      <p class="cloud-blocker" id="cloudBlocker"></p>
+    </section>
+  </div>
+
 <!-- 【离线部署】中国省级边界 GeoJSON 本地缓存，避免 DataV CDN 不可达时地图加载失败 -->
 <script src="china-geo.js"></script>
 <!-- 【离线部署】34 省地级市边界 GeoJSON 本地缓存，城市点全量加载（371城），不再依赖 DataV CDN -->
@@ -3495,6 +3618,10 @@
 
 <!-- Matter.js 物理引擎：引力相册照片刚体模拟（掉落/碰撞/拖拽抛掷） -->
 <script src="https://cdn.jsdelivr.net/npm/matter-js@0.20.0/build/matter.min.js"></script>
+
+<!-- Supabase：账号认证、数据库与私有照片云存储（原生浏览器客户端，无需 npm 构建） -->
+<script src="supabase-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <!-- GSAP 入场动画（独立执行，不等 globe.gl 加载，避免延迟）
      用 fromTo 明确起止状态，immediateRender:true 在首帧前即设为隐藏，无闪烁 -->
@@ -4929,7 +5056,7 @@
     return withTimeout(new Promise((resolve,reject)=>{
       const os=db.transaction(STORE,'readwrite').objectStore(STORE);
       const r=os.add(rec);
-      r.onsuccess=()=>resolve(r.result);
+      r.onsuccess=()=>{markCloudDirty();resolve(r.result);};
       r.onerror=()=>reject(r.error);
     }),20000,'保存照片超时');
   }
@@ -4948,7 +5075,7 @@
     const db=await openDB();
     return withTimeout(new Promise((resolve,reject)=>{
       const r=db.transaction(STORE,'readwrite').objectStore(STORE).delete(id);
-      r.onsuccess=()=>resolve();
+      r.onsuccess=()=>{markCloudDirty();resolve();};
       r.onerror=()=>reject(r.error);
     }),10000,'删除照片超时');
   }
@@ -4976,7 +5103,7 @@
           os.put(ra); os.put(rb);
         }
       }
-      tx.oncomplete=()=>resolve();
+      tx.oncomplete=()=>{markCloudDirty();resolve();};
       tx.onerror=()=>reject(tx.error);
     }),10000,'交换顺序超时');
   }
@@ -5003,6 +5130,7 @@
       r.onerror=()=>reject(r.error);
     }),8000,'保存城市元数据超时');
     cityMetaCache.set(meta.cityKey,meta);
+    markCloudDirty();
   }
   async function getAllCityMeta(){
     const db=await openDB();
@@ -5014,6 +5142,373 @@
     metas.forEach(m=>cityMetaCache.set(m.cityKey,m));
     return metas;
   }
+
+  /* ---------- Supabase 账号与云端同步 ---------- */
+  const CLOUD_TABLE='travel_snapshots',CLOUD_BUCKET='travel-media';
+  const CLOUD_OWNER_KEY='travelCloudOwner',CLOUD_DIRTY_KEY='travelCloudDirty';
+  const cloudConfig=window.TRAVEL_SUPABASE_CONFIG||{};
+  const cloudClient=(window.supabase&&cloudConfig.url&&cloudConfig.publishableKey)
+    ?window.supabase.createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})
+    :null;
+  let cloudUser=null,cloudSyncTimer=null,cloudSyncPromise=null,cloudPreparePromise=null,cloudPrepareUserId='';
+  let cloudSuppressDirty=false,cloudReady=false,cloudSigningOut=false;
+  const accountBtn=$('accountBtn'),accountLabel=$('accountLabel'),syncStatus=$('syncStatus');
+  const authOverlay=$('authOverlay'),authClose=$('authClose'),authGuestView=$('authGuestView'),authUserView=$('authUserView');
+  const loginTab=$('loginTab'),registerTab=$('registerTab'),authForm=$('authForm'),authEmail=$('authEmail'),authEmailField=$('authEmailField');
+  const authPassword=$('authPassword'),authSubmit=$('authSubmit'),resetPasswordBtn=$('resetPasswordBtn');
+  const authMessage=$('authMessage'),accountEmail=$('accountEmail'),signOutBtn=$('signOutBtn');
+  const syncNowBtn=$('syncNowBtn'),cloudBlocker=$('cloudBlocker'),authTitle=$('authTitle'),authDesc=$('authDesc');
+  let authMode='login';
+
+  function setSyncStatus(text,state){
+    syncStatus.textContent=text;
+    syncStatus.className='sync-status'+(state?(' '+state):'');
+  }
+  function setAuthMessage(text,isError){
+    authMessage.textContent=text||'';
+    authMessage.className='auth-message'+(text?' show':'')+(isError?' error':'');
+  }
+  function friendlyAuthError(error){
+    const msg=(error&&error.message)||String(error||'未知错误');
+    if(/Invalid login credentials/i.test(msg)) return '邮箱或密码不正确。';
+    if(/Email not confirmed/i.test(msg)) return '请先打开注册邮件并确认邮箱。';
+    if(/User already registered/i.test(msg)) return '这个邮箱已经注册，请直接登录。';
+    if(/Password should be/i.test(msg)) return '密码至少需要 6 位字符。';
+    if(/rate limit/i.test(msg)) return '操作太频繁，请稍后再试。';
+    if(/Failed to fetch|NetworkError/i.test(msg)) return '无法连接云端，请检查网络。';
+    return msg;
+  }
+  function setAuthMode(mode){
+    authMode=mode;
+    const isRegister=mode==='register';
+    const isRecovery=mode==='recovery';
+    authEmailField.style.display=isRecovery?'none':'';
+    loginTab.classList.toggle('active',!isRegister);
+    registerTab.classList.toggle('active',isRegister);
+    loginTab.setAttribute('aria-selected',String(!isRegister));
+    registerTab.setAttribute('aria-selected',String(isRegister));
+    authSubmit.textContent=isRecovery?'保存新密码':(isRegister?'创建账号':'登录');
+    authPassword.autocomplete=(isRegister||isRecovery)?'new-password':'current-password';
+    authPassword.placeholder=isRecovery?'输入新的登录密码':'至少 6 位字符';
+    resetPasswordBtn.style.display=(isRegister||isRecovery)?'none':'';
+    loginTab.parentElement.style.display=isRecovery?'none':'';
+    if(isRecovery){authTitle.textContent='设置新密码';authDesc.textContent='请输入新的登录密码，保存后会继续登录你的旅行账号。';}
+    setAuthMessage('',false);
+  }
+  function updateAccountUI(){
+    const signedIn=!!cloudUser&&authMode!=='recovery';
+    accountBtn.classList.toggle('signed-in',signedIn);
+    accountLabel.textContent=signedIn?(cloudUser.email||'已登录'):'登录账号';
+    authGuestView.hidden=signedIn;
+    authUserView.hidden=!signedIn;
+    accountEmail.textContent=signedIn?(cloudUser.email||'当前账号'):'';
+    authTitle.textContent=signedIn?'旅行账号':'登录旅行账号';
+    authDesc.textContent=signedIn?'同一账号在不同设备登录后，会显示相同的旅行记录。':'登录后，城市记录和照片会同步到云端，并可在其他设备查看。';
+    if(!signedIn) setSyncStatus('仅本机','');
+  }
+  function openAuth(){
+    updateAccountUI();
+    if(authMode==='recovery') setAuthMode('recovery');
+    authOverlay.classList.add('show');
+    document.body.classList.add('modal-open');
+    if(!cloudUser) setTimeout(()=>authEmail.focus(),50);
+  }
+  function closeAuth(){
+    authOverlay.classList.remove('show');
+    document.body.classList.remove('modal-open');
+  }
+  accountBtn.addEventListener('click',openAuth);
+  authClose.addEventListener('click',closeAuth);
+  authOverlay.addEventListener('click',e=>{if(e.target===authOverlay) closeAuth();});
+  loginTab.addEventListener('click',()=>setAuthMode('login'));
+  registerTab.addEventListener('click',()=>setAuthMode('register'));
+
+  function markCloudDirty(){
+    if(cloudSuppressDirty) return;
+    localStorage.setItem(CLOUD_DIRTY_KEY,'1');
+    if(!cloudUser){setSyncStatus('仅本机','');return;}
+    setSyncStatus('待同步','syncing');
+    clearTimeout(cloudSyncTimer);
+    cloudSyncTimer=setTimeout(()=>syncToCloud().catch(()=>{}),1200);
+  }
+
+  function dataUrlToBlob(dataUrl){
+    const parts=dataUrl.split(','),mime=((parts[0].match(/:(.*?);/)||[])[1]||'image/jpeg');
+    const bytes=atob(parts[1]||''),arr=new Uint8Array(bytes.length);
+    for(let i=0;i<bytes.length;i++) arr[i]=bytes.charCodeAt(i);
+    return new Blob([arr],{type:mime});
+  }
+  function blobToDataUrl(blob){
+    return new Promise((resolve,reject)=>{const fr=new FileReader();fr.onload=()=>resolve(fr.result);fr.onerror=()=>reject(fr.error);fr.readAsDataURL(blob);});
+  }
+  function newCloudId(){
+    return (typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():(Date.now().toString(36)+Math.random().toString(36).slice(2));
+  }
+  async function uploadCloudImage(dataUrl,kind,cloudId){
+    const blob=dataUrlToBlob(dataUrl);
+    const ext=blob.type==='image/png'?'png':blob.type==='image/webp'?'webp':blob.type==='image/gif'?'gif':'jpg';
+    const path=cloudUser.id+'/'+kind+'/'+cloudId+'.'+ext;
+    const {error}=await cloudClient.storage.from(CLOUD_BUCKET).upload(path,blob,{contentType:blob.type,upsert:true,cacheControl:'3600'});
+    if(error) throw error;
+    return path;
+  }
+  async function downloadCloudImage(path){
+    if(!path) return '';
+    const {data,error}=await cloudClient.storage.from(CLOUD_BUCKET).download(path);
+    if(error) throw error;
+    return blobToDataUrl(data);
+  }
+  async function putLocalPhoto(rec){
+    const db=await openDB();
+    return withTimeout(new Promise((resolve,reject)=>{
+      const r=db.transaction(STORE,'readwrite').objectStore(STORE).put(rec);
+      r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);
+    }),20000,'更新本地照片超时');
+  }
+  async function putLocalMeta(meta){
+    const db=await openDB();
+    return withTimeout(new Promise((resolve,reject)=>{
+      const r=db.transaction(META_STORE,'readwrite').objectStore(META_STORE).put(meta);
+      r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error);
+    }),10000,'更新本地资料超时');
+  }
+  async function clearLocalTravelData(){
+    const db=await openDB();
+    await withTimeout(new Promise((resolve,reject)=>{
+      const tx=db.transaction([STORE,META_STORE],'readwrite');
+      tx.objectStore(STORE).clear();tx.objectStore(META_STORE).clear();
+      tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
+    }),20000,'清理本地缓存超时');
+    cityMetaCache.clear();thumbCacheByCity.clear();photoCountByCity.clear();
+  }
+  async function hasLocalTravelData(){
+    const [photos,metas]=await Promise.all([getAllPhotos(),getAllCityMeta()]);
+    return photos.length>0||metas.some(m=>m&&(
+      m.visitMonth||m.description||m.rating||(m.tags&&m.tags.length)||(m.attractions&&m.attractions.length)||m.coverImage
+    ));
+  }
+
+  async function buildCloudSnapshot(){
+    const photos=await getAllPhotos(),metas=await getAllCityMeta();
+    cloudSuppressDirty=true;
+    try{
+      const cloudPhotos=[],photoPathByDataUrl=new Map();
+      for(const photo of photos){
+        if(!photo.cloudId) photo.cloudId=newCloudId();
+        if(photo.dataUrl&&!photo.storagePath) photo.storagePath=await uploadCloudImage(photo.dataUrl,'photos',photo.cloudId);
+        await putLocalPhoto(photo);
+        if(photo.dataUrl) photoPathByDataUrl.set(photo.dataUrl,{storagePath:photo.storagePath,cloudId:photo.cloudId});
+        const clean={...photo};delete clean.id;delete clean.dataUrl;
+        cloudPhotos.push(clean);
+      }
+      const cloudMetas=[];
+      for(const meta of metas){
+        if(meta.coverImage&&!meta.coverStoragePath){
+          meta.coverCloudId=meta.coverCloudId||newCloudId();
+          meta.coverStoragePath=await uploadCloudImage(meta.coverImage,'covers',meta.coverCloudId);
+        }
+        const attractions=meta.attractions||[];
+        for(const att of attractions){
+          for(const ph of (att.photos||[])){
+            ph.cloudId=ph.cloudId||newCloudId();
+            const shared=ph.dataUrl?photoPathByDataUrl.get(ph.dataUrl):null;
+            if(shared){ph.storagePath=shared.storagePath;ph.cloudId=shared.cloudId;}
+            else if(ph.dataUrl&&!ph.storagePath) ph.storagePath=await uploadCloudImage(ph.dataUrl,'attractions',ph.cloudId);
+          }
+        }
+        await putLocalMeta(meta);
+        const clean=JSON.parse(JSON.stringify(meta));
+        delete clean.coverImage;
+        (clean.attractions||[]).forEach(att=>(att.photos||[]).forEach(ph=>delete ph.dataUrl));
+        cloudMetas.push(clean);
+      }
+      return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,savedAt:new Date().toISOString()};
+    }finally{cloudSuppressDirty=false;}
+  }
+
+  async function syncToCloud(options){
+    if(!cloudClient||!cloudUser) return;
+    if(cloudSyncPromise) return cloudSyncPromise;
+    cloudSyncPromise=(async ()=>{
+      setSyncStatus('同步中','syncing');
+      try{
+        const previous=await readCloudSnapshot();
+        const snapshot=await buildCloudSnapshot();
+        const {error}=await cloudClient.from(CLOUD_TABLE).upsert({user_id:cloudUser.id,data:snapshot,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+        if(error) throw error;
+        const previousPaths=collectSnapshotPaths(previous),currentPaths=collectSnapshotPaths(snapshot);
+        const unusedPaths=[...previousPaths].filter(path=>!currentPaths.has(path));
+        for(let i=0;i<unusedPaths.length;i+=100){
+          const {error:removeError}=await cloudClient.storage.from(CLOUD_BUCKET).remove(unusedPaths.slice(i,i+100));
+          if(removeError) console.warn('清理云端旧照片失败',removeError);
+        }
+        localStorage.setItem(CLOUD_OWNER_KEY,cloudUser.id);
+        localStorage.setItem(CLOUD_DIRTY_KEY,'0');
+        setSyncStatus('已同步','');
+        if(options&&options.notify) toast('旅行资料已同步到云端');
+      }catch(error){
+        console.error('云端同步失败',error);
+        setSyncStatus('同步失败','error');
+        if(options&&options.notify) toast('同步失败：'+friendlyAuthError(error),true);
+        throw error;
+      }finally{cloudSyncPromise=null;}
+    })();
+    return cloudSyncPromise;
+  }
+
+  async function readCloudSnapshot(){
+    const {data,error}=await cloudClient.from(CLOUD_TABLE).select('data,updated_at').eq('user_id',cloudUser.id).maybeSingle();
+    if(error) throw error;
+    return data&&data.data?data.data:null;
+  }
+  function collectSnapshotPaths(snapshot){
+    const paths=new Set();
+    (snapshot&&snapshot.photos||[]).forEach(p=>{if(p.storagePath) paths.add(p.storagePath);});
+    (snapshot&&snapshot.cityMeta||[]).forEach(meta=>{
+      if(meta.coverStoragePath) paths.add(meta.coverStoragePath);
+      (meta.attractions||[]).forEach(att=>(att.photos||[]).forEach(ph=>{if(ph.storagePath) paths.add(ph.storagePath);}));
+    });
+    return paths;
+  }
+  async function restoreCloudSnapshot(snapshot){
+    setSyncStatus('下载中','syncing');
+    cloudSuppressDirty=true;
+    try{
+      await clearLocalTravelData();
+      const downloadedImages=new Map();
+      async function cachedCloudImage(path){
+        if(!path) return '';
+        if(!downloadedImages.has(path)) downloadedImages.set(path,downloadCloudImage(path));
+        return downloadedImages.get(path);
+      }
+      for(const remote of (snapshot.photos||[])){
+        const dataUrl=await cachedCloudImage(remote.storagePath);
+        const rec={...remote,dataUrl};delete rec.id;
+        await addPhoto(rec);
+      }
+      for(const remoteMeta of (snapshot.cityMeta||[])){
+        const meta=JSON.parse(JSON.stringify(remoteMeta));
+        meta.coverImage=await cachedCloudImage(meta.coverStoragePath);
+        for(const att of (meta.attractions||[])){
+          for(const ph of (att.photos||[])) ph.dataUrl=await cachedCloudImage(ph.storagePath);
+        }
+        await putLocalMeta(meta);
+      }
+      cityMetaCache.clear();
+      localStorage.setItem(CLOUD_OWNER_KEY,cloudUser.id);
+      localStorage.setItem(CLOUD_DIRTY_KEY,'0');
+      await refreshState();
+      setSyncStatus('已同步','');
+    }finally{cloudSuppressDirty=false;}
+  }
+
+  async function prepareUserData(user){
+    if(cloudPreparePromise&&cloudPrepareUserId===user.id) return cloudPreparePromise;
+    cloudPrepareUserId=user.id;
+    cloudPreparePromise=(async ()=>{
+      cloudUser=user;updateAccountUI();setSyncStatus('连接中','syncing');
+      const owner=localStorage.getItem(CLOUD_OWNER_KEY),dirty=localStorage.getItem(CLOUD_DIRTY_KEY)==='1';
+      try{
+        if(owner&&owner!==user.id){
+          cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;
+        }
+        const remote=await readCloudSnapshot();
+        const localHas=await hasLocalTravelData();
+        if(owner===user.id&&dirty){
+          await syncToCloud();
+        }else if(remote&&localHas&&owner!==user.id){
+          const useLocal=confirm('检测到这台设备有尚未绑定账号的旅行资料，同时该账号已有云端资料。\n\n按“确定”：用这台设备的资料替换云端资料。\n按“取消”：使用账号的云端资料替换这台设备的资料。');
+          if(useLocal) await syncToCloud(); else await restoreCloudSnapshot(remote);
+        }else if(remote){
+          await restoreCloudSnapshot(remote);
+        }else if(localHas){
+          await syncToCloud();
+          toast('本机旅行资料已迁移到你的云端账号');
+        }else{
+          localStorage.setItem(CLOUD_OWNER_KEY,user.id);localStorage.setItem(CLOUD_DIRTY_KEY,'0');setSyncStatus('已同步','');
+        }
+        cloudBlocker.classList.remove('show');cloudBlocker.textContent='';
+      }catch(error){
+        console.error('账号数据准备失败',error);
+        setSyncStatus('云端未配置','error');
+        cloudBlocker.textContent='云端数据表尚未初始化。请在 Supabase 的 SQL Editor 运行项目中的 supabase-setup.sql。';
+        cloudBlocker.classList.add('show');
+        toast('账号已登录，但云端存储尚未初始化',true);
+      }
+    })();
+    try{return await cloudPreparePromise;}
+    finally{cloudPreparePromise=null;cloudPrepareUserId='';}
+  }
+
+  authForm.addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!cloudClient){setAuthMessage('Supabase 客户端加载失败，请刷新页面重试。',true);return;}
+    authSubmit.disabled=true;setAuthMessage('',false);
+    try{
+      if(authMode==='recovery'){
+        const {data,error}=await cloudClient.auth.updateUser({password:authPassword.value});
+        if(error) throw error;
+        setAuthMode('login');await prepareUserData(data.user);closeAuth();toast('新密码已保存');
+      }else if(authMode==='register'){
+        const redirectTo=location.href.split('#')[0].split('?')[0];
+        const {data,error}=await cloudClient.auth.signUp({email:authEmail.value.trim(),password:authPassword.value,options:{emailRedirectTo:redirectTo}});
+        if(error) throw error;
+        if(data.session){await prepareUserData(data.user);closeAuth();toast('账号创建成功');}
+        else setAuthMessage('注册成功。请打开邮箱中的确认邮件，确认后再登录。',false);
+      }else{
+        const {data,error}=await cloudClient.auth.signInWithPassword({email:authEmail.value.trim(),password:authPassword.value});
+        if(error) throw error;
+        await prepareUserData(data.user);closeAuth();toast('登录成功，已载入你的旅行资料');
+      }
+    }catch(error){setAuthMessage(friendlyAuthError(error),true);}
+    finally{authSubmit.disabled=false;}
+  });
+  resetPasswordBtn.addEventListener('click',async ()=>{
+    const email=authEmail.value.trim();
+    if(!email){setAuthMessage('请先填写邮箱。',true);authEmail.focus();return;}
+    resetPasswordBtn.disabled=true;
+    const redirectTo=location.href.split('#')[0].split('?')[0];
+    const {error}=await cloudClient.auth.resetPasswordForEmail(email,{redirectTo});
+    resetPasswordBtn.disabled=false;
+    setAuthMessage(error?friendlyAuthError(error):'密码重置邮件已发送，请查看邮箱。',!!error);
+  });
+  syncNowBtn.addEventListener('click',()=>syncToCloud({notify:true}));
+  signOutBtn.addEventListener('click',async ()=>{
+    signOutBtn.disabled=true;
+    try{
+      if(localStorage.getItem(CLOUD_DIRTY_KEY)==='1') await syncToCloud();
+      cloudSigningOut=true;
+      const {error}=await cloudClient.auth.signOut();if(error) throw error;
+      cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;
+      localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_DIRTY_KEY);
+      cloudUser=null;await refreshState();updateAccountUI();closeAuth();toast('已安全退出账号');
+    }catch(error){toast('退出失败：'+friendlyAuthError(error),true);}
+    finally{cloudSigningOut=false;signOutBtn.disabled=false;}
+  });
+
+  async function initCloudAuth(){
+    if(cloudReady) return;
+    cloudReady=true;updateAccountUI();
+    if(!cloudClient){setSyncStatus('云端不可用','error');return;}
+    cloudClient.auth.onAuthStateChange((event,session)=>{
+      if(event==='PASSWORD_RECOVERY'){
+        setTimeout(()=>{cloudUser=session&&session.user?session.user:cloudUser;setAuthMode('recovery');openAuth();},0);
+      }else if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session&&(!cloudUser||cloudUser.id!==session.user.id)){
+        setTimeout(()=>{if(!cloudUser||cloudUser.id!==session.user.id) prepareUserData(session.user);},0);
+      }else if(event==='SIGNED_OUT'&&!cloudSigningOut&&cloudUser){
+        setTimeout(async ()=>{
+          cloudSuppressDirty=true;
+          try{await clearLocalTravelData();cloudUser=null;localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_DIRTY_KEY);await refreshState();updateAccountUI();}
+          finally{cloudSuppressDirty=false;}
+        },0);
+      }
+    });
+    const {data,error}=await cloudClient.auth.getSession();
+    if(error){setSyncStatus('云端不可用','error');return;}
+    if(data.session) await prepareUserData(data.session.user);
+  }
+
+  window.TravelCloud={sync:()=>syncToCloud({notify:true}),openAccount:openAuth};
 
   /* ---------- 图片处理：Base64（大图自动压缩，防止配额膨胀） ---------- */
   function readAsDataURL(file){
@@ -7382,6 +7877,8 @@
     const dataUrl=await compressImage(file,1600,0.85);
     const meta=await getCityMeta(currentCity.cityKey);
     meta.coverImage=dataUrl;
+    delete meta.coverStoragePath;
+    delete meta.coverCloudId;
     await saveCityMeta(meta);
     coverPreview.src=dataUrl;
     coverPreviewWrap.style.display='block';
@@ -7495,6 +7992,7 @@
         r.onsuccess=()=>resolve();
         r.onerror=()=>reject(r.error);
       }),8000,'删除城市元数据超时');
+      markCloudDirty();
       // 3. 清除内存缓存
       cityMetaCache.delete(cityKey);
       thumbCacheByCity.delete(cityKey);
@@ -8780,6 +9278,7 @@
 
   /* ---------- 启动 ---------- */
   async function start(){
+    await initCloudAuth();
     try{ await loadEcharts(); }
     catch(e){
       showMapError('ECharts 加载失败，请检查网络连接后刷新页面重试。<br/><br/>'+
