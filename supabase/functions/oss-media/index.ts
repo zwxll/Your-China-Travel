@@ -1,5 +1,23 @@
 import OSS from "npm:ali-oss@6.20.0";
-import { withSupabase } from "jsr:@supabase/server@^1";
+import { createClient } from "npm:@supabase/supabase-js@2";
+
+const allowedOrigins = new Set([
+  "https://zwxll.github.io",
+  "http://127.0.0.1:8765",
+]);
+
+function corsHeaders(request: Request) {
+  const origin = request.headers.get("Origin") || "";
+  return {
+    "Access-Control-Allow-Origin": allowedOrigins.has(origin) ? origin : "https://zwxll.github.io",
+    "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+    "Access-Control-Allow-Methods": "POST, OPTIONS",
+    "Vary": "Origin",
+  };
+}
+
+const json = (request: Request, body: unknown, status = 200) =>
+  Response.json(body, { status, headers: corsHeaders(request) });
 
 function ownsPath(path: unknown, userId: string): path is string {
   return typeof path === "string" &&
@@ -10,10 +28,27 @@ function ownsPath(path: unknown, userId: string): path is string {
 }
 
 export default {
-  fetch: withSupabase({ auth: "user" }, async (request, ctx) => {
-    if (request.method !== "POST") return Response.json({ error: "Method not allowed" }, { status: 405 });
-    const userId = String(ctx.userClaims?.sub || "");
-    if (!userId) return Response.json({ error: "登录状态无效" }, { status: 401 });
+  async fetch(request: Request) {
+    if (request.method === "OPTIONS") {
+      return new Response(null, { status: 204, headers: corsHeaders(request) });
+    }
+    if (request.method !== "POST") return json(request, { error: "Method not allowed" }, 405);
+
+    const authorization = request.headers.get("Authorization") || "";
+    const token = authorization.replace(/^Bearer\s+/i, "");
+    if (!token) return json(request, { error: "登录状态无效" }, 401);
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL") || "",
+      Deno.env.get("SUPABASE_ANON_KEY") || "",
+      { auth: { persistSession: false, autoRefreshToken: false } },
+    );
+    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    if (authError || !user) {
+      console.error("Supabase auth error", authError);
+      return json(request, { error: "登录状态无效" }, 401);
+    }
+    const userId = user.id;
 
     try {
       const payload = await request.json();
@@ -28,25 +63,25 @@ export default {
       });
 
       if (payload.action === "put" || payload.action === "get") {
-        if (!ownsPath(payload.path, userId)) return Response.json({ error: "无权访问该照片" }, { status: 403 });
+        if (!ownsPath(payload.path, userId)) return json(request, { error: "无权访问该照片" }, 403);
         const method = payload.action === "put" ? "PUT" : "GET";
         const url = await client.signatureUrlV4(method, 300, { headers: {} }, payload.path);
-        return Response.json({ url, expiresIn: 300 });
+        return json(request, { url, expiresIn: 300 });
       }
 
       if (payload.action === "delete") {
         const paths = Array.isArray(payload.paths) ? payload.paths : [];
         if (!paths.length || paths.length > 50 || paths.some((path) => !ownsPath(path, userId))) {
-          return Response.json({ error: "照片路径无效" }, { status: 400 });
+          return json(request, { error: "照片路径无效" }, 400);
         }
         await Promise.all(paths.map((path) => client.delete(path)));
-        return Response.json({ deleted: paths.length });
+        return json(request, { deleted: paths.length });
       }
 
-      return Response.json({ error: "不支持的操作" }, { status: 400 });
+      return json(request, { error: "不支持的操作" }, 400);
     } catch (error) {
       console.error("OSS media error", error);
-      return Response.json({ error: error instanceof Error ? error.message : "OSS 请求失败" }, { status: 500 });
+      return json(request, { error: error instanceof Error ? error.message : "OSS 请求失败" }, 500);
     }
-  }),
+  },
 };
