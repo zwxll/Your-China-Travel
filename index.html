@@ -241,6 +241,43 @@
     pointer-events:auto;
     padding:20px 20px 20px 0;    /* 左侧无 padding 紧贴右栏边缘，右侧留白 */
   }
+  /* 左右信息区收起按钮：贴住对应面板边缘，收起后停留在屏幕边缘 */
+  .left-panel,.dash-panel{
+    transition:transform .28s cubic-bezier(.16,1,.3,1),opacity .2s ease;
+  }
+  .panel-collapse-toggle{
+    position:absolute;top:50%;z-index:7;width:36px;height:78px;padding:0;
+    display:grid;place-items:center;border:1px solid rgba(125,211,252,.3);
+    background:rgba(5,13,20,.94);color:var(--accent);cursor:pointer;
+    box-shadow:0 0 20px rgba(56,189,248,.16),inset 0 1px 0 rgba(255,255,255,.05);
+    transform:translateY(-50%);
+    transition:left .28s cubic-bezier(.16,1,.3,1),right .28s cubic-bezier(.16,1,.3,1),
+               border-color .2s ease,background .2s ease,box-shadow .2s ease;
+  }
+  .panel-collapse-toggle:hover{
+    border-color:rgba(125,211,252,.72);background:#07131d;
+    box-shadow:0 0 24px rgba(56,189,248,.25),inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .panel-collapse-toggle:active{background:#0a1b27;}
+  .panel-collapse-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:3px;}
+  .panel-collapse-toggle-left{left:360px;border-left:0;border-radius:0 12px 12px 0;}
+  .panel-collapse-toggle-right{right:380px;border-right:0;border-radius:12px 0 0 12px;}
+  .panel-collapse-toggle .panel-toggle-arrow{
+    width:10px;height:10px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;
+    transition:transform .2s ease;
+  }
+  .panel-collapse-toggle-left .panel-toggle-arrow{transform:rotate(135deg);}
+  .panel-collapse-toggle-right .panel-toggle-arrow{transform:rotate(-45deg);}
+  body.left-panel-collapsed .left-panel{
+    transform:translateX(calc(-100% - 8px));opacity:0;pointer-events:none;
+  }
+  body.left-panel-collapsed .panel-collapse-toggle-left{left:0;}
+  body.left-panel-collapsed .panel-collapse-toggle-left .panel-toggle-arrow{transform:rotate(-45deg);}
+  body.right-panel-collapsed .dash-panel{
+    transform:translateX(calc(100% + 8px));opacity:0;pointer-events:none;
+  }
+  body.right-panel-collapsed .panel-collapse-toggle-right{right:0;}
+  body.right-panel-collapsed .panel-collapse-toggle-right .panel-toggle-arrow{transform:rotate(135deg);}
   /* 【固定布局】#cityCardsPanel 改为 flex 列容器：标题+按钮固定，仅列表内部独立滚动 */
   .dash-panel #cityCardsPanel{
     flex:1 1 auto;min-height:0;overflow:hidden; /* 容器自身不滚动，交由内部滚动 */
@@ -1031,6 +1068,13 @@
     .dash-panel{right:0;left:0;top:auto;bottom:0;width:auto;height:45vh;}
     .dash-panel #cityCardsPanel{border-radius:0;}
     .left-panel{width:calc(100% - 20px);left:10px;top:10px;height:auto;max-height:35vh;padding:10px;}
+    .panel-collapse-toggle{width:32px;height:60px;}
+    .panel-collapse-toggle-left{left:0;top:42%;}
+    .panel-collapse-toggle-right{right:0;top:58%;}
+  }
+
+  @media (prefers-reduced-motion:reduce){
+    .left-panel,.dash-panel,.panel-collapse-toggle,.panel-collapse-toggle .panel-toggle-arrow{transition:none;}
   }
 
   /* 视图切换标签 —— 0.2s 柔和底色过渡 */
@@ -1319,14 +1363,24 @@
   /* 年月选择器行 */
   /* 【弹窗尺寸放大】年月行水平 18→22px，垂直 10→11px，与各模块统一 */
   .month-picker{
-    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;
     padding:11px 22px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;
   }
-  .month-picker label{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;}
+  .month-picker>label{font-size:12px;color:var(--muted);font-weight:600;white-space:nowrap;padding-top:7px;}
+  .month-entries{display:flex;flex:1 1 280px;min-width:220px;flex-direction:column;gap:7px;}
+  .month-entry{display:flex;align-items:center;gap:7px;min-width:0;}
+  .month-entry-index{width:42px;flex:0 0 42px;font-size:11px;color:var(--muted);text-align:right;}
   .month-picker input[type=month]{
-    border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:13px;color:var(--ink);background:#080808;
+    width:150px;border:1px solid var(--line);border-radius:7px;padding:5px 8px;font-size:13px;color:var(--ink);background:#080808;
   }
   .month-picker .btn{padding:6px 12px;font-size:12px;}
+  .month-remove-btn{
+    width:28px;height:28px;padding:0;border:1px solid rgba(248,113,113,.25);border-radius:7px;
+    background:rgba(127,29,29,.14);color:#fca5a5;font-size:16px;line-height:1;cursor:pointer;
+  }
+  .month-remove-btn:hover{border-color:rgba(248,113,113,.55);background:rgba(127,29,29,.24);}
+  .month-add-btn{color:var(--accent-d);border-color:rgba(56,189,248,.3);background:rgba(56,189,248,.08);}
+  .att-info-value.is-multi-month{font-size:14px;line-height:1.45;text-align:center;}
   /* 标签管理区 —— 放大间距与字号 */
   /* 【弹窗尺寸放大】标签区上间距 16→18px，与景点区一致，三个模块分隔均匀 */
   .tag-section{margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);}
@@ -2351,6 +2405,7 @@
   body.fullscreen-grid .map-search{display:none;}
   body.fullscreen-grid .map-loader{display:none;}
   body.fullscreen-grid .left-panel{display:none;}
+  body.fullscreen-grid .panel-collapse-toggle{display:none;}
   body.fullscreen-grid .dash-panel{
     position:static;width:100%;max-width:none;max-height:none;flex:1;
     padding:0;overflow-y:auto;background:#0f0f0f;
@@ -3384,6 +3439,14 @@
         <div id="cityCardsEmpty" class="city-cards-empty" style="display:none;">还没有点亮的城市，点击地图上的城市标记开始记录</div>
       </div>
     </div>
+    <button class="panel-collapse-toggle panel-collapse-toggle-left" id="leftPanelToggle" type="button"
+            aria-controls="leftPanel" aria-expanded="true" aria-label="收起左侧信息区" title="收起左侧信息区">
+      <span class="panel-toggle-arrow" aria-hidden="true"></span>
+    </button>
+    <button class="panel-collapse-toggle panel-collapse-toggle-right" id="rightPanelToggle" type="button"
+            aria-controls="dashPanel" aria-expanded="true" aria-label="收起右侧信息区" title="收起右侧信息区">
+      <span class="panel-toggle-arrow" aria-hidden="true"></span>
+    </button>
     <div id="mapLoader" class="map-loader">
       <!-- 加载动画对标 uiverse.io/Praashoo7/lucky-hound-44：9柱放射小球弹跳 -->
       <div class="uv-main">
@@ -3464,7 +3527,8 @@
       <!-- 游玩年月选择器 -->
       <div class="month-picker">
         <label>游玩年月</label>
-        <input type="month" id="monthInput" />
+        <div class="month-entries" id="monthEntries"></div>
+        <button class="btn month-add-btn" id="monthAddBtn" type="button">+ 加一次</button>
         <button class="btn primary" id="monthSaveBtn">保存</button>
       </div>
       <div class="modal-body">
@@ -4505,7 +4569,7 @@
     init(); // 启用 Variable Proximity 可变字体效果（Figtree + 动态颜色 + 发光）
   })();
   // 弹窗新增元素
-  const monthInput=$('monthInput'), monthSaveBtn=$('monthSaveBtn'),
+  const monthEntries=$('monthEntries'), monthAddBtn=$('monthAddBtn'), monthSaveBtn=$('monthSaveBtn'),
         tagList=$('tagList'), tagInput=$('tagInput'), tagCategory=$('tagCategory'),
         tagAddBtn=$('tagAddBtn');
   // 封面图 + 星级 + 景点
@@ -4765,7 +4829,6 @@
         formatter:p=>{
           if(p.seriesType==='scatter'||p.seriesType==='effectScatter'){
             const n=photoCountByCity.get(p.data.cityKey)||0;
-            const lm=landmarkOf(p.data.name);
             if(n){
               // 点亮城市（有照片）：tooltip 图片框等比例放大1.2倍
               const thumbs=thumbCacheByCity.get(p.data.cityKey)||[];
@@ -4788,13 +4851,11 @@
               html+='<div style="color:#38bdf8;font-weight:600">● 已记录 '+n+' 张照片';
               if(n>MAX_THUMBS) html+='（预览前'+MAX_THUMBS+'张）';
               html+='</div>';
-              if(lm) html+='<div style="color:#7a8694;margin-top:4px">🏛 '+lm+'</div>';
               html+='<div style="color:#9aa5b1;margin-top:2px;font-size:13px">点击查看全部照片</div>';
               return html;
             }
             // 未记录城市：原始尺寸
             let html='<div style="font-weight:700;font-size:13px;margin-bottom:4px;text-shadow:0 0 8px rgba(248,250,252,.25)">'+p.data.name+'</div>';  /* 【提亮】未记录城市名发光 */
-            if(lm) html+='<div style="color:#7a8694">🏛 '+lm+'</div>';
             html+='<div style="color:#38bdf8;margin-top:2px">点击标记，记录你的照片</div>';
             return html;
           }
@@ -5192,14 +5253,18 @@
   }
 
   /* ---------- 城市元数据 CRUD（游玩年月、标签） ---------- */
-  // cityMeta 结构: {cityKey, visitMonth:'YYYY-MM', tags:[{text,category}]}
+  // cityMeta 结构: {cityKey, visitMonth:'YYYY-MM', visitMonths:['YYYY-MM'], tags:[{text,category}]}
   let cityMetaCache=new Map(); // cityKey -> meta
+  function getVisitMonths(meta){
+    if(Array.isArray(meta&&meta.visitMonths)) return meta.visitMonths.filter(month=>typeof month==='string'&&month);
+    return meta&&meta.visitMonth?[meta.visitMonth]:[];
+  }
   async function getCityMeta(cityKey){
     if(cityMetaCache.has(cityKey)) return cityMetaCache.get(cityKey);
     const db=await openDB();
     const meta=await withTimeout(new Promise((resolve,reject)=>{
       const r=db.transaction(META_STORE,'readonly').objectStore(META_STORE).get(cityKey);
-      r.onsuccess=()=>resolve(r.result||{cityKey,visitMonth:'',tags:[]});
+      r.onsuccess=()=>resolve(r.result||{cityKey,visitMonth:'',visitMonths:[],tags:[]});
       r.onerror=()=>reject(r.error);
     }),8000,'读取城市元数据超时');
     cityMetaCache.set(cityKey,meta);
@@ -5509,7 +5574,7 @@
   }
   function hasLocalTravelData(photos,metas){
     return photos.length>0||metas.some(m=>m&&(
-      m.visitMonth||m.description||m.rating||(m.tags&&m.tags.length)||(m.attractions&&m.attractions.length)||m.coverImage
+      m.visitMonth||(m.visitMonths&&m.visitMonths.length)||m.description||m.rating||(m.tags&&m.tags.length)||(m.attractions&&m.attractions.length)||m.coverImage
     ));
   }
 
@@ -7616,13 +7681,12 @@
     const elRating=document.getElementById('attInfoRating');
     const elCount=document.getElementById('attInfoCount');
     const elPhotos=document.getElementById('attInfoPhotos');
-    // 游玩年月（YYYY-MM → YYYY年M月）
+    // 多次游玩年月
     if(elMonth){
-      const vm=meta.visitMonth||'';
-      if(vm){
-        const p=vm.split('-');
-        elMonth.textContent=p.length===2?(parseInt(p[0])+'年'+parseInt(p[1])+'月'):vm;
-      }else{elMonth.textContent='未记录';}
+      const months=getVisitMonths(meta);
+      elMonth.textContent=months.length?months.map(formatMonth).join(' / '):'未记录';
+      elMonth.classList.toggle('is-multi-month',months.length>1);
+      elMonth.title=months.length?months.map((month,index)=>'第'+(index+1)+'次：'+formatMonth(month)).join('\n'):'';
     }
     // 推荐星级（带星符号 + 微光）
     if(elRating){
@@ -7990,6 +8054,47 @@
   }
 
   /* ---------- 模态框 ---------- */
+  function collectVisitMonthInputs(){
+    return Array.from(monthEntries.querySelectorAll('input[type="month"]')).map(input=>input.value);
+  }
+  function renderVisitMonthInputs(months){
+    const values=months&&months.length?months:[''];
+    monthEntries.innerHTML='';
+    values.forEach((value,index)=>{
+      const row=document.createElement('div');
+      row.className='month-entry';
+      const label=document.createElement('span');
+      label.className='month-entry-index';
+      label.textContent='第'+(index+1)+'次';
+      const input=document.createElement('input');
+      input.type='month';
+      input.value=value||'';
+      input.setAttribute('aria-label','第'+(index+1)+'次游玩年月');
+      row.append(label,input);
+      if(values.length>1){
+        const remove=document.createElement('button');
+        remove.type='button';
+        remove.className='month-remove-btn';
+        remove.innerHTML='&times;';
+        remove.title='删除第'+(index+1)+'次游玩年月';
+        remove.setAttribute('aria-label',remove.title);
+        remove.addEventListener('click',()=>{
+          const current=collectVisitMonthInputs();
+          current.splice(index,1);
+          renderVisitMonthInputs(current);
+        });
+        row.appendChild(remove);
+      }
+      monthEntries.appendChild(row);
+    });
+  }
+  function addVisitMonthInput(){
+    const values=collectVisitMonthInputs();
+    values.push('');
+    renderVisitMonthInputs(values);
+    const inputs=monthEntries.querySelectorAll('input[type="month"]');
+    if(inputs.length) inputs[inputs.length-1].focus();
+  }
   function openCityModal(city){
     currentCity=city;
     cityTitle.textContent=city.name;
@@ -8002,7 +8107,7 @@
     thumbsGrid.innerHTML='';
     modalEmpty.style.display='none';
     // 重置年月、标签、封面、星级、景点
-    monthInput.value='';
+    renderVisitMonthInputs([]);
     tagList.innerHTML='';
     tagInput.value='';
     coverPreviewWrap.style.display='none';
@@ -8021,7 +8126,7 @@
   async function loadCityMeta(cityKey){
     try{
       const meta=await getCityMeta(cityKey);
-      monthInput.value=meta.visitMonth||'';
+      renderVisitMonthInputs(getVisitMonths(meta));
       renderTagList(meta.tags||[]);
       // 封面图
       if(meta.coverImage){
@@ -8311,13 +8416,16 @@
     renderTagList(meta.tags);
     renderCityCards();
   }
-  // 保存游玩年月
-  async function saveVisitMonth(){
+  // 保存多次游玩年月；visitMonth 保留第一次记录以兼容旧版时间轴
+  async function saveVisitMonths(){
     if(!currentCity) return;
     const meta=await getCityMeta(currentCity.cityKey);
-    meta.visitMonth=monthInput.value||'';
+    const months=collectVisitMonthInputs().filter(Boolean);
+    meta.visitMonths=months;
+    meta.visitMonth=months[0]||'';
     await saveCityMeta(meta);
-    toast('游玩年月已保存');
+    renderVisitMonthInputs(months);
+    toast(months.length?('已保存 '+months.length+' 次游玩年月'):'游玩年月已清空');
     renderCityCards();
   }
   function closeModal(){
@@ -8393,9 +8501,11 @@
       if(!cp) continue;
       const meta=await getCityMeta(cityKey);
       const photos=await getPhotosByCity(cityKey);
+      const visitMonths=getVisitMonths(meta);
       items.push({
         cityKey, name:cp.name, value:cp.value, adcode:cp.adcode,
-        visitMonth:meta.visitMonth||'',
+        visitMonth:getLatestVisitMonth(visitMonths),
+        visitMonths,
         tags:meta.tags||[],
         rating:meta.rating||0,
         coverImage:meta.coverImage||'',
@@ -8427,7 +8537,8 @@
       nameEl.textContent=item.name;
       const dateEl=document.createElement('span');
       dateEl.className='city-card-date';
-      dateEl.textContent=item.visitMonth?formatMonth(item.visitMonth):('· '+item.photoCount+'张照片');
+      dateEl.textContent=item.visitMonths.length?formatVisitMonthSummary(item.visitMonths):('· '+item.photoCount+'张照片');
+      dateEl.title=item.visitMonths.map((month,index)=>'第'+(index+1)+'次：'+formatMonth(month)).join('\n');
       head.append(nameEl,dateEl);
       // 缩略图行
       const thumbsRow=document.createElement('div');
@@ -8666,7 +8777,8 @@
       meta.className='grid-card-meta';
       const date=document.createElement('span');
       date.className='grid-card-date';
-      date.textContent=item.visitMonth?formatMonth(item.visitMonth):('未记录');
+      date.textContent=item.visitMonths.length?formatVisitMonthSummary(item.visitMonths):'未记录';
+      date.title=item.visitMonths.map((month,index)=>'第'+(index+1)+'次：'+formatMonth(month)).join('\n');
       const stars=document.createElement('span');
       stars.className='star-display';
       for(let i=1;i<=5;i++){
@@ -8770,6 +8882,13 @@
     const parts=ym.split('-');
     if(parts.length<2) return ym;
     return parts[0]+'年'+parseInt(parts[1])+'月';
+  }
+  function getLatestVisitMonth(months){
+    return (months||[]).reduce((latest,month)=>month>latest?month:latest,'');
+  }
+  function formatVisitMonthSummary(months){
+    const latest=getLatestVisitMonth(months);
+    return latest?(formatMonth(latest)+(months.length>1?' · 共'+months.length+'次':'')):'';
   }
   // 聚焦地图到指定城市
   function focusCityOnMap(item){
@@ -9508,8 +9627,9 @@
   modalClose.addEventListener('click',closeModal);
   modalOverlay.addEventListener('click',e=>{ if(e.target===modalOverlay) closeModal(); });
   lightbox.addEventListener('click',closeLightbox);
-  // 年月保存
-  monthSaveBtn.addEventListener('click',saveVisitMonth);
+  // 多次游玩年月
+  monthAddBtn.addEventListener('click',addVisitMonthInput);
+  monthSaveBtn.addEventListener('click',saveVisitMonths);
   // 标签添加
   tagAddBtn.addEventListener('click',addTag);
   tagInput.addEventListener('keydown',e=>{ if(e.key==='Enter') addTag(); });
@@ -9623,6 +9743,33 @@
     mapError.style.display='block';
     mapError.innerHTML=html;
   }
+
+  /* ===== 左右信息面板收起/展开 ===== */
+  (function setupPanelCollapse(){
+    const panels=[
+      {buttonId:'leftPanelToggle',bodyClass:'left-panel-collapsed',storageKey:'travel-left-panel-collapsed',side:'左侧'},
+      {buttonId:'rightPanelToggle',bodyClass:'right-panel-collapsed',storageKey:'travel-right-panel-collapsed',side:'右侧'}
+    ];
+    panels.forEach(config=>{
+      const button=document.getElementById(config.buttonId);
+      if(!button) return;
+      let collapsed=false;
+      try{collapsed=localStorage.getItem(config.storageKey)==='1';}catch(e){}
+      const applyState=()=>{
+        document.body.classList.toggle(config.bodyClass,collapsed);
+        button.setAttribute('aria-expanded',String(!collapsed));
+        const action=collapsed?'展开':'收起';
+        button.setAttribute('aria-label',`${action}${config.side}信息区`);
+        button.title=`${action}${config.side}信息区`;
+      };
+      button.addEventListener('click',()=>{
+        collapsed=!collapsed;
+        applyState();
+        try{localStorage.setItem(config.storageKey,collapsed?'1':'0');}catch(e){}
+      });
+      applyState();
+    });
+  })();
 
   /* ===== 【滚轮事件隔离】城市列表区块滚轮不冒泡到页面 ===== */
   // 鼠标悬浮在标题、切换按钮、城市列表区域滚动滚轮时，阻止事件向上冒泡，
