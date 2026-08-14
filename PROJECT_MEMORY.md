@@ -2,20 +2,107 @@
 
 > 本文档供 Agent 间记忆传递使用。包含项目代码结构、各模块功能、本次会话全部修改记录、以及 GitHub 推送全流程。
 
+> **2026-08-14 当前基线**：账号与跨设备照片同步已经完成。若本文后续旧章节与本节冲突，以本节为准。
+
+---
+
+## 〇、当前 Agent 快速记忆（优先阅读）
+
+### 当前架构
+
+- 前端：`index.html`，无构建流程，部署于 `https://zwxll.github.io/Your-China-Travel/`。
+- 本机缓存：IndexedDB `TravelPhotosDB`，stores 为 `photos`、`cityMeta`。
+- 账号：Supabase Auth。
+- 云端旅行快照：`public.travel_snapshots`，`user_id` 主键，RLS 限制用户只能操作自己的行。
+- 实际图片：私有阿里云 OSS Bucket `your-china-travel-8877-hk`，中国香港地域。
+- 签名代理：Supabase Edge Function `oss-media`，代码在 `supabase/functions/oss-media/index.ts`。
+- 当前工作目录：`F:\codex\codex-list\projects\Your-China-Travel`。
+- 云同步安全基线：`9ee1b61`。
+
+### 权限模型
+
+任何人可以注册登录，但只能管理自己的数据。前端请求路径为 `users/<user.id>/...`；Edge Function 先用 Supabase `auth.getUser(token)` 验证用户，再用 `ownsPath()` 校验路径。OSS 保持私有，浏览器只使用 300 秒有效的 PUT/GET 签名 URL。不要把 OSS 设置为公共读写。
+
+Edge Function 控制台的 **Verify JWT with legacy secret 必须关闭**，因为项目使用 Publishable key 签发的新令牌；关闭网关旧校验不代表公开访问，函数内部仍执行用户验证。
+
+### 必需云端配置
+
+```text
+Supabase Project Ref: zpqbbawremufcxxszgde
+Edge Function: oss-media
+OSS Bucket: your-china-travel-8877-hk
+OSS ACL: 私有
+正式 Origin: https://zwxll.github.io
+本地 Origin: http://127.0.0.1:8765
+```
+
+Secrets 只记录名称，不记录值：
+
+```text
+ALIYUN_OSS_ACCESS_KEY_ID
+ALIYUN_OSS_ACCESS_KEY_SECRET
+ALIYUN_OSS_BUCKET
+ALIYUN_OSS_REGION
+```
+
+OSS CORS 允许正式与本地 Origin，Methods 至少为 GET/PUT/DELETE/HEAD，Allowed Headers 为 `*`。RAM 自定义策略 `YourChinaTravelOSSAccess` 仅授权 `your-china-travel-8877-hk/users/*` 对象的读取、上传与删除。
+
+### 同步代码的不可破坏约束
+
+1. `cloudSuppressDirty` 为真时不得上传快照。
+2. 云端恢复必须先完成所有照片下载和数据准备，之后才能 `clearLocalTravelData()`。
+3. 恢复开始前必须取消已排队的同步 timer。
+4. 不得根据某一次快照自动批量清理“未引用 OSS 对象”；竞态会误删真实照片。
+5. 批量上传必须等待 IndexedDB 的全部写入完成，再构建快照。
+6. 用户主动删除照片时，路径仍需经过当前 user ID 校验。
+7. 同一用户且 `travelCloudUpdatedAt` 与云端 `updated_at` 一致时，只有在本地缓存包含快照所需的全部 OSS 路径后才能跳过恢复。
+8. 云端版本变化时，应按 `storagePath` 复用 IndexedDB 中已有的 `dataUrl`，只下载本机缺少的 OSS 图片。
+
+### 已处理的云端故障
+
+- `401`：关闭 Edge Function 的 legacy JWT 网关校验，函数内部继续验 token。
+- `SignatureDoesNotMatch`：PUT 的 `content-type` 必须参与 V4 签名，浏览器上传时保持一致。
+- OSS PUT `403`：RAM 策略必须绑定给正确 RAM 用户并指向香港 Bucket。
+- `404 NoSuchKey`：对象已经不在 OSS，单纯重新获取签名无法恢复。
+- 登录/退出竞态误清理：提交 `9ee1b61` 已禁止恢复期间覆盖云端和自动清理 OSS。
+
+### 新增文件与最近提交
+
+```text
+supabase-config.js
+supabase-setup.sql
+supabase/functions/oss-media/index.ts
+```
+
+```text
+2706876 feat: 新增账号登录与旅行资料跨设备云同步
+0946393 fix: 修复批量添加照片时云端同步遗漏
+0b0b63a feat: 使用阿里云 OSS 自动同步照片
+a369567 fix: 兼容现有 Supabase 用户令牌
+1765191 fix: 由 OSS 地域自动生成上传地址
+1819cb0 fix: 签入 OSS 上传内容类型
+875dc17 fix: 兼容旧页面的 OSS 上传签名
+9ee1b61 fix: 防止恢复期间覆盖或删除云端照片
+```
+
+### 本地恢复资料
+
+`recovery/` 和 `zwxll.github.io.har` 是本地事故分析资料，不得加入 Git。HAR 可能包含会话令牌和临时签名 URL。不要在回答、文档或日志中输出 AccessKey Secret。
+
 ---
 
 ## 一、项目概览
 
 - **项目名称**：记录我的中国行（Chinese Footprint）
-- **技术栈**：单文件 HTML（内联 CSS/JS，无构建步骤），8544 行
+- **技术栈**：前端为单文件 HTML（内联 CSS/JS，无构建步骤）；云端使用 Supabase Auth/Database/Edge Functions 与阿里云 OSS
 - **核心依赖**（CDN 运行时加载，无打包）：
   - ECharts 5.4.3 — 中国地图渲染（4 重 CDN 回退）
   - globe.gl — 3D 地球首屏
   - GSAP 3.12.5 — 动画引擎
   - Inter 可变字体（self-host）— Variable Proximity 标题动画
   - 中国 GeoJSON — 省份边界数据（geo.datav.aliyun.com）
-- **数据存储**：IndexedDB（浏览器本地，照片 + 城市元数据）
-- **工作目录**：`f:\trae\1\Your-China-Travel`
+- **数据存储**：IndexedDB 本机缓存 + Supabase 用户快照 + 私有阿里云 OSS 图片
+- **工作目录**：`F:\codex\codex-list\projects\Your-China-Travel`
 
 ---
 
@@ -301,7 +388,7 @@ npx http-server -p 8765
 
 ## 九、注意事项
 
-1. **IndexedDB 数据本地化**：照片和城市记录存浏览器本地，不同设备数据独立，这是项目固有设计
+1. **IndexedDB 是本机缓存**：未登录时数据仅在本机；登录后 Supabase + OSS 才是跨设备来源，同一账号可自动恢复
 2. **地图数据依赖外网**：需能访问 `geo.datav.aliyun.com`，内网无外网时地图无法加载
 3. **ECharts CDN 回退**：已配置 4 重 CDN 回退（jsdelivr / fastly / bootcdn / unpkg）
 4. **修改原则**：所有修改均保留原有功能（虚化背景、金色标题、关闭按钮、卡片交互、旋转木马、编辑弹窗、3D地球、旅行轨迹等）
@@ -318,6 +405,7 @@ npx http-server -p 8765
 
 ---
 
-*文档生成时间：2026-07-21*
-*项目路径：f:\trae\1\Your-China-Travel*
-*主文件：index.html（8544行）*
+*初始文档生成时间：2026-07-21*
+*当前基线更新时间：2026-08-14*
+*项目路径：F:\codex\codex-list\projects\Your-China-Travel*
+*文档整理前发布基线：9ee1b61*

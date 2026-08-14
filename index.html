@@ -5298,8 +5298,7 @@
     }),20000,'清理本地缓存超时');
     cityMetaCache.clear();thumbCacheByCity.clear();photoCountByCity.clear();
   }
-  async function hasLocalTravelData(){
-    const [photos,metas]=await Promise.all([getAllPhotos(),getAllCityMeta()]);
+  function hasLocalTravelData(photos,metas){
     return photos.length>0||metas.some(m=>m&&(
       m.visitMonth||m.description||m.rating||(m.tags&&m.tags.length)||(m.attractions&&m.attractions.length)||m.coverImage
     ));
@@ -5403,12 +5402,34 @@
     });
     return paths;
   }
+  function buildLocalCloudImageCache(photos,metas){
+    const cache=new Map();
+    photos.forEach(photo=>{
+      if(photo.storagePath&&photo.dataUrl) cache.set(photo.storagePath,photo.dataUrl);
+    });
+    metas.forEach(meta=>{
+      if(meta.coverStoragePath&&meta.coverImage) cache.set(meta.coverStoragePath,meta.coverImage);
+      (meta.attractions||[]).forEach(att=>(att.photos||[]).forEach(photo=>{
+        if(photo.storagePath&&photo.dataUrl) cache.set(photo.storagePath,photo.dataUrl);
+      }));
+    });
+    return cache;
+  }
+  async function getLocalCloudImageCache(){
+    const [photos,metas]=await Promise.all([getAllPhotos(),getAllCityMeta()]);
+    return buildLocalCloudImageCache(photos,metas);
+  }
+  function hasCompleteLocalImageCache(snapshot,cache){
+    const requiredPaths=collectSnapshotPaths(snapshot);
+    if(!requiredPaths.size) return true;
+    return [...requiredPaths].every(path=>cache.has(path));
+  }
   async function restoreCloudSnapshot(snapshot,updatedAt){
     setSyncStatus('下载中','syncing');
     cloudSuppressDirty=true;
     try{
       clearTimeout(cloudSyncTimer);cloudSyncTimer=null;
-      const downloadedImages=new Map();
+      const downloadedImages=await getLocalCloudImageCache();
       async function cachedCloudImage(path){
         if(!path) return '';
         if(!downloadedImages.has(path)) downloadedImages.set(path,downloadCloudImage(path));
@@ -5452,12 +5473,17 @@
           cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;localStorage.removeItem(CLOUD_UPDATED_KEY);
         }
         const remoteRecord=await readCloudRecord(),remote=remoteRecord.snapshot;
-        const localHas=await hasLocalTravelData();
-        const localPhotoCount=(await getAllPhotos()).length;
+        const [localPhotos,localMetas]=await Promise.all([getAllPhotos(),getAllCityMeta()]);
+        const localHas=hasLocalTravelData(localPhotos,localMetas);
+        const localPhotoCount=localPhotos.length;
+        const localImageCache=buildLocalCloudImageCache(localPhotos,localMetas);
         const remotePhotoCount=remote&&remote.photos?remote.photos.length:0;
         const lastUpdated=localStorage.getItem(CLOUD_UPDATED_KEY)||'';
         if(owner===user.id&&dirty){
           await syncToCloud();
+        }else if(owner===user.id&&remote&&lastUpdated&&lastUpdated===remoteRecord.updatedAt&&hasCompleteLocalImageCache(remote,localImageCache)){
+          localStorage.setItem(CLOUD_DIRTY_KEY,'0');
+          setSyncStatus('已同步','');
         }else if(owner===user.id&&remote&&!lastUpdated&&localPhotoCount>remotePhotoCount){
           cloudMutationVersion+=1;
           localStorage.setItem(CLOUD_DIRTY_KEY,'1');
