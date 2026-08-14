@@ -983,6 +983,22 @@
   .account-action{height:42px;border-radius:var(--radius-pill);border:1px solid rgba(148,163,184,.25);background:rgba(255,255,255,.04);color:#dbeafe;font-weight:700;cursor:pointer;}
   .account-action.primary{border-color:rgba(56,189,248,.45);background:rgba(56,189,248,.12);color:#e0f7ff;}
   .account-action:hover{background:rgba(255,255,255,.08);}
+  .account-action:disabled{cursor:wait;opacity:.58;}
+  .account-sync-status{
+    display:flex;align-items:center;gap:9px;min-height:38px;margin:0;padding:9px 12px;
+    border:1px solid rgba(56,189,248,.2);border-radius:var(--radius-sm);
+    background:rgba(56,189,248,.07);color:#bae6fd;font-size:12px;line-height:1.5;
+  }
+  .account-sync-status[hidden]{display:none;}
+  .account-sync-status::before{
+    content:"";flex:0 0 auto;width:8px;height:8px;border-radius:50%;
+    background:var(--accent);box-shadow:0 0 0 4px rgba(56,189,248,.12),0 0 12px rgba(56,189,248,.45);
+  }
+  .account-sync-status.syncing::before{animation:accountSyncPulse 1.15s ease-in-out infinite;}
+  .account-sync-status.error{border-color:rgba(248,113,113,.25);background:rgba(239,68,68,.09);color:#fecaca;}
+  .account-sync-status.error::before{background:#f87171;box-shadow:0 0 0 4px rgba(248,113,113,.12);}
+  @keyframes accountSyncPulse{50%{opacity:.35;transform:scale(.72);}}
+  @media(prefers-reduced-motion:reduce){.account-sync-status.syncing::before{animation:none;}}
   .cloud-blocker{display:none;padding:0 28px 25px;color:#fca5a5;font-size:12px;line-height:1.6;}
   .cloud-blocker.show{display:block;}
   @media(max-width:720px){
@@ -3620,6 +3636,7 @@
             <button class="account-action primary" id="syncNowBtn" type="button">立即同步</button>
             <button class="account-action" id="signOutBtn" type="button">退出账号</button>
           </div>
+          <p class="account-sync-status" id="accountSyncStatus" role="status" aria-live="polite" aria-atomic="true" hidden></p>
         </div>
       </div>
       <p class="cloud-blocker" id="cloudBlocker"></p>
@@ -5187,19 +5204,41 @@
   let cloudUser=null,cloudSyncTimer=null,cloudSyncPromise=null,cloudPreparePromise=null,cloudPrepareUserId='';
   let cloudCheckPromise=null,cloudWatchStarted=false;
   let cloudSuppressDirty=false,cloudReady=false,cloudSigningOut=false,cloudMutationVersion=0;
-  let syncRetryAction=null;
+  let syncRetryAction=null,accountSyncStatusTimer=null;
   const accountBtn=$('accountBtn'),accountLabel=$('accountLabel'),syncStatus=$('syncStatus');
   const authOverlay=$('authOverlay'),authClose=$('authClose'),authGuestView=$('authGuestView'),authUserView=$('authUserView');
   const loginTab=$('loginTab'),registerTab=$('registerTab'),authForm=$('authForm'),authEmail=$('authEmail'),authEmailField=$('authEmailField');
   const authPassword=$('authPassword'),authSubmit=$('authSubmit'),resetPasswordBtn=$('resetPasswordBtn');
   const authMessage=$('authMessage'),accountEmail=$('accountEmail'),signOutBtn=$('signOutBtn');
-  const syncNowBtn=$('syncNowBtn'),cloudBlocker=$('cloudBlocker'),authTitle=$('authTitle'),authDesc=$('authDesc');
+  const syncNowBtn=$('syncNowBtn'),accountSyncStatus=$('accountSyncStatus'),cloudBlocker=$('cloudBlocker'),authTitle=$('authTitle'),authDesc=$('authDesc');
   let authMode='login';
 
+  function formatAccountSyncStatus(text,state){
+    if(state==='error') return '同步失败：'+text;
+    if(text==='连接中') return '正在连接云端';
+    if(text==='下载中') return '正在下载中';
+    if(text==='同步中') return '正在同步中';
+    if(text==='继续同步') return '正在同步最新内容';
+    if(text==='待同步') return '正在等待同步';
+    if(/^同步 \d+\/\d+$/.test(text)) return '正在上传照片 '+text.slice(3);
+    if(text==='已同步') return '同步完成';
+    return text;
+  }
+  function setAccountSyncStatus(text,state){
+    clearTimeout(accountSyncStatusTimer);accountSyncStatusTimer=null;
+    const hidden=!text||text==='仅本机';
+    accountSyncStatus.hidden=hidden;
+    accountSyncStatus.textContent=hidden?'':formatAccountSyncStatus(text,state);
+    accountSyncStatus.className='account-sync-status'+(state?(' '+state):'');
+    syncNowBtn.disabled=state==='syncing';
+    syncNowBtn.setAttribute('aria-busy',state==='syncing'?'true':'false');
+    if(!hidden&&text==='已同步') accountSyncStatusTimer=setTimeout(()=>{accountSyncStatus.hidden=true;},2400);
+  }
   function setSyncStatus(text,state){
     syncStatus.textContent=text;
     syncStatus.className='sync-status'+(state?(' '+state):'');
     syncStatus.title=state==='error'?'点击查看错误并重新尝试':'同步状态：'+text;
+    setAccountSyncStatus(text,state);
     if(state!=='error') syncRetryAction=null;
   }
   function setAuthMessage(text,isError){
