@@ -5179,6 +5179,10 @@
     if(/Failed to fetch|NetworkError/i.test(msg)) return '无法连接云端，请检查网络。';
     return msg;
   }
+  function isMissingCloudAccountError(error){
+    const msg=(error&&error.message)||String(error||'');
+    return /travel_snapshots_user_id_fkey|violates foreign key constraint/i.test(msg);
+  }
   function setAuthMode(mode){
     authMode=mode;
     const isRegister=mode==='register';
@@ -5568,13 +5572,28 @@
   syncNowBtn.addEventListener('click',()=>syncToCloud({notify:true}));
   signOutBtn.addEventListener('click',async ()=>{
     signOutBtn.disabled=true;
+    let preserveLocalData=false;
     try{
-      if(localStorage.getItem(CLOUD_DIRTY_KEY)==='1') await syncToCloud();
+      if(localStorage.getItem(CLOUD_DIRTY_KEY)==='1'){
+        try{await syncToCloud();}
+        catch(error){
+          if(!isMissingCloudAccountError(error)) throw error;
+          preserveLocalData=true;
+        }
+      }
       cloudSigningOut=true;
-      const {error}=await cloudClient.auth.signOut();if(error) throw error;
-      cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;
-      localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_DIRTY_KEY);localStorage.removeItem(CLOUD_UPDATED_KEY);
-      cloudUser=null;await refreshState();updateAccountUI();closeAuth();toast('已安全退出账号');
+      const result=preserveLocalData
+        ?await cloudClient.auth.signOut({scope:'local'})
+        :await cloudClient.auth.signOut();
+      if(result.error) throw result.error;
+      if(preserveLocalData){
+        localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_UPDATED_KEY);
+      }else{
+        cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;
+        localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_DIRTY_KEY);localStorage.removeItem(CLOUD_UPDATED_KEY);
+      }
+      cloudUser=null;await refreshState();updateAccountUI();closeAuth();
+      toast(preserveLocalData?'账号已失效，已退出并保留本机照片':'已安全退出账号');
     }catch(error){toast('退出失败：'+friendlyAuthError(error),true);}
     finally{cloudSigningOut=false;signOutBtn.disabled=false;}
   });

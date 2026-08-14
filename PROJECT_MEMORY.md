@@ -57,6 +57,7 @@ OSS CORS 允许正式与本地 Origin，Methods 至少为 GET/PUT/DELETE/HEAD，
 6. 用户主动删除照片时，路径仍需经过当前 user ID 校验。
 7. 同一用户且 `travelCloudUpdatedAt` 与云端 `updated_at` 一致时，只有在本地缓存包含快照所需的全部 OSS 路径后才能跳过恢复。
 8. 云端版本变化时，应按 `storagePath` 复用 IndexedDB 中已有的 `dataUrl`，只下载本机缺少的 OSS 图片。
+9. 退出前同步若命中 `travel_snapshots_user_id_fkey`，表示 Auth 用户已经不存在；此时只清除本机会话并保留 IndexedDB，方便重新注册后迁移，其他同步错误仍必须阻止退出。
 
 ### 已处理的云端故障
 
