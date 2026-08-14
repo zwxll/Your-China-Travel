@@ -183,9 +183,14 @@
   .account-btn .account-dot{width:7px;height:7px;border-radius:50%;background:#64748b;box-shadow:0 0 0 4px rgba(100,116,139,.12);}
   .account-btn.signed-in .account-dot{background:var(--accent);box-shadow:0 0 0 4px rgba(56,189,248,.14),0 0 12px rgba(56,189,248,.5);}
   .account-btn .account-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .sync-status{min-width:58px;color:var(--muted);font-size:11px;text-align:right;white-space:nowrap;}
+  .sync-status{
+    min-width:58px;padding:4px 0;border:0;background:transparent;color:var(--muted);
+    font:500 11px/1.2 inherit;text-align:right;white-space:nowrap;
+  }
   .sync-status.syncing{color:var(--accent-l);}
-  .sync-status.error{color:#fca5a5;}
+  .sync-status.error{color:#fca5a5;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+  .sync-status.error:hover{color:#fecaca;}
+  .sync-status:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px;}
   .stat{
     background:#080808;border:1px solid var(--line);border-radius:12px;
     padding:6px 14px;text-align:center;box-shadow:var(--shadow-sm);
@@ -904,12 +909,33 @@
   /* Toast */
   .toast{
     position:fixed;left:50%;bottom:28px;transform:translateX(-50%) translateY(20px);
-    z-index:80;opacity:0;pointer-events:none;transition:.25s;
-    background:rgba(20,28,38,.92);color:#fff;padding:10px 18px;border-radius:10px;
-    font-size:13px;box-shadow:var(--shadow);max-width:90vw;text-align:center;
+    z-index:80;opacity:0;visibility:hidden;pointer-events:none;transition:.25s;
+    display:flex;align-items:center;gap:12px;
+    background:rgba(20,28,38,.96);color:#fff;padding:11px 12px 11px 16px;border-radius:var(--radius-sm);
+    border:1px solid rgba(125,211,252,.16);font-size:13px;box-shadow:var(--shadow);
+    width:max-content;max-width:min(520px,calc(100vw - 28px));text-align:left;
   }
-  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-  .toast.error{background:rgba(197,48,48,.95);}
+  .toast.show{opacity:1;visibility:visible;pointer-events:auto;transform:translateX(-50%) translateY(0);}
+  .toast.error{background:rgba(69,18,24,.98);border-color:rgba(252,165,165,.28);}
+  .toast-copy{display:grid;gap:3px;min-width:0;line-height:1.45;}
+  .toast-title{font-size:13px;font-weight:800;color:#f8fafc;}
+  .toast-message{font-size:12px;color:#cbd5e1;overflow-wrap:anywhere;}
+  .toast.error .toast-message{color:#fecaca;}
+  .toast-action,.toast-close{
+    flex:0 0 auto;border:1px solid rgba(125,211,252,.28);background:rgba(56,189,248,.11);
+    color:#e0f7ff;cursor:pointer;font:700 12px/1 inherit;transition:background .2s ease,transform .2s ease;
+  }
+  .toast-action{min-height:34px;padding:0 13px;border-radius:var(--radius-pill);white-space:nowrap;}
+  .toast-close{width:30px;height:30px;padding:0;border-radius:var(--radius-xs);font-size:18px;}
+  .toast-action:hover,.toast-close:hover{background:rgba(56,189,248,.2);}
+  .toast-action:active,.toast-close:active{transform:scale(.98);}
+  .toast-action:focus-visible,.toast-close:focus-visible{outline:2px solid var(--accent-l);outline-offset:2px;}
+  @media(max-width:640px){
+    .toast{bottom:16px;align-items:stretch;flex-wrap:wrap;}
+    .toast-copy{flex:1 1 calc(100% - 42px);}
+    .toast-action{order:3;flex:1 1 100%;}
+    .toast-close{margin-left:auto;}
+  }
 
   /* 账号与云端同步 */
   .auth-overlay{
@@ -3224,7 +3250,7 @@
         <div class="stat"><span id="cityStat">0</span><label>座城市</label></div>
         <div class="stat"><span id="photoStat">0</span><label>张照片</label></div>
       </div>
-      <span class="sync-status" id="syncStatus" aria-live="polite">仅本机</span>
+      <button class="sync-status" id="syncStatus" type="button" aria-live="polite" title="查看同步状态">仅本机</button>
       <button class="account-btn" id="accountBtn" type="button" aria-haspopup="dialog">
         <span class="account-dot" aria-hidden="true"></span>
         <span class="account-label" id="accountLabel">登录账号</span>
@@ -3547,7 +3573,14 @@
   </div>
 
   <!-- Toast -->
-  <div id="toast" class="toast"></div>
+  <div id="toast" class="toast" role="status" aria-live="polite" aria-hidden="true">
+    <div class="toast-copy">
+      <strong class="toast-title" id="toastTitle"></strong>
+      <span class="toast-message" id="toastMessage"></span>
+    </div>
+    <button class="toast-action" id="toastAction" type="button" hidden>重新尝试</button>
+    <button class="toast-close" id="toastClose" type="button" aria-label="关闭提示">&times;</button>
+  </div>
 
   <!-- 账号弹窗：Supabase Auth + 云端同步 -->
   <div class="auth-overlay" id="authOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitle">
@@ -4296,7 +4329,8 @@
         modalCount=$('modalCount'), thumbsGrid=$('thumbsGrid'),
         modalEmpty=$('modalEmpty'), modalClose=$('modalClose'), fileInput=$('fileInput');
   const lightbox=$('lightbox'), lightboxImg=$('lightboxImg');
-  const toastEl=$('toast');
+  const toastEl=$('toast'),toastTitleEl=$('toastTitle'),toastMessageEl=$('toastMessage'),
+        toastActionEl=$('toastAction'),toastCloseEl=$('toastClose');
   // 面板元素
   const litCityCountEl=$('litCityCount'), litProvCountEl=$('litProvCount'),
         cityProgCurEl=$('cityProgCur'), cityProgTotalEl=$('cityProgTotal'),
@@ -5153,6 +5187,7 @@
   let cloudUser=null,cloudSyncTimer=null,cloudSyncPromise=null,cloudPreparePromise=null,cloudPrepareUserId='';
   let cloudCheckPromise=null,cloudWatchStarted=false;
   let cloudSuppressDirty=false,cloudReady=false,cloudSigningOut=false,cloudMutationVersion=0;
+  let syncRetryAction=null;
   const accountBtn=$('accountBtn'),accountLabel=$('accountLabel'),syncStatus=$('syncStatus');
   const authOverlay=$('authOverlay'),authClose=$('authClose'),authGuestView=$('authGuestView'),authUserView=$('authUserView');
   const loginTab=$('loginTab'),registerTab=$('registerTab'),authForm=$('authForm'),authEmail=$('authEmail'),authEmailField=$('authEmailField');
@@ -5164,6 +5199,8 @@
   function setSyncStatus(text,state){
     syncStatus.textContent=text;
     syncStatus.className='sync-status'+(state?(' '+state):'');
+    syncStatus.title=state==='error'?'点击查看错误并重新尝试':'同步状态：'+text;
+    if(state!=='error') syncRetryAction=null;
   }
   function setAuthMessage(text,isError){
     authMessage.textContent=text||'';
@@ -5177,12 +5214,45 @@
     if(/Password should be/i.test(msg)) return '密码至少需要 6 位字符。';
     if(/email rate limit|over_email_send_rate_limit/i.test(msg)) return '注册邮件额度已用完。Supabase 默认邮件服务每小时最多发送 2 封，请稍后再试。';
     if(/rate limit/i.test(msg)) return '操作太频繁，请稍后再试。';
-    if(/Failed to fetch|NetworkError/i.test(msg)) return '无法连接云端，请检查网络。';
+    if(/Failed to fetch|NetworkError|Failed to send a request to the Edge Function/i.test(msg)) return '无法连接云端，请检查网络。';
     return msg;
+  }
+  function isCloudSetupError(error){
+    const msg=(error&&error.message)||String(error||'');
+    return /travel_snapshots.*(?:does not exist|schema cache)|relation .*travel_snapshots|PGRST205|42P01/i.test(msg);
   }
   function isMissingCloudAccountError(error){
     const msg=(error&&error.message)||String(error||'');
     return /travel_snapshots_user_id_fkey|violates foreign key constraint/i.test(msg);
+  }
+  function describeSyncError(error){
+    const msg=[error&&error.message,error&&error.code,error&&error.status,error&&error.name]
+      .filter(Boolean).join(' ');
+    if((typeof navigator!=='undefined'&&navigator.onLine===false)||/Failed to fetch|NetworkError|network request failed|Load failed|Failed to send a request to the Edge Function|ERR_(?:NETWORK|INTERNET|CONNECTION)/i.test(msg)){
+      return {kind:'network',short:'网络异常',title:'网络暂时不可用',message:'无法连接云端。请检查网络连接，恢复后重新尝试。',actionLabel:'重新尝试'};
+    }
+    if(/NoSuchKey|specified key does not exist|OSS 下载失败\D*404|照片(?:文件)?不存在|object not found/i.test(msg)){
+      return {kind:'missing-photo',short:'照片不存在',title:'云端照片不存在',message:'这张照片没有在云端找到。可能已被删除，重新同步后会再次检查。',actionLabel:'重新尝试'};
+    }
+    if(/quota|storage.{0,20}limit|insufficient.{0,10}storage|EntityTooLarge|RequestEntityTooLarge|exceeded.{0,20}(?:space|storage|limit)|云端空间不足|\b507\b/i.test(msg)){
+      return {kind:'quota',short:'空间不足',title:'云端空间不足',message:'云端暂时没有足够空间保存照片。请清理 OSS 空间或检查账户额度后重试。',actionLabel:'重新尝试'};
+    }
+    if(/阿里云\s*OSS\s*上传失败|OSS.{0,20}(?:上传|签名)失败|SignatureDoesNotMatch|AccessDenied|InvalidAccessKeyId|SecurityTokenExpired/i.test(msg)){
+      return {kind:'oss-upload',short:'OSS 上传失败',title:'OSS 上传失败',message:'照片没有成功保存到阿里云。请检查 OSS 权限、密钥和服务状态后重试。',actionLabel:'重新尝试'};
+    }
+    if(/Auth session missing|JWT|token.{0,20}(?:expired|invalid)|Invalid Refresh Token|refresh_token_not_found|Unauthorized|未登录|登录已失效|用户身份无效|\b401\b/i.test(msg)){
+      return {kind:'auth',short:'登录失效',title:'登录已失效',message:'当前账号登录状态已经过期。你的本机照片仍会保留，请重新登录后继续同步。',actionLabel:'重新登录'};
+    }
+    return {kind:'unknown',short:'同步失败',title:'同步没有完成',message:'旅行资料暂时未能同步，本机内容已保留。请稍后重新尝试。',actionLabel:'重新尝试'};
+  }
+  function showSyncFailure(error,retryAction){
+    const info=describeSyncError(error);
+    const retry=info.kind==='auth'
+      ?()=>{cloudUser=null;setAuthMode('login');updateAccountUI();openAuth();}
+      :(retryAction||(()=>syncToCloud({notify:true}).catch(()=>{})));
+    setSyncStatus(info.short,'error');
+    syncRetryAction=retry;
+    toast(info.message,true,{title:info.title,actionLabel:info.actionLabel,onAction:retry,persistent:true});
   }
   function setAuthMode(mode){
     authMode=mode;
@@ -5256,9 +5326,32 @@
   }
   async function invokeOssMedia(body){
     const {data,error}=await cloudClient.functions.invoke('oss-media',{body});
-    if(error) throw error;
+    if(error){
+      let detail='',status=error.status||(error.context&&error.context.status)||0;
+      if(error.context&&typeof error.context.clone==='function'){
+        const response=error.context.clone();
+        try{
+          const raw=await response.text();
+          try{
+            const payload=JSON.parse(raw);
+            detail=payload&&payload.error?payload.error:raw.slice(0,240);
+          }catch(_error){detail=raw.slice(0,240);}
+        }catch(_ignored){}
+      }
+      const requestError=new Error(detail||error.message||'OSS 服务请求失败');
+      requestError.status=status;requestError.code=error.code||'';
+      throw requestError;
+    }
     if(!data||data.error) throw new Error(data&&data.error?data.error:'OSS 服务未返回有效结果');
     return data;
+  }
+  async function createOssRequestError(response,operation){
+    let body='';
+    try{body=await response.text();}catch(_error){}
+    const code=((body.match(/<Code>([^<]+)<\/Code>/i)||[])[1]||'').trim();
+    const error=new Error('阿里云 OSS '+operation+'失败（'+response.status+'）'+(code?'：'+code:''));
+    error.status=response.status;error.code=code;
+    return error;
   }
   function isOssPath(path){return typeof path==='string'&&path.startsWith(OSS_PATH_PREFIX);}
   function ossObjectKey(path){return path.slice(OSS_PATH_PREFIX.length);}
@@ -5268,7 +5361,7 @@
     const objectKey='users/'+cloudUser.id+'/'+kind+'/'+cloudId+'.'+ext;
     const {url}=await invokeOssMedia({action:'put',path:objectKey,contentType:blob.type});
     const response=await fetch(url,{method:'PUT',headers:{'Content-Type':blob.type},body:blob});
-    if(!response.ok) throw new Error('阿里云 OSS 上传失败（'+response.status+'）');
+    if(!response.ok) throw await createOssRequestError(response,'上传');
     return OSS_PATH_PREFIX+objectKey;
   }
   async function downloadCloudImage(path){
@@ -5276,7 +5369,7 @@
     if(isOssPath(path)){
       const {url}=await invokeOssMedia({action:'get',path:ossObjectKey(path)});
       const response=await fetch(url);
-      if(!response.ok) throw new Error('阿里云 OSS 下载失败（'+response.status+'）');
+      if(!response.ok) throw await createOssRequestError(response,'下载');
       return blobToDataUrl(await response.blob());
     }
     const {data,error}=await cloudClient.storage.from(CLOUD_BUCKET).download(path);
@@ -5385,8 +5478,7 @@
       }catch(error){
         console.error('云端同步失败',error);
         localStorage.setItem(CLOUD_DIRTY_KEY,'1');
-        setSyncStatus('同步失败','error');
-        if(options&&options.notify) toast('同步失败：'+friendlyAuthError(error),true);
+        showSyncFailure(error,()=>syncToCloud({notify:true}).catch(()=>{}));
         throw error;
       }finally{cloudSyncPromise=null;}
     })();
@@ -5511,10 +5603,16 @@
         cloudBlocker.classList.remove('show');cloudBlocker.textContent='';
       }catch(error){
         console.error('账号数据准备失败',error);
-        setSyncStatus('云端未配置','error');
-        cloudBlocker.textContent='云端数据表尚未初始化。请在 Supabase 的 SQL Editor 运行项目中的 supabase-setup.sql。';
-        cloudBlocker.classList.add('show');
-        toast('账号已登录，但云端存储尚未初始化',true);
+        if(isCloudSetupError(error)){
+          syncRetryAction=null;
+          setSyncStatus('云端未配置','error');
+          cloudBlocker.textContent='云端数据表尚未初始化。请在 Supabase 的 SQL Editor 运行项目中的 supabase-setup.sql。';
+          cloudBlocker.classList.add('show');
+          toast('请先完成 Supabase 数据表初始化。',true,{title:'云端尚未配置',persistent:true});
+        }else{
+          cloudBlocker.classList.remove('show');cloudBlocker.textContent='';
+          showSyncFailure(error,()=>prepareUserData(user).catch(()=>{}));
+        }
       }
     })();
     try{return await cloudPreparePromise;}
@@ -5573,7 +5671,11 @@
     resetPasswordBtn.disabled=false;
     setAuthMessage(error?friendlyAuthError(error):'密码重置邮件已发送，请查看邮箱。',!!error);
   });
-  syncNowBtn.addEventListener('click',()=>syncToCloud({notify:true}));
+  syncNowBtn.addEventListener('click',()=>syncToCloud({notify:true}).catch(()=>{}));
+  syncStatus.addEventListener('click',()=>{
+    if(syncRetryAction) syncRetryAction();
+    else if(cloudUser) openAuth();
+  });
   signOutBtn.addEventListener('click',async ()=>{
     signOutBtn.disabled=true;
     let preserveLocalData=false;
@@ -9234,13 +9336,26 @@
 
   /* ---------- Toast ---------- */
   let toastTimer=null;
-  function toast(msg,isError){
-    toastEl.textContent=msg;
+  function hideToast(){
+    clearTimeout(toastTimer);toastTimer=null;toastEl.classList.remove('show');toastEl.setAttribute('aria-hidden','true');
+  }
+  function toast(msg,isError,options){
+    const opts=options||{};
+    toastTitleEl.textContent=opts.title||'';
+    toastTitleEl.hidden=!opts.title;
+    toastMessageEl.textContent=msg||'';
     toastEl.classList.toggle('error',!!isError);
+    toastEl.setAttribute('role',isError?'alert':'status');
+    toastEl.setAttribute('aria-live',isError?'assertive':'polite');
+    toastActionEl.hidden=!(opts.actionLabel&&opts.onAction);
+    toastActionEl.textContent=opts.actionLabel||'重新尝试';
+    toastActionEl.onclick=opts.onAction?()=>{hideToast();opts.onAction();}:null;
+    toastEl.setAttribute('aria-hidden','false');
     toastEl.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer=setTimeout(()=>toastEl.classList.remove('show'),2400);
+    if(!opts.persistent) toastTimer=setTimeout(hideToast,3200);
   }
+  toastCloseEl.addEventListener('click',hideToast);
 
   /* ---------- 事件绑定 ---------- */
   modalClose.addEventListener('click',closeModal);
