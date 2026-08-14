@@ -5175,6 +5175,7 @@
     if(/Email not confirmed/i.test(msg)) return '请先打开注册邮件并确认邮箱。';
     if(/User already registered/i.test(msg)) return '这个邮箱已经注册，请直接登录。';
     if(/Password should be/i.test(msg)) return '密码至少需要 6 位字符。';
+    if(/email rate limit|over_email_send_rate_limit/i.test(msg)) return '注册邮件额度已用完。Supabase 默认邮件服务每小时最多发送 2 封，请稍后再试。';
     if(/rate limit/i.test(msg)) return '操作太频繁，请稍后再试。';
     if(/Failed to fetch|NetworkError/i.test(msg)) return '无法连接云端，请检查网络。';
     return msg;
@@ -5209,7 +5210,10 @@
     accountEmail.textContent=signedIn?(cloudUser.email||'当前账号'):'';
     authTitle.textContent=signedIn?'旅行账号':'登录旅行账号';
     authDesc.textContent=signedIn?'同一账号在不同设备登录后，会显示相同的旅行记录。':'登录后，城市记录和照片会同步到云端，并可在其他设备查看。';
-    if(!signedIn) setSyncStatus('仅本机','');
+    if(!signedIn){
+      setSyncStatus('仅本机','');
+      cloudBlocker.classList.remove('show');cloudBlocker.textContent='';
+    }
   }
   function openAuth(){
     updateAccountUI();
