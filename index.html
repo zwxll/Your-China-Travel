@@ -940,7 +940,7 @@
     width:min(430px,100%);border:1px solid rgba(125,211,252,.22);border-radius:var(--radius);
     background:linear-gradient(145deg,rgba(12,19,28,.98),rgba(5,8,12,.98));
     box-shadow:0 28px 90px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.07);
-    overflow:hidden;
+    max-height:calc(100dvh - 40px);overflow-x:hidden;overflow-y:auto;
   }
   .auth-panel-head{padding:28px 28px 18px;position:relative;}
   .auth-kicker{margin:0 0 8px;color:var(--accent-l);font:700 11px/1.2 'Inter',sans-serif;letter-spacing:1.6px;text-transform:uppercase;}
@@ -982,8 +982,12 @@
   .account-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .account-action{height:42px;border-radius:var(--radius-pill);border:1px solid rgba(148,163,184,.25);background:rgba(255,255,255,.04);color:#dbeafe;font-weight:700;cursor:pointer;}
   .account-action.primary{border-color:rgba(56,189,248,.45);background:rgba(56,189,248,.12);color:#e0f7ff;}
+  .account-action.signout{grid-column:1/-1;}
   .account-action:hover{background:rgba(255,255,255,.08);}
   .account-action:disabled{cursor:wait;opacity:.58;}
+  .account-password-form{display:grid;gap:14px;padding-top:18px;border-top:1px solid rgba(255,255,255,.08);}
+  .account-password-form[hidden]{display:none;}
+  .account-password-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
   .account-sync-status{
     display:flex;align-items:center;gap:9px;min-height:38px;margin:0;padding:9px 12px;
     border:1px solid rgba(56,189,248,.2);border-radius:var(--radius-sm);
@@ -3646,8 +3650,24 @@
           </div>
           <div class="account-actions">
             <button class="account-action primary" id="syncNowBtn" type="button">立即同步</button>
-            <button class="account-action" id="signOutBtn" type="button">退出账号</button>
+            <button class="account-action" id="changePasswordBtn" type="button" aria-expanded="false" aria-controls="changePasswordForm">修改密码</button>
+            <button class="account-action signout" id="signOutBtn" type="button">退出账号</button>
           </div>
+          <form class="account-password-form" id="changePasswordForm" hidden>
+            <div class="auth-field">
+              <label for="newAccountPassword">新密码</label>
+              <input id="newAccountPassword" name="new-password" type="password" autocomplete="new-password" placeholder="至少 6 位字符" minlength="6" required>
+            </div>
+            <div class="auth-field">
+              <label for="confirmAccountPassword">确认新密码</label>
+              <input id="confirmAccountPassword" name="confirm-password" type="password" autocomplete="new-password" placeholder="再次输入新密码" minlength="6" required>
+            </div>
+            <p class="auth-message" id="changePasswordMessage" role="status" aria-live="polite"></p>
+            <div class="account-password-actions">
+              <button class="account-action primary" id="savePasswordBtn" type="submit">保存新密码</button>
+              <button class="account-action" id="cancelPasswordBtn" type="button">取消</button>
+            </div>
+          </form>
           <p class="account-sync-status" id="accountSyncStatus" role="status" aria-live="polite" aria-atomic="true" hidden></p>
         </div>
       </div>
@@ -5224,6 +5244,9 @@
   const authPassword=$('authPassword'),authSubmit=$('authSubmit'),resetPasswordBtn=$('resetPasswordBtn');
   const authMessage=$('authMessage'),accountEmail=$('accountEmail'),signOutBtn=$('signOutBtn');
   const localModeBtn=$('localModeBtn'),enableCloudBtn=$('enableCloudBtn'),syncNowBtn=$('syncNowBtn'),accountSyncStatus=$('accountSyncStatus');
+  const changePasswordBtn=$('changePasswordBtn'),changePasswordForm=$('changePasswordForm');
+  const newAccountPassword=$('newAccountPassword'),confirmAccountPassword=$('confirmAccountPassword');
+  const changePasswordMessage=$('changePasswordMessage'),savePasswordBtn=$('savePasswordBtn'),cancelPasswordBtn=$('cancelPasswordBtn');
   const cloudBlocker=$('cloudBlocker'),authTitle=$('authTitle'),authDesc=$('authDesc');
   let authMode='login';
 
@@ -5262,11 +5285,23 @@
     authMessage.textContent=text||'';
     authMessage.className='auth-message'+(text?' show':'')+(isError?' error':'');
   }
+  function setChangePasswordMessage(text,isError){
+    changePasswordMessage.textContent=text||'';
+    changePasswordMessage.className='auth-message'+(text?' show':'')+(isError?' error':'');
+  }
+  function setChangePasswordOpen(open){
+    changePasswordForm.hidden=!open;
+    changePasswordBtn.setAttribute('aria-expanded',String(open));
+    newAccountPassword.value='';confirmAccountPassword.value='';
+    setChangePasswordMessage('',false);
+    if(open) setTimeout(()=>newAccountPassword.focus(),50);
+  }
   function friendlyAuthError(error){
     const msg=(error&&error.message)||String(error||'未知错误');
     if(/Invalid login credentials/i.test(msg)) return '邮箱或密码不正确。';
     if(/Email not confirmed/i.test(msg)) return '请先打开注册邮件并确认邮箱。';
     if(/User already registered/i.test(msg)) return '这个邮箱已经注册，请直接登录。';
+    if(/New password should be different|same password/i.test(msg)) return '新密码不能与当前密码相同。';
     if(/Password should be/i.test(msg)) return '密码至少需要 6 位字符。';
     if(/email rate limit|over_email_send_rate_limit/i.test(msg)) return '注册邮件额度已用完。Supabase 默认邮件服务每小时最多发送 2 封，请稍后再试。';
     if(/rate limit/i.test(msg)) return '操作太频繁，请稍后再试。';
@@ -5340,6 +5375,7 @@
       ?'同一账号在不同设备登录后，会显示相同的旅行记录。'
       :(localOnly?'当前内容不会上传云端。':'登录后可跨设备同步，也可以选择仅在本机使用。');
     if(!signedIn){
+      setChangePasswordOpen(false);
       setSyncStatus('仅本机','');
       cloudBlocker.classList.remove('show');cloudBlocker.textContent='';
     }
@@ -5352,6 +5388,7 @@
     if(!cloudUser&&!isLocalMode()) setTimeout(()=>authEmail.focus(),50);
   }
   function closeAuth(){
+    if(!changePasswordForm.hidden) setChangePasswordOpen(false);
     authOverlay.classList.remove('show');
     document.body.classList.remove('modal-open');
   }
@@ -5750,6 +5787,28 @@
     const {error}=await cloudClient.auth.resetPasswordForEmail(email,{redirectTo});
     resetPasswordBtn.disabled=false;
     setAuthMessage(error?friendlyAuthError(error):'密码重置邮件已发送，请查看邮箱。',!!error);
+  });
+  changePasswordBtn.addEventListener('click',()=>setChangePasswordOpen(changePasswordForm.hidden));
+  cancelPasswordBtn.addEventListener('click',()=>setChangePasswordOpen(false));
+  changePasswordForm.addEventListener('submit',async e=>{
+    e.preventDefault();
+    if(!cloudClient||!cloudUser){setChangePasswordMessage('登录状态已失效，请重新登录。',true);return;}
+    const password=newAccountPassword.value;
+    if(password.length<6){setChangePasswordMessage('新密码至少需要 6 位字符。',true);newAccountPassword.focus();return;}
+    if(password!==confirmAccountPassword.value){setChangePasswordMessage('两次输入的密码不一致。',true);confirmAccountPassword.focus();return;}
+    savePasswordBtn.disabled=true;cancelPasswordBtn.disabled=true;changePasswordBtn.disabled=true;
+    setChangePasswordMessage('正在保存新密码...',false);
+    try{
+      const {data,error}=await cloudClient.auth.updateUser({password});
+      if(error) throw error;
+      if(data&&data.user) cloudUser=data.user;
+      setChangePasswordOpen(false);
+      toast('密码修改成功，下次登录请使用新密码');
+    }catch(error){
+      setChangePasswordMessage(friendlyAuthError(error),true);
+    }finally{
+      savePasswordBtn.disabled=false;cancelPasswordBtn.disabled=false;changePasswordBtn.disabled=false;
+    }
   });
   syncNowBtn.addEventListener('click',()=>syncToCloud({notify:true}).catch(()=>{}));
   signOutBtn.addEventListener('click',async ()=>{
