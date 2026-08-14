@@ -183,14 +183,6 @@
   .account-btn .account-dot{width:7px;height:7px;border-radius:50%;background:#64748b;box-shadow:0 0 0 4px rgba(100,116,139,.12);}
   .account-btn.signed-in .account-dot{background:var(--accent);box-shadow:0 0 0 4px rgba(56,189,248,.14),0 0 12px rgba(56,189,248,.5);}
   .account-btn .account-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  .sync-status{
-    min-width:58px;padding:4px 0;border:0;background:transparent;color:var(--muted);
-    font:500 11px/1.2 inherit;text-align:right;white-space:nowrap;
-  }
-  .sync-status.syncing{color:var(--accent-l);}
-  .sync-status.error{color:#fca5a5;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
-  .sync-status.error:hover{color:#fecaca;}
-  .sync-status:focus-visible{outline:2px solid var(--accent);outline-offset:4px;border-radius:4px;}
   .stat{
     background:#080808;border:1px solid var(--line);border-radius:12px;
     padding:6px 14px;text-align:center;box-shadow:var(--shadow-sm);
@@ -976,6 +968,14 @@
   .auth-message{display:none;margin:0;padding:10px 12px;border-radius:var(--radius-sm);font-size:12px;line-height:1.55;background:rgba(56,189,248,.09);color:#bae6fd;}
   .auth-message.show{display:block;}
   .auth-message.error{background:rgba(239,68,68,.1);color:#fecaca;}
+  .auth-local-option{display:grid;gap:9px;padding-top:3px;border-top:1px solid rgba(255,255,255,.08);}
+  .auth-local-btn{
+    height:44px;border:1px solid rgba(125,211,252,.26);border-radius:var(--radius-pill);
+    background:rgba(56,189,248,.06);color:#dbeafe;font-weight:750;cursor:pointer;
+  }
+  .auth-local-btn:hover{border-color:rgba(125,211,252,.5);background:rgba(56,189,248,.11);}
+  .auth-local-btn:focus-visible{outline:2px solid var(--accent-l);outline-offset:2px;}
+  .auth-local-note{margin:0;color:#7f8da0;font-size:11px;line-height:1.55;text-align:center;}
   .account-panel{padding:25px 28px 28px;display:grid;gap:18px;}
   .account-email{font-size:15px;color:#f8fafc;overflow-wrap:anywhere;}
   .account-note{color:#94a3b8;font-size:12px;line-height:1.65;}
@@ -1004,7 +1004,7 @@
   @media(max-width:720px){
     header{flex-wrap:nowrap;padding:10px 12px;}
     .header-actions{gap:6px;}
-    .sync-status,.stats{display:none;}
+    .stats{display:none;}
     .account-btn{max-width:126px;padding:0 11px;}
     .auth-panel-head,.auth-form,.account-panel{padding-left:20px;padding-right:20px;}
     .auth-tabs{margin-left:20px;margin-right:20px;}
@@ -3266,7 +3266,6 @@
         <div class="stat"><span id="cityStat">0</span><label>座城市</label></div>
         <div class="stat"><span id="photoStat">0</span><label>张照片</label></div>
       </div>
-      <button class="sync-status" id="syncStatus" type="button" aria-live="polite" title="查看同步状态">仅本机</button>
       <button class="account-btn" id="accountBtn" type="button" aria-haspopup="dialog">
         <span class="account-dot" aria-hidden="true"></span>
         <span class="account-label" id="accountLabel">登录账号</span>
@@ -3602,7 +3601,7 @@
   <div class="auth-overlay" id="authOverlay" role="dialog" aria-modal="true" aria-labelledby="authTitle">
     <section class="auth-panel">
       <div class="auth-panel-head">
-        <p class="auth-kicker">Travel Cloud</p>
+        <p class="auth-kicker">Travel Archive</p>
         <h2 class="auth-title" id="authTitle">登录旅行账号</h2>
         <p class="auth-desc" id="authDesc">登录后，城市记录和照片会同步到云端，并可在其他设备查看。</p>
         <button class="auth-close" id="authClose" type="button" aria-label="关闭">&times;</button>
@@ -3624,7 +3623,20 @@
           <p class="auth-message" id="authMessage" aria-live="polite"></p>
           <button class="auth-submit" id="authSubmit" type="submit">登录</button>
           <button class="auth-link" id="resetPasswordBtn" type="button">忘记密码</button>
+          <div class="auth-local-option">
+            <button class="auth-local-btn" id="localModeBtn" type="button">仅在本机使用</button>
+            <p class="auth-local-note">照片只保存在当前浏览器，不会上传云端。清除浏览器数据后将无法恢复。</p>
+          </div>
         </form>
+      </div>
+      <div id="authLocalView" hidden>
+        <div class="account-panel">
+          <div>
+            <div class="account-email">本机模式</div>
+            <div class="account-note">照片和旅行记录只保存在当前浏览器，不会上传云端，也无法在其他设备查看。</div>
+          </div>
+          <button class="account-action primary" id="enableCloudBtn" type="button">登录并开启云同步</button>
+        </div>
       </div>
       <div id="authUserView" hidden>
         <div class="account-panel">
@@ -5197,21 +5209,30 @@
   /* ---------- Supabase 账号与云端同步 ---------- */
   const CLOUD_TABLE='travel_snapshots',CLOUD_BUCKET='travel-media',OSS_PATH_PREFIX='oss:';
   const CLOUD_OWNER_KEY='travelCloudOwner',CLOUD_DIRTY_KEY='travelCloudDirty',CLOUD_UPDATED_KEY='travelCloudUpdatedAt';
+  const STORAGE_MODE_KEY='travelStorageMode';
   const cloudConfig=window.TRAVEL_SUPABASE_CONFIG||{};
   const cloudClient=(window.supabase&&cloudConfig.url&&cloudConfig.publishableKey)
     ?window.supabase.createClient(cloudConfig.url,cloudConfig.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}})
     :null;
-  let cloudUser=null,cloudSyncTimer=null,cloudSyncPromise=null,cloudPreparePromise=null,cloudPrepareUserId='';
+  let cloudUser=null,cloudSyncTimer=null,cloudSyncPromise=null,cloudPreparePromise=null,cloudPrepareUserId='',cloudSyncEpoch=0;
   let cloudCheckPromise=null,cloudWatchStarted=false;
   let cloudSuppressDirty=false,cloudReady=false,cloudSigningOut=false,cloudMutationVersion=0;
-  let syncRetryAction=null,accountSyncStatusTimer=null;
-  const accountBtn=$('accountBtn'),accountLabel=$('accountLabel'),syncStatus=$('syncStatus');
-  const authOverlay=$('authOverlay'),authClose=$('authClose'),authGuestView=$('authGuestView'),authUserView=$('authUserView');
+  let accountSyncStatusTimer=null,storageMode=localStorage.getItem(STORAGE_MODE_KEY)||'';
+  const accountBtn=$('accountBtn'),accountLabel=$('accountLabel');
+  const authOverlay=$('authOverlay'),authClose=$('authClose'),authGuestView=$('authGuestView'),authLocalView=$('authLocalView'),authUserView=$('authUserView');
   const loginTab=$('loginTab'),registerTab=$('registerTab'),authForm=$('authForm'),authEmail=$('authEmail'),authEmailField=$('authEmailField');
   const authPassword=$('authPassword'),authSubmit=$('authSubmit'),resetPasswordBtn=$('resetPasswordBtn');
   const authMessage=$('authMessage'),accountEmail=$('accountEmail'),signOutBtn=$('signOutBtn');
-  const syncNowBtn=$('syncNowBtn'),accountSyncStatus=$('accountSyncStatus'),cloudBlocker=$('cloudBlocker'),authTitle=$('authTitle'),authDesc=$('authDesc');
+  const localModeBtn=$('localModeBtn'),enableCloudBtn=$('enableCloudBtn'),syncNowBtn=$('syncNowBtn'),accountSyncStatus=$('accountSyncStatus');
+  const cloudBlocker=$('cloudBlocker'),authTitle=$('authTitle'),authDesc=$('authDesc');
   let authMode='login';
+
+  function isLocalMode(){return storageMode==='local';}
+  function setStorageMode(mode){
+    storageMode=mode;
+    if(mode) localStorage.setItem(STORAGE_MODE_KEY,mode);
+    else localStorage.removeItem(STORAGE_MODE_KEY);
+  }
 
   function formatAccountSyncStatus(text,state){
     if(state==='error') return '同步失败：'+text;
@@ -5226,7 +5247,7 @@
   }
   function setAccountSyncStatus(text,state){
     clearTimeout(accountSyncStatusTimer);accountSyncStatusTimer=null;
-    const hidden=!text||text==='仅本机';
+    const hidden=!cloudUser||!text||text==='仅本机';
     accountSyncStatus.hidden=hidden;
     accountSyncStatus.textContent=hidden?'':formatAccountSyncStatus(text,state);
     accountSyncStatus.className='account-sync-status'+(state?(' '+state):'');
@@ -5235,11 +5256,7 @@
     if(!hidden&&text==='已同步') accountSyncStatusTimer=setTimeout(()=>{accountSyncStatus.hidden=true;},2400);
   }
   function setSyncStatus(text,state){
-    syncStatus.textContent=text;
-    syncStatus.className='sync-status'+(state?(' '+state):'');
-    syncStatus.title=state==='error'?'点击查看错误并重新尝试':'同步状态：'+text;
     setAccountSyncStatus(text,state);
-    if(state!=='error') syncRetryAction=null;
   }
   function setAuthMessage(text,isError){
     authMessage.textContent=text||'';
@@ -5290,7 +5307,6 @@
       ?()=>{cloudUser=null;setAuthMode('login');updateAccountUI();openAuth();}
       :(retryAction||(()=>syncToCloud({notify:true}).catch(()=>{})));
     setSyncStatus(info.short,'error');
-    syncRetryAction=retry;
     toast(info.message,true,{title:info.title,actionLabel:info.actionLabel,onAction:retry,persistent:true});
   }
   function setAuthMode(mode){
@@ -5312,13 +5328,17 @@
   }
   function updateAccountUI(){
     const signedIn=!!cloudUser&&authMode!=='recovery';
-    accountBtn.classList.toggle('signed-in',signedIn);
-    accountLabel.textContent=signedIn?(cloudUser.email||'已登录'):'登录账号';
-    authGuestView.hidden=signedIn;
+    const localOnly=!signedIn&&isLocalMode();
+    accountBtn.classList.toggle('signed-in',signedIn||localOnly);
+    accountLabel.textContent=signedIn?(cloudUser.email||'已登录'):(localOnly?'本机模式':'登录账号');
+    authGuestView.hidden=signedIn||localOnly;
+    authLocalView.hidden=!localOnly;
     authUserView.hidden=!signedIn;
     accountEmail.textContent=signedIn?(cloudUser.email||'当前账号'):'';
-    authTitle.textContent=signedIn?'旅行账号':'登录旅行账号';
-    authDesc.textContent=signedIn?'同一账号在不同设备登录后，会显示相同的旅行记录。':'登录后，城市记录和照片会同步到云端，并可在其他设备查看。';
+    authTitle.textContent=signedIn?'旅行账号':(localOnly?'仅在本机使用':'登录旅行账号');
+    authDesc.textContent=signedIn
+      ?'同一账号在不同设备登录后，会显示相同的旅行记录。'
+      :(localOnly?'当前内容不会上传云端。':'登录后可跨设备同步，也可以选择仅在本机使用。');
     if(!signedIn){
       setSyncStatus('仅本机','');
       cloudBlocker.classList.remove('show');cloudBlocker.textContent='';
@@ -5329,7 +5349,7 @@
     if(authMode==='recovery') setAuthMode('recovery');
     authOverlay.classList.add('show');
     document.body.classList.add('modal-open');
-    if(!cloudUser) setTimeout(()=>authEmail.focus(),50);
+    if(!cloudUser&&!isLocalMode()) setTimeout(()=>authEmail.focus(),50);
   }
   function closeAuth(){
     authOverlay.classList.remove('show');
@@ -5340,6 +5360,18 @@
   authOverlay.addEventListener('click',e=>{if(e.target===authOverlay) closeAuth();});
   loginTab.addEventListener('click',()=>setAuthMode('login'));
   registerTab.addEventListener('click',()=>setAuthMode('register'));
+  localModeBtn.addEventListener('click',()=>{
+    cloudSyncEpoch+=1;
+    clearTimeout(cloudSyncTimer);cloudSyncTimer=null;
+    setStorageMode('local');
+    updateAccountUI();closeAuth();
+    toast('已进入本机模式，照片不会上传云端');
+  });
+  enableCloudBtn.addEventListener('click',()=>{
+    setStorageMode('');
+    setAuthMode('login');updateAccountUI();
+    setTimeout(()=>authEmail.focus(),50);
+  });
 
   function markCloudDirty(){
     if(cloudSuppressDirty) return;
@@ -5484,8 +5516,9 @@
   }
 
   async function syncToCloud(options){
-    if(!cloudClient||!cloudUser||cloudSuppressDirty) return;
+    if(isLocalMode()||!cloudClient||!cloudUser||cloudSuppressDirty) return;
     if(cloudSyncPromise) return cloudSyncPromise;
+    const syncEpoch=cloudSyncEpoch;
     cloudSyncPromise=(async ()=>{
       setSyncStatus('同步中','syncing');
       try{
@@ -5494,11 +5527,13 @@
           const passVersion=cloudMutationVersion;
           const previous=await readCloudSnapshot();
           const snapshot=await buildCloudSnapshot();
+          if(syncEpoch!==cloudSyncEpoch||cloudSigningOut||!cloudUser) throw Object.assign(new Error('同步已取消'),{name:'AbortError'});
           const updatedAt=new Date().toISOString();
           const {data:updatedRow,error}=await cloudClient.from(CLOUD_TABLE)
             .upsert({user_id:cloudUser.id,data:snapshot,updated_at:updatedAt},{onConflict:'user_id'})
             .select('updated_at').single();
           if(error) throw error;
+          if(syncEpoch!==cloudSyncEpoch||cloudSigningOut||!cloudUser) throw Object.assign(new Error('同步已取消'),{name:'AbortError'});
           const previousPaths=collectSnapshotPaths(previous),currentPaths=collectSnapshotPaths(snapshot);
           const unusedPaths=[...previousPaths].filter(path=>!currentPaths.has(path));
           const legacyPaths=unusedPaths.filter(path=>!isOssPath(path));
@@ -5510,11 +5545,16 @@
           needsAnotherPass=cloudMutationVersion!==passVersion;
           if(needsAnotherPass) setSyncStatus('继续同步','syncing');
         }
+        if(syncEpoch!==cloudSyncEpoch||cloudSigningOut||!cloudUser) throw Object.assign(new Error('同步已取消'),{name:'AbortError'});
         localStorage.setItem(CLOUD_OWNER_KEY,cloudUser.id);
         localStorage.setItem(CLOUD_DIRTY_KEY,'0');
         setSyncStatus('已同步','');
         if(options&&options.notify) toast('旅行资料已同步到云端');
       }catch(error){
+        if(error&&error.name==='AbortError'&&syncEpoch!==cloudSyncEpoch){
+          localStorage.setItem(CLOUD_DIRTY_KEY,'1');
+          throw error;
+        }
         console.error('云端同步失败',error);
         localStorage.setItem(CLOUD_DIRTY_KEY,'1');
         showSyncFailure(error,()=>syncToCloud({notify:true}).catch(()=>{}));
@@ -5602,9 +5642,11 @@
   }
 
   async function prepareUserData(user){
+    if(isLocalMode()) return;
     if(cloudPreparePromise&&cloudPrepareUserId===user.id) return cloudPreparePromise;
     cloudPrepareUserId=user.id;
     cloudPreparePromise=(async ()=>{
+      setStorageMode('cloud');startCloudWatcher();
       cloudUser=user;updateAccountUI();setSyncStatus('连接中','syncing');
       const owner=localStorage.getItem(CLOUD_OWNER_KEY),dirty=localStorage.getItem(CLOUD_DIRTY_KEY)==='1';
       try{
@@ -5643,7 +5685,6 @@
       }catch(error){
         console.error('账号数据准备失败',error);
         if(isCloudSetupError(error)){
-          syncRetryAction=null;
           setSyncStatus('云端未配置','error');
           cloudBlocker.textContent='云端数据表尚未初始化。请在 Supabase 的 SQL Editor 运行项目中的 supabase-setup.sql。';
           cloudBlocker.classList.add('show');
@@ -5711,44 +5752,51 @@
     setAuthMessage(error?friendlyAuthError(error):'密码重置邮件已发送，请查看邮箱。',!!error);
   });
   syncNowBtn.addEventListener('click',()=>syncToCloud({notify:true}).catch(()=>{}));
-  syncStatus.addEventListener('click',()=>{
-    if(syncRetryAction) syncRetryAction();
-    else if(cloudUser) openAuth();
-  });
   signOutBtn.addEventListener('click',async ()=>{
     signOutBtn.disabled=true;
-    let preserveLocalData=false;
+    const preserveLocalData=localStorage.getItem(CLOUD_DIRTY_KEY)==='1'||!!cloudSyncPromise;
     try{
-      if(localStorage.getItem(CLOUD_DIRTY_KEY)==='1'){
-        try{await syncToCloud();}
-        catch(error){
-          if(!isMissingCloudAccountError(error)) throw error;
-          preserveLocalData=true;
-        }
-      }
       cloudSigningOut=true;
-      const result=preserveLocalData
-        ?await cloudClient.auth.signOut({scope:'local'})
-        :await cloudClient.auth.signOut();
-      if(result.error) throw result.error;
+      cloudSyncEpoch+=1;
+      clearTimeout(cloudSyncTimer);cloudSyncTimer=null;
+      let remoteSignOutFailed=false;
+      try{
+        const result=await withTimeout(
+          preserveLocalData?cloudClient.auth.signOut({scope:'local'}):cloudClient.auth.signOut(),
+          4000,
+          '退出请求超时'
+        );
+        if(result.error) throw result.error;
+      }catch(error){
+        remoteSignOutFailed=true;
+        const projectRef=new URL(cloudConfig.url).hostname.split('.')[0];
+        localStorage.removeItem(`sb-${projectRef}-auth-token`);
+      }
       if(preserveLocalData){
-        localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_UPDATED_KEY);
+        localStorage.setItem(CLOUD_DIRTY_KEY,'1');
       }else{
         cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;
         localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_DIRTY_KEY);localStorage.removeItem(CLOUD_UPDATED_KEY);
       }
-      cloudUser=null;await refreshState();updateAccountUI();closeAuth();
-      toast(preserveLocalData?'账号已失效，已退出并保留本机照片':'已安全退出账号');
-    }catch(error){toast('退出失败：'+friendlyAuthError(error),true);}
+      setStorageMode('');cloudUser=null;await refreshState();updateAccountUI();closeAuth();
+      toast(remoteSignOutFailed
+        ?'已从本机退出；云端暂时无法结束其他设备会话'
+        :(preserveLocalData?'已退出账号，未同步内容已保留在本机':'已安全退出账号'));
+    }catch(error){
+      if(preserveLocalData) setSyncStatus('待同步','syncing');
+      toast('退出失败：'+friendlyAuthError(error),true);
+    }
     finally{cloudSigningOut=false;signOutBtn.disabled=false;}
   });
 
   async function initCloudAuth(){
     if(cloudReady) return;
     cloudReady=true;updateAccountUI();
-    if(!cloudClient){setSyncStatus('云端不可用','error');return;}
+    if(isLocalMode()) return;
+    if(!cloudClient){setSyncStatus('云端不可用','error');openAuth();return;}
     startCloudWatcher();
     cloudClient.auth.onAuthStateChange((event,session)=>{
+      if(isLocalMode()&&event!=='PASSWORD_RECOVERY') return;
       if(event==='PASSWORD_RECOVERY'){
         setTimeout(()=>{cloudUser=session&&session.user?session.user:cloudUser;setAuthMode('recovery');openAuth();},0);
       }else if((event==='SIGNED_IN'||event==='TOKEN_REFRESHED')&&session&&(!cloudUser||cloudUser.id!==session.user.id)){
@@ -5762,8 +5810,9 @@
       }
     });
     const {data,error}=await cloudClient.auth.getSession();
-    if(error){setSyncStatus('云端不可用','error');return;}
-    if(data.session) await prepareUserData(data.session.user);
+    if(error){setSyncStatus('云端不可用','error');openAuth();return;}
+    if(data.session&&!isLocalMode()) await prepareUserData(data.session.user);
+    else if(!isLocalMode()) openAuth();
   }
 
   window.TravelCloud={sync:()=>syncToCloud({notify:true}),openAccount:openAuth};
