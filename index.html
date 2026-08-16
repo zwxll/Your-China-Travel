@@ -237,6 +237,160 @@
   .theme-toggle-btn:hover{border-color:rgba(125,211,252,.65);background:rgba(14,165,233,.14);}
   .theme-toggle-btn:active{transform:scale(.98);}
   .theme-toggle-btn svg{display:block;}
+  /* ===================== 人生地图足迹（家 → 按时间顺序飞行回放） ===================== */
+  .footprint-btn .fp-btn-ico{display:grid;place-items:center;color:#7dd3fc;}
+  body.light-theme .footprint-btn .fp-btn-ico{color:#4f46e5;}
+  .footprint-btn.active{border-color:rgba(56,189,248,.85);background:rgba(14,165,233,.26);}
+  body.light-theme .footprint-btn.active{border-color:rgba(79,70,229,.6);background:rgba(99,102,241,.16);}
+  @media(max-width:760px){.footprint-btn .fp-btn-label{display:none;}}
+  /* 足迹图层：z:3 位于省份卡片层(z:4)之下，航线从卡片下方穿过 */
+  .footprint-layer{
+    position:absolute;inset:0;z-index:3;pointer-events:none;overflow:hidden;
+    --fp-line:#7dd3fc;--fp-line-soft:rgba(125,211,252,.5);--fp-glow:rgba(56,189,248,.34);
+    --fp-plane-a:#7dd3fc;--fp-plane-b:#0369a1;--fp-dot:#38bdf8;
+    --fp-pill-bg:rgba(5,15,26,.92);--fp-pill-bd:rgba(125,211,252,.45);--fp-pill-tx:#eaf7ff;
+  }
+  body.light-theme .footprint-layer{
+    --fp-line:#4f46e5;--fp-line-soft:rgba(79,70,229,.42);--fp-glow:rgba(99,102,241,.3);
+    --fp-plane-a:#818cf8;--fp-plane-b:#3730a3;--fp-dot:#4f46e5;
+    --fp-pill-bg:rgba(255,255,255,.96);--fp-pill-bd:rgba(79,70,229,.5);--fp-pill-tx:#312e81;
+  }
+  .footprint-layer[hidden]{display:none;}
+  #footprintLines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+  .fp-route-pending{fill:none;stroke:var(--fp-line-soft);stroke-width:1.3;stroke-dasharray:2 7;stroke-linecap:round;opacity:.55;}
+  .fp-route-glow{fill:none;stroke:var(--fp-glow);stroke-width:7;stroke-linecap:round;}
+  .fp-route-core{fill:none;stroke:var(--fp-line);stroke-width:2.4;stroke-linecap:round;}
+  .fp-stop-dot{fill:var(--fp-dot);stroke:#fff;stroke-width:1.2;}
+  .fp-home-dot{fill:var(--fp-dot);stroke:#fff;stroke-width:1.6;}
+  .fp-pulse{
+    fill:none;stroke:var(--fp-line);stroke-width:2;
+    transform-box:fill-box;transform-origin:center;
+    animation:fpPulse .85s ease-out forwards;
+  }
+  @keyframes fpPulse{
+    0%{transform:scale(.25);opacity:.95;}
+    100%{transform:scale(3);opacity:0;}
+  }
+  .fp-plane{position:absolute;left:0;top:0;width:30px;height:30px;margin:-15px 0 0 -15px;will-change:transform;}
+  .fp-plane[hidden]{display:none;}
+  .fp-plane svg{display:block;width:100%;height:100%;filter:drop-shadow(0 0 7px var(--fp-glow));}
+  .fp-plane .plane-top{fill:var(--fp-plane-a);}
+  .fp-plane .plane-bottom{fill:var(--fp-plane-b);}
+  .fp-plane .plane-dot{fill:#fff;opacity:.95;}
+  /* 到站城市卡片：仅 城市名/推荐指数/标签 的半透明小卡，不遮航线；右上角序号徽章（家=🏠） */
+  .fp-city-cards{position:absolute;inset:0;}
+  .fp-city-card{
+    position:absolute;left:0;top:0;width:118px;height:50px;
+    display:flex;flex-direction:column;justify-content:center;gap:2px;
+    padding:5px 8px;text-align:left;pointer-events:none;
+    border:1px solid rgba(125,211,252,.22);border-radius:var(--radius-sm);
+    background:rgba(5,10,16,.42);
+    animation:fpCardIn .28s cubic-bezier(.16,1,.3,1) both;
+  }
+  body.light-theme .fp-city-card{
+    background:rgba(255,255,255,.52);border-color:rgba(79,70,229,.26);
+  }
+  @keyframes fpCardIn{
+    0%{opacity:0;transform:translateY(8px) scale(.9);}
+    100%{opacity:1;transform:translateY(0) scale(1);}
+  }
+  .fp-city-card .fp-card-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f1f5f9;font-size:11.5px;line-height:1.3;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.6);}
+  .fp-city-card .fp-card-rating{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7dd3fc;font-size:10px;line-height:1.3;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.55);}
+  .fp-city-card .fp-card-tags{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#a8bfd4;font-size:10px;line-height:1.3;text-shadow:0 1px 3px rgba(0,0,0,.5);}
+  body.light-theme .fp-city-card .fp-card-name{color:#1f2a37;text-shadow:0 1px 2px rgba(255,255,255,.7);}
+  body.light-theme .fp-city-card .fp-card-rating{color:#4f46e5;text-shadow:0 1px 2px rgba(255,255,255,.7);}
+  body.light-theme .fp-city-card .fp-card-tags{color:#5b6b7d;text-shadow:0 1px 2px rgba(255,255,255,.7);}
+  /* 到达顺序徽章：阿拉伯数字序号，主题色渐变 + 白描边 */
+  .fp-card-badge{
+    position:absolute;right:-8px;top:-8px;width:26px;height:26px;border-radius:50%;
+    display:grid;place-items:center;font:800 13px/1 inherit;color:#fff;
+    background:linear-gradient(135deg,#38bdf8,#0284c7);
+    border:2px solid #fff;box-shadow:0 4px 14px rgba(2,132,199,.55);
+    letter-spacing:0;z-index:2;
+  }
+  body.light-theme .fp-card-badge{
+    background:linear-gradient(135deg,#818cf8,#4338ca);
+    box-shadow:0 4px 14px rgba(79,70,229,.45);
+  }
+  /* 底部控制面板（玻璃胶囊） */
+  .footprint-panel{
+    position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:9;
+    display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:999px;
+    border:1px solid rgba(125,211,252,.32);background:rgba(6,12,20,.9);
+    backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    box-shadow:0 12px 32px rgba(0,0,0,.5);max-width:calc(100% - 24px);
+  }
+  body.light-theme .footprint-panel{
+    background:rgba(255,255,255,.93);border-color:rgba(79,70,229,.32);
+    box-shadow:0 12px 28px rgba(31,42,55,.2);
+  }
+  .footprint-panel[hidden]{display:none;}
+  .fp-ctl{
+    flex:0 0 auto;width:32px;height:32px;border-radius:50%;
+    border:1px solid rgba(125,211,252,.35);background:rgba(56,189,248,.12);color:var(--ink);
+    cursor:pointer;display:grid;place-items:center;font-size:13px;line-height:1;
+    transition:background .18s ease,border-color .18s ease,transform .12s ease;
+  }
+  .fp-ctl:hover{background:rgba(56,189,248,.24);}
+  .fp-ctl:active{transform:scale(.94);}
+  body.light-theme .fp-ctl{border-color:rgba(79,70,229,.32);background:rgba(99,102,241,.1);}
+  body.light-theme .fp-ctl:hover{background:rgba(99,102,241,.2);}
+  .fp-speed{width:auto;min-width:42px;border-radius:999px;padding:0 9px;font:700 11px/1 inherit;}
+  .fp-status{min-width:0;display:flex;flex-direction:column;gap:1px;line-height:1.3;padding:0 4px;}
+  .fp-status b{font-size:13px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:230px;}
+  .fp-status span{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:230px;}
+  .fp-status .fp-dist{color:#7dd3fc;font-weight:700;}
+  body.light-theme .fp-status .fp-dist{color:#4f46e5;}
+  @media(max-width:640px){
+    .footprint-panel{bottom:12px;gap:6px;padding:6px 8px;}
+    .fp-status b{max-width:132px;font-size:12px;}
+    .fp-status span{max-width:132px;font-size:10px;}
+    .fp-ctl{width:28px;height:28px;font-size:12px;}
+  }
+  /* 选择家的城市弹窗 */
+  .fp-home-overlay{
+    position:fixed;inset:0;z-index:10020;background:rgba(2,6,12,.62);
+    backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+    display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .fp-home-overlay[hidden]{display:none;}
+  .fp-home-modal{
+    width:min(440px,94vw);max-height:min(580px,88vh);display:flex;flex-direction:column;
+    border-radius:16px;border:1px solid rgba(125,211,252,.3);background:#0a121d;
+    box-shadow:0 30px 80px rgba(0,0,0,.6);overflow:hidden;
+  }
+  body.light-theme .fp-home-modal{background:#ffffff;border-color:rgba(79,70,229,.3);box-shadow:0 30px 70px rgba(31,42,55,.28);}
+  .fp-home-head{padding:16px 46px 12px 18px;position:relative;}
+  .fp-home-head h2{margin:0;font-size:16px;font-weight:800;}
+  .fp-home-head p{margin:5px 0 0;font-size:12px;color:var(--muted);line-height:1.5;}
+  .fp-home-close{
+    position:absolute;right:12px;top:12px;width:30px;height:30px;border-radius:50%;
+    border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;
+    display:grid;place-items:center;font-size:14px;
+  }
+  .fp-home-close:hover{background:rgba(125,211,252,.14);}
+  #fpHomeSearch{
+    margin:0 18px 12px;padding:9px 12px;border-radius:10px;outline:none;
+    border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);
+    font:500 13px/1.4 inherit;
+  }
+  #fpHomeSearch:focus{border-color:rgba(125,211,252,.6);}
+  body.light-theme #fpHomeSearch{background:#f7f9fc;}
+  .fp-home-list{
+    overflow:auto;padding:0 12px 14px;display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:8px;align-content:start;
+  }
+  .fp-home-item{
+    padding:8px 10px;border-radius:10px;border:1px solid var(--line);
+    background:rgba(255,255,255,.03);cursor:pointer;font:600 13px/1.3 inherit;
+    text-align:left;color:var(--ink);transition:border-color .15s ease,background .15s ease;
+  }
+  .fp-home-item:hover{border-color:rgba(125,211,252,.6);background:rgba(56,189,248,.1);}
+  body.light-theme .fp-home-item{background:#fafbfd;}
+  .fp-home-item.is-home{border-color:#34d399;}
+  .fp-home-item.is-home .fp-home-city-name{color:#34d399;}
+  .fp-home-item .cnt{display:block;margin-top:2px;font-size:10px;font-weight:500;color:var(--muted);}
+  .fp-home-empty{grid-column:1/-1;text-align:center;padding:26px 0;font-size:13px;color:var(--muted);}
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
   /* 【SKILL.md 6.B REDUCED MOTION】全局覆盖：禁用所有无限循环动画（流星、边缘光辉、粒子、自转等），
@@ -353,6 +507,11 @@
     filter:drop-shadow(0 0 5px rgba(56,189,248,.5));
   }
   .province-focus-lines circle{fill:#7dd3fc;filter:drop-shadow(0 0 6px rgba(56,189,248,.8));}
+  body.light-theme .province-focus-lines path{
+    stroke:rgba(3,105,161,.82);
+    filter:drop-shadow(0 0 4px rgba(3,105,161,.3));
+  }
+  body.light-theme .province-focus-lines circle{fill:#0369a1;filter:drop-shadow(0 0 5px rgba(3,105,161,.4));}
   .province-map-card{
     position:absolute;width:154px;height:70px;display:grid;grid-template-columns:62px 1fr;
     overflow:hidden;pointer-events:auto;cursor:pointer;border:1px solid rgba(125,211,252,.28);
@@ -1374,6 +1533,7 @@
   .prog-head .val{font-size:14px;color:var(--muted);font-weight:600;}
   .prog-head .val b{color:var(--blue-d);font-size:16px;font-weight:800;}
   .prog-bar{height:10px;border-radius:var(--radius-bar);background:#161616;overflow:hidden;}
+  .trip-row{margin-bottom:2px;}
   .prog-fill{height:100%;border-radius:var(--radius-bar);transition:width .6s cubic-bezier(.2,.8,.3,1);}
   .prog-fill.blue{background:linear-gradient(90deg,#7dd3fc,var(--blue-d));}
   .prog-fill.gold{background:linear-gradient(90deg,var(--accent-l),var(--accent-d));}
@@ -3524,6 +3684,12 @@
         <div class="stat"><span id="cityStat">0</span><label>座城市</label></div>
         <div class="stat"><span id="photoStat">0</span><label>张照片</label></div>
       </div>
+      <button class="theme-toggle-btn footprint-btn" id="footprintBtn" type="button" aria-label="查看人生地图足迹" title="人生地图足迹：从家出发，按时间顺序回放航线">
+        <span class="fp-btn-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21.5 15.5l-8.2-3.2V6.8c0-.9-.7-1.6-1.6-1.6s-1.6.7-1.6 1.6v5.5L2.6 15.5v2l7.5-2.3v4.2l-2.4 1.6v1.6l4-1.2 4 1.2v-1.6l-2.4-1.6v-4.2l8.2 2.3v-2z"/></svg>
+        </span>
+        <span class="fp-btn-label">人生足迹</span>
+      </button>
       <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="切换深色/浅色主题">
         <span class="theme-toggle-icon" id="themeToggleIcon" aria-hidden="true"></span>
         <span id="themeToggleLabel">浅色</span>
@@ -3541,6 +3707,33 @@
       <svg class="province-focus-lines" id="provinceFocusLines" aria-hidden="true"></svg>
       <div id="provinceFocusCards"></div>
       <div class="province-focus-more" id="provinceFocusMore" hidden></div>
+    </div>
+    <!-- 人生地图足迹层：虚线预示航线 + 已飞亮线 + 到站圆点/脉冲 + 家/到站城市卡片 + 小飞机 -->
+    <div class="footprint-layer" id="footprintLayer" hidden>
+      <svg id="footprintLines" aria-hidden="true"></svg>
+      <div class="fp-city-cards" id="fpCityCards" aria-hidden="true"></div>
+      <div class="fp-plane" id="fpPlane" hidden>
+        <svg viewBox="0 0 28 28" aria-hidden="true">
+          <g transform="rotate(45 14 14)">
+            <path class="plane-top" d="M25.2 2.8 L12.4 15.6 L4 11 Z"/>
+            <path class="plane-bottom" d="M25.2 2.8 L12.4 15.6 L15 24.2 Z"/>
+            <circle class="plane-dot" cx="12.4" cy="15.6" r="1.5"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+    <!-- 人生足迹控制面板：暂停/重播/速度 + 状态 + 设置家 + 关闭 -->
+    <div class="footprint-panel" id="footprintPanel" hidden role="status">
+      <button class="fp-ctl" id="fpPlayBtn" type="button" title="暂停 / 继续">⏸</button>
+      <button class="fp-ctl" id="fpRestartBtn" type="button" title="重播">↻</button>
+      <button class="fp-ctl fp-speed" id="fpSpeedBtn" type="button" title="播放速度">1x</button>
+      <div class="fp-status">
+        <b id="fpStatusMain">准备出发</b>
+        <span id="fpStatusSub">以家为起点回放旅程</span>
+        <span class="fp-dist" id="fpStatusDist" hidden></span>
+      </div>
+      <button class="fp-ctl" id="fpHomeBtn" type="button" title="设置家的城市">🏠</button>
+      <button class="fp-ctl" id="fpCloseBtn" type="button" title="关闭足迹回放">✕</button>
     </div>
     <div class="legend">
       <div class="title">图例</div>
@@ -3572,6 +3765,12 @@
             <span class="val"><b id="provProgCur">0</b> / 34</span>
           </div>
           <div class="prog-bar"><div class="prog-fill gold" id="provProgFill" style="width:0%"></div></div>
+        </div>
+        <div class="prog-row trip-row">
+          <div class="prog-head">
+            <span class="label">总计行程</span>
+            <span class="val"><b id="totalTripKm">0</b> km</span>
+          </div>
         </div>
       </div>
       <!-- 第二面板：弯曲时间曲线时间轴 -->
@@ -3812,6 +4011,19 @@
         <button class="tl-close" id="tlCloseBtn">✕</button>
       </div>
       <div class="timeline-modal-body" id="timelineModalBody"></div>
+    </div>
+  </div>
+
+  <!-- 选择家的城市弹窗（人生地图足迹）：搜索 + 城市网格，选择后保存为航线起点 -->
+  <div id="fpHomeOverlay" class="fp-home-overlay" hidden role="dialog" aria-modal="true" aria-label="选择家的城市">
+    <div class="fp-home-modal">
+      <div class="fp-home-head">
+        <h2>🏠 你的家在哪座城市？</h2>
+        <p>以家为起点，按点亮城市的游玩时间顺序，在地图上回放你的中国行航线</p>
+        <button class="fp-home-close" id="fpHomeCloseBtn" type="button" aria-label="关闭">✕</button>
+      </div>
+      <input type="text" id="fpHomeSearch" placeholder="搜索城市名，如：成都" autocomplete="off" />
+      <div class="fp-home-list" id="fpHomeList"></div>
     </div>
   </div>
 
@@ -4659,7 +4871,7 @@
   const litCityCountEl=$('litCityCount'), litProvCountEl=$('litProvCount'),
         cityProgCurEl=$('cityProgCur'), cityProgTotalEl=$('cityProgTotal'),
         cityProgFillEl=$('cityProgFill'), provProgCurEl=$('provProgCur'),
-        provProgFillEl=$('provProgFill');
+        provProgFillEl=$('provProgFill'), totalTripKmEl=$('totalTripKm');
 
   /* ===== Variable Proximity 可变字体效果（参考 reactbits variable-proximity）===== */
   // 鼠标靠近时字符变粗（wght 400→800）+ 变亮（color #38bdf8→#e0f7ff）+ 发光（drop-shadow 随 influence 增强）
@@ -5033,7 +5245,7 @@
     return isLightTheme()?{
       area:'#e9eef5',border:'#94a3b8',
       emArea:'#d9e7f5',emBorder:'#64748b',
-      label:'#475569',labelShadow:'rgba(255,255,255,.95)',emLabel:'#1e293b',emLabelShadow:'rgba(255,255,255,.9)',
+      label:'#0369a1',labelShadow:'rgba(255,255,255,.95)',emLabel:'#075985',emLabelShadow:'rgba(255,255,255,.9)',
       markerBorder:'#ffffff',cityLabel:'#e11d48',cityLabelShadow:'rgba(255,255,255,.95)',
       markerVisited:'#38bdf8',markerVisitedShadow:'rgba(56,189,248,.6)',
       markerNormal:'#3d7fb8',markerNormalHover:'#2b6cb0',
@@ -5396,7 +5608,7 @@
           geo:[
             {
               // 省份汉字始终显示，fontSize 随缩放自适应
-              label:{show:true,fontSize:pf,fontWeight:pf>=12?600:500,lineHeight:Math.round(pf*1.4)},
+              label:{show:true,fontSize:pf,fontWeight:700,lineHeight:Math.round(pf*1.4)},
               labelLayout:{hideOverlap:true},
               emphasis:{label:{show:true,fontSize:Math.min(pf+3,26),lineHeight:Math.round((pf+3)*1.4),color:chartThemeColors().emLabel,formatter:p=>provinceShort(p.name),textShadowColor:chartThemeColors().emLabelShadow,textShadowBlur:8}}  /* 省份悬浮标签颜色跟随主题（浅色=亮靛蓝/深色=冷亮白） */
             }
@@ -5760,7 +5972,7 @@
         city,
         cover:meta.coverImage||'',
         rating:Math.max(0,Math.min(5,Math.round(Number(meta.rating)||0))),
-        description:(meta.description||'').trim()
+        tags:(meta.tags||[]).map(t=>t&&t.text).filter(Boolean)   // 卡片下部分展示城市标签（替代城市简介）
       };
     }));
     const viewStillMatches=showAllLitCities
@@ -5805,8 +6017,8 @@
       rating.textContent=item.rating?'推荐 '+('★'.repeat(item.rating))+('☆'.repeat(5-item.rating)):'推荐 暂未评分';
       const intro=document.createElement('span');
       intro.className='province-map-card-intro';
-      intro.textContent=item.description||'暂无城市简介';
-      intro.title=intro.textContent;
+      intro.textContent=item.tags.length?item.tags.join(' · '):'暂无标签';
+      intro.title=item.tags.length?('标签：'+item.tags.join('、')):'暂无标签';
       copy.append(name,rating,intro);
       card.append(image,copy);
       // 位置缓存命中：直接落在历史位置并跳过入场动画，重建前后位置完全一致，杜绝"换位"观感
@@ -6938,6 +7150,7 @@
     // 省份进度
     provProgCurEl.textContent=litProv;
     provProgFillEl.style.width=(litProv/TOTAL_PROVINCES*100)+'%';
+    updateTotalTripKm();                                 // 总计行程（异步重算，token 防旧值覆盖）
     applyProvinceRegionStyles();
   }
 
@@ -7031,6 +7244,476 @@
     });
     return items;
   }
+
+  /* ===================== 人生地图足迹（家 → 按时间顺序飞行回放） =====================
+   * 数据：collectTimelineCities() 已按 游玩年月→当月最早日 排序，直接作为航线顺序
+   * 视觉：虚线预示全程 → 亮线逐段点亮（双层描边=光晕+亮芯）→ 小飞机沿贝塞尔曲线飞行
+   *       到站时城市点脉冲扩散；家城市以"🏠 家"胶囊标记
+   * 主题：深色=青蓝航线，浅色=橙色航线，全部走 CSS 变量随主题自动切换
+   * 同步：地图平移/缩放(georoam)、窗口 resize 时按当前进度重算几何，飞机航线不漂移
+   */
+  const FOOTPRINT_HOME_KEY='footprintHomeCity';
+  const fpLayerEl=$('footprintLayer'), fpLinesEl=$('footprintLines'), fpPlaneEl=$('fpPlane'),
+        fpCityCardsEl=$('fpCityCards'),
+        fpPanelEl=$('footprintPanel'), fpBtnEl=$('footprintBtn'),
+        fpPlayBtnEl=$('fpPlayBtn'), fpRestartBtnEl=$('fpRestartBtn'), fpSpeedBtnEl=$('fpSpeedBtn'),
+        fpHomeBtnEl=$('fpHomeBtn'), fpCloseBtnEl=$('fpCloseBtn'),
+        fpHomeOverlayEl=$('fpHomeOverlay'), fpHomeListEl=$('fpHomeList'), fpHomeSearchEl=$('fpHomeSearch'),
+        fpHomeCloseEl=$('fpHomeCloseBtn'), fpStatusMainEl=$('fpStatusMain'), fpStatusSubEl=$('fpStatusSub'),
+        fpStatusDistEl=$('fpStatusDist');
+  let fpState=null, fpRoamHooked=false, fpSyncQueued=false, fpPickerMode='start';
+  const FP_SPEEDS=[1,1.5,2];
+  const FP_CARD_W=118, FP_CARD_H=50, FP_CARD_PAD=8;
+
+  // 两经纬点间球面距离（Haversine，地球半径 6371km）
+  function fpHavKm(p,q){
+    const R=6371,rad=Math.PI/180;
+    const dLat=(q[1]-p[1])*rad,dLng=(q[0]-p[0])*rad;
+    const a=Math.sin(dLat/2)**2+Math.cos(p[1]*rad)*Math.cos(q[1]*rad)*Math.sin(dLng/2)**2;
+    return 2*R*Math.asin(Math.min(1,Math.sqrt(a)));
+  }
+  function fpFmtKm(km){
+    const v=km>=1000?Math.round(km):Math.round(km*10)/10;
+    return v.toLocaleString('zh-CN');
+  }
+  // 城市视图统计卡：总计行程（家→时间顺序城市，球面距离累加；分段距离由人生足迹底部面板展示）
+  let fpTripToken=0;
+  async function updateTotalTripKm(){
+    const token=++fpTripToken;
+    try{
+      const home=getFootprintHome();
+      const cities=await collectTimelineCities();
+      if(token!==fpTripToken) return;
+      let prev=(home&&home.value)?home.value:null,total=0;
+      for(const c of cities){
+        if(!c.value) continue;
+        if(home&&c.cityKey===home.cityKey){ prev=c.value; continue; }
+        if(prev) total+=fpHavKm(prev,c.value);
+        prev=c.value;
+      }
+      totalTripKmEl.textContent=fpFmtKm(total);
+    }catch(e){}
+  }
+
+  function getFootprintHome(){
+    let key=null;
+    try{key=localStorage.getItem(FOOTPRINT_HOME_KEY);}catch(e){}
+    return key?(cityPoints.find(c=>c.cityKey===key)||null):null;
+  }
+  function setFootprintHome(cityKey){ try{localStorage.setItem(FOOTPRINT_HOME_KEY,cityKey);}catch(e){} }
+
+  // ---- 贝塞尔几何：每段航线为二次曲线，控制点在中点法线方向偏移，奇偶段交替弯曲 ----
+  function fpCtrl(i){
+    const s=fpState,a=s.px[i],b=s.px[i+1];
+    const dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy)||1;
+    const bend=Math.min(d*.22,110)*((i%2===0)?1:-1);
+    return [(a[0]+b[0])/2-dy/d*bend,(a[1]+b[1])/2+dx/d*bend];
+  }
+  function fpSegFull(i){
+    const s=fpState,a=s.px[i],b=s.px[i+1],c=fpCtrl(i);
+    return 'M'+a[0].toFixed(1)+' '+a[1].toFixed(1)+' Q'+c[0].toFixed(1)+' '+c[1].toFixed(1)+' '+b[0].toFixed(1)+' '+b[1].toFixed(1);
+  }
+  // 0..t 的折线采样（每 ~7px 一个点），飞机飞过多少、亮线画多少
+  function fpSegPartial(i,t){
+    const s=fpState,a=s.px[i],b=s.px[i+1],c=fpCtrl(i);
+    const d=Math.hypot(b[0]-a[0],b[1]-a[1]);
+    const steps=Math.max(8,Math.min(64,Math.ceil(d/7)));
+    let dd='';
+    for(let k=0;k<=steps;k++){
+      const u=Math.min(1,t)*k/steps,v=1-u;
+      const x=v*v*a[0]+2*v*u*c[0]+u*u*b[0], y=v*v*a[1]+2*v*u*c[1]+u*u*b[1];
+      dd+=(k?'L':'M')+x.toFixed(1)+' '+y.toFixed(1);
+    }
+    return dd;
+  }
+  // 曲线点 + 切向量（供飞机定位与朝向）
+  function fpPointAt(i,t){
+    const s=fpState,a=s.px[i],b=s.px[i+1],c=fpCtrl(i);
+    const u=t,v=1-u;
+    return [v*v*a[0]+2*v*u*c[0]+u*u*b[0], v*v*a[1]+2*v*u*c[1]+u*u*b[1],
+            2*v*(c[0]-a[0])+2*u*(b[0]-c[0]), 2*v*(c[1]-a[1])+2*u*(b[1]-c[1])];
+  }
+  function fpSegDuration(i){
+    const s=fpState,a=s.px[i],b=s.px[i+1];
+    return Math.max(620,Math.min(2400,Math.hypot(b[0]-a[0],b[1]-a[1])*2.4));
+  }
+  function fpPlaneAt(x,y,angDeg){
+    const s=fpState;
+    if(Number.isFinite(angDeg)) s.planeAng=angDeg;
+    fpPlaneEl.hidden=false;
+    fpPlaneEl.style.transform='translate3d('+x.toFixed(1)+'px,'+y.toFixed(1)+'px,0) rotate('+((s.planeAng||0).toFixed(1))+'deg)';
+  }
+
+  // ---- SVG 构建：每段 3 条 path（虚线预示 / 光晕 / 亮芯）+ 家圆点 ----
+  function fpBuildSvg(){
+    const s=fpState, NS='http://www.w3.org/2000/svg';
+    fpLinesEl.innerHTML='';
+    fpCityCardsEl.innerHTML='';
+    s.paths=[];
+    for(let i=0;i<s.route.length-1;i++){
+      const pending=document.createElementNS(NS,'path'); pending.setAttribute('class','fp-route-pending');
+      const glow=document.createElementNS(NS,'path');    glow.setAttribute('class','fp-route-glow');
+      const core=document.createElementNS(NS,'path');    core.setAttribute('class','fp-route-core');
+      fpLinesEl.append(pending,glow,core);
+      s.paths.push({pending,glow,core});
+    }
+    const hd=document.createElementNS(NS,'circle');
+    hd.setAttribute('class','fp-home-dot'); hd.setAttribute('r','4.5');
+    fpLinesEl.append(hd); s.homeDot=hd;
+  }
+  function fpAddStopDot(ci){
+    const s=fpState, NS='http://www.w3.org/2000/svg';
+    const dot=document.createElementNS(NS,'circle');
+    dot.setAttribute('class','fp-stop-dot'); dot.setAttribute('r','3.5');
+    dot.setAttribute('cx',s.px[ci][0]); dot.setAttribute('cy',s.px[ci][1]);
+    fpLinesEl.append(dot); s.dots.push(dot);
+  }
+  function fpAddPulse(ci){
+    const s=fpState, NS='http://www.w3.org/2000/svg';
+    const pl=document.createElementNS(NS,'circle');
+    pl.setAttribute('class','fp-pulse'); pl.setAttribute('r','7');
+    pl.setAttribute('cx',s.px[ci][0]); pl.setAttribute('cy',s.px[ci][1]);
+    fpLinesEl.append(pl);
+    const rec={el:pl,ci};
+    s.pulses.push(rec);
+    setTimeout(()=>{ const k=s.pulses.indexOf(rec); if(k>-1)s.pulses.splice(k,1); pl.remove(); },900);
+  }
+
+  // ---- 到站城市卡片摆放：防遮挡算法（参考省份卡片规则）----
+  // 新卡片弹出时在候选位置中挑选：不与已放置卡片重叠(含8px间距)、不越界、离城市点最近；
+  // 全部冲突时退化为重叠面积最小的位置。摆放后记忆相对城市点的偏移，地图平移/缩放时按偏移跟随。
+  function fpOverlapArea(a,b){
+    const ox=Math.max(0,Math.min(a.x+a.w,b.x+b.w)-Math.max(a.x,b.x));
+    const oy=Math.max(0,Math.min(a.y+a.h,b.y+b.h)-Math.max(a.y,b.y));
+    return ox*oy;
+  }
+  function fpPickCardSpot(pt,ci){
+    const s=fpState;
+    const w=mapWrapEl.clientWidth,h=mapWrapEl.clientHeight;
+    const cw=FP_CARD_W,ch=FP_CARD_H;
+    const rects=[];
+    for(const k in s.cards){
+      if(Number(k)===ci) continue;
+      const el=s.cards[k];
+      const x=parseFloat(el.style.left),y=parseFloat(el.style.top);
+      if(Number.isFinite(x)&&Number.isFinite(y)) rects.push({x,y,w:cw,h:ch});
+    }
+    const clamp=(x,y)=>({x:Math.max(6,Math.min(w-cw-6,x)),y:Math.max(10,Math.min(h-ch-6,y))});
+    const fits=r=>r.x>=6&&r.y>=10&&r.x+r.w<=w-6&&r.y+r.h<=h-6;
+    // 候选：理想位（城市点右上）→ 环形展开 8方向×4梯度 → 网格槽位兜底
+    const base=clamp(pt[0]+14,pt[1]-ch-12);
+    const cand=[base];
+    const dirs=[[1,-1],[1,0],[1,1],[0,1],[-1,1],[-1,0],[-1,-1],[0,-1]];
+    for(const d of dirs) for(const step of [48,96,144,192]){
+      cand.push(clamp(base.x+d[0]*step, base.y+d[1]*step));
+    }
+    for(let y=14;y<=h-ch-10;y+=ch+12){
+      for(let x=10;x<=w-cw-10;x+=cw+12) cand.push({x,y});
+    }
+    let bestClean=null,bestCleanDist=Infinity;
+    let bestAny=null,bestAnyCost=Infinity;
+    for(const c of cand){
+      const r={x:c.x,y:c.y,w:cw,h:ch};
+      if(!fits(r)) continue;
+      let area=0;
+      for(const o of rects) area+=fpOverlapArea(r,o);
+      const dist=Math.hypot(r.x-base.x,r.y-base.y);
+      if(area===0){
+        if(dist<bestCleanDist){ bestClean=r; bestCleanDist=dist; }
+      }else if(area<bestAnyCost||(area===bestAnyCost&&dist<Math.hypot(bestAny.x-base.x,bestAny.y-base.y))){
+        bestAny=r; bestAnyCost=area;
+      }
+    }
+    return bestClean||bestAny||base;
+  }
+  function fpPlaceCard(card,pt,ci){
+    const s=fpState;
+    const w=mapWrapEl.clientWidth,h=mapWrapEl.clientHeight;
+    const cw=FP_CARD_W,ch=FP_CARD_H;
+    let x,y;
+    const off=s.cardOff[ci];
+    if(off){ x=pt[0]+off.dx; y=pt[1]+off.dy; }        // 已摆放：按记忆偏移跟随城市
+    else{
+      const spot=fpPickCardSpot(pt,ci);                // 首次弹出：防遮挡选位
+      x=spot.x; y=spot.y;
+      s.cardOff[ci]={dx:x-pt[0],dy:y-pt[1]};
+    }
+    x=Math.max(6,Math.min(w-cw-6,x));
+    y=Math.max(10,Math.min(h-ch-6,y));
+    card.style.left=x.toFixed(1)+'px';
+    card.style.top=y.toFixed(1)+'px';
+  }
+  function fpShowCityCard(ci){
+    const s=fpState;
+    if(!s||!s.px||!s.px[ci]||s.cards[ci]) return;
+    const c=s.route[ci];
+    const card=document.createElement('div');
+    card.className='fp-city-card';
+    const rating=c.rating
+      ?('推荐 '+'★'.repeat(c.rating)+'☆'.repeat(5-c.rating))
+      :'推荐 暂未评分';
+    card.innerHTML='<span class="fp-card-badge">'+(c.isHome?'🏠':s.arrived.length)+'</span>'
+      +'<span class="fp-card-name">'+c.name+(c.isHome?' · 家':'')+'</span>'
+      +'<span class="fp-card-rating">'+rating+'</span>'
+      +'<span class="fp-card-tags">'+((c.tags&&c.tags.length)?c.tags.join(' · '):'暂无标签')+'</span>';
+    fpCityCardsEl.append(card);
+    s.cards[ci]=card;
+    fpPlaceCard(card,s.px[ci],ci);
+    fpSyncCardsVisibility();       // 弹出即检测：省份视图已有该城市卡片时立即让位
+  }
+
+  // 省份视图已为城市渲染了省份卡片时，隐藏对应足迹卡片（家/到站站）—— 两层各有一张，视觉上合为一张
+  function fpSyncCardsVisibility(){
+    const s=fpState;
+    if(!s) return;
+    const keys=(!provinceFocusLayer.hidden&&provinceFocusCities.length)
+      ?new Set(provinceFocusCities.map(it=>it.city&&it.city.cityKey).filter(Boolean))
+      :null;
+    for(const k in s.cards){
+      const ci=Number(k), el=s.cards[ci];
+      const hide=!!(keys&&s.route[ci].cityKey&&keys.has(s.route[ci].cityKey));
+      if(el._fpHide!==hide){ el._fpHide=hide; el.style.display=hide?'none':''; }
+    }
+  }
+
+  // ---- 几何同步：roam/resize 后按当前进度重建所有 path 与标记位置 ----
+  function fpSyncGeometry(){
+    fpSyncQueued=false;
+    const s=fpState;
+    if(!s||!myChart) return;
+    const w=mapWrapEl.clientWidth,h=mapWrapEl.clientHeight;
+    fpLinesEl.setAttribute('viewBox','0 0 '+w+' '+h);
+    s.px=s.route.map(r=>{
+      const p=myChart.convertToPixel('geo',r.value);
+      return (p&&Number.isFinite(p[0])&&Number.isFinite(p[1]))?p:null;
+    });
+    if(s.px.some(p=>!p)) return;                       // 地图未就绪，跳过本轮
+    if(s.homeDot){ s.homeDot.setAttribute('cx',s.px[0][0]); s.homeDot.setAttribute('cy',s.px[0][1]); }
+    s.dots.forEach((d,k)=>{ const ci=s.arrived[k]; d.setAttribute('cx',s.px[ci][0]); d.setAttribute('cy',s.px[ci][1]); });
+    s.pulses.forEach(pl=>{ pl.el.setAttribute('cx',s.px[pl.ci][0]); pl.el.setAttribute('cy',s.px[pl.ci][1]); });
+    for(const k in s.cards) fpPlaceCard(s.cards[k],s.px[k],Number(k));
+    const segs=s.route.length-1;
+    for(let i=0;i<segs;i++){
+      s.paths[i].pending.setAttribute('d',fpSegFull(i));
+      // 段全亮仅当：已飞完的段(i<seg)，或当前段恰好飞满(t>=1)。
+      // 不能用 holdUntil 判断 —— 出发前/到站的停留期会把尚未飞行的段提前整段点亮
+      if(i<s.seg||(i===s.seg&&s.t>=1)){
+        s.paths[i].glow.setAttribute('d',fpSegFull(i));
+        s.paths[i].core.setAttribute('d',fpSegFull(i));
+      }
+    }
+    if(!s.done&&s.seg<segs&&!s.holdUntil&&s.t<1){
+      fpUpdateLive();                                   // 飞行中：刷新当前段亮线 + 飞机
+    }else{
+      fpPlaneAt(s.px[Math.min(s.seg,s.route.length-1)][0], s.px[Math.min(s.seg,s.route.length-1)][1], NaN);
+    }
+  }
+  function fpRequestSync(){
+    if(!fpState||fpSyncQueued) return;
+    fpSyncQueued=true;
+    requestAnimationFrame(fpSyncGeometry);
+  }
+  // 每帧飞行推进：当前段部分亮线 + 飞机位置与朝向
+  function fpUpdateLive(){
+    const s=fpState;
+    if(!s||!s.px||!s.paths[s.seg]) return;
+    const d=fpSegPartial(s.seg,s.t);
+    s.paths[s.seg].glow.setAttribute('d',d);
+    s.paths[s.seg].core.setAttribute('d',d);
+    const p=fpPointAt(s.seg,s.t);
+    fpPlaneAt(p[0],p[1],Math.atan2(p[3],p[2])*180/Math.PI);
+  }
+  function fpArrive(ts){
+    const s=fpState,i=s.seg,ci=i+1;
+    s.paths[i].glow.setAttribute('d',fpSegFull(i));
+    s.paths[i].core.setAttribute('d',fpSegFull(i));
+    s.arrived.push(ci);
+    fpAddStopDot(ci);
+    fpAddPulse(ci);
+    fpShowCityCard(ci);                                 // 到站即弹出带序号的城市卡片
+    s.seg=ci; s.t=0;
+    fpPlaneAt(s.px[ci][0],s.px[ci][1],NaN);
+    if(ci>=s.route.length-1){
+      s.done=true; s.playing=false;
+      fpPlayBtnEl.textContent='▶';
+    }else{
+      s.holdUntil=ts+720;                              // 到站短暂停留后继续起飞
+    }
+    fpUpdateStatus();
+  }
+  function fpTick(ts){
+    const s=fpState;
+    if(!s) return;
+    if(s.playing&&!s.done&&s.px){
+      if(!s.lastTs) s.lastTs=ts;
+      const dt=Math.min(64,ts-s.lastTs); s.lastTs=ts;
+      if(s.holdUntil){
+        if(ts>=s.holdUntil){ s.holdUntil=0; fpUpdateStatus(); }
+      }else{
+        s.t+=dt*s.speed/fpSegDuration(s.seg);
+        if(s.t>=1){ s.t=1; fpArrive(ts); }
+        else fpUpdateLive();
+      }
+    }
+    fpSyncCardsVisibility();       // 省份视图渲染/清除城市卡片时，足迹卡片即时让位或回归
+    s.raf=requestAnimationFrame(fpTick);
+  }
+  function fpUpdateStatus(){
+    const s=fpState;
+    if(!s) return;
+    const total=s.route.length-1, homeName=s.route[0].name;
+    if(s.done){
+      fpStatusMainEl.textContent='🎉 旅程完成 · 共 '+total+' 站';
+      fpStatusSubEl.textContent='家（'+homeName+'）→ '+s.route[total].name;
+      fpStatusDistEl.textContent='总行程 '+fpFmtKm(s.totalKm)+' km';
+    }else if(s.seg===0&&s.holdUntil){
+      fpStatusMainEl.textContent='🛫 从家出发 · '+homeName;
+      fpStatusSubEl.textContent='即将飞往 '+s.route[1].name;
+      fpStatusDistEl.textContent='本段 '+fpFmtKm(s.segKm[0])+' km';
+    }else if(s.holdUntil){
+      const c=s.route[s.seg];
+      fpStatusMainEl.textContent='📍 到达 '+c.name;
+      fpStatusSubEl.textContent=c.visitMonth?(formatMonthShort(c.visitMonth)+' 到访'):'到访时间未记录';
+      fpStatusDistEl.textContent='本段 '+fpFmtKm(s.segKm[s.seg-1])+' km · 累计 '+fpFmtKm(s.cumKm[s.seg])+' km';
+    }else{
+      const c=s.route[s.seg+1];
+      fpStatusMainEl.textContent='✈ 第 '+(s.seg+1)+'/'+total+' 站 · '+c.name;
+      fpStatusSubEl.textContent=c.visitMonth?(formatMonthShort(c.visitMonth)+' 到访'):'到访时间未记录';
+      fpStatusDistEl.textContent='本段 '+fpFmtKm(s.segKm[s.seg])+' km · 累计 '+fpFmtKm(s.cumKm[s.seg+1])+' km';
+    }
+  }
+
+  // ---- 播放控制 ----
+  function fpResetVisuals(){
+    fpLinesEl.innerHTML='';
+    fpCityCardsEl.innerHTML='';
+    fpPlaneEl.hidden=true;
+    fpPlaneEl.style.transform='';
+    fpStatusDistEl.hidden=true;
+    fpStatusDistEl.textContent='';
+  }
+  function fpStopAll(){
+    if(fpState&&fpState.raf) cancelAnimationFrame(fpState.raf);
+    fpState=null;
+    fpResetVisuals();
+    fpLayerEl.hidden=true;
+    fpPanelEl.hidden=true;
+    fpBtnEl.classList.remove('active');
+  }
+  async function fpStart(){
+    const home=getFootprintHome();
+    if(!home){ openFpHomePicker('start'); return; }
+    const cities=await collectTimelineCities();
+    const travel=cities.filter(c=>c.cityKey!==home.cityKey);
+    if(!travel.length){ toast('除家之外还没有点亮的城市，先去点亮几座吧',true); return; }
+    // 航线 = 家 + 按时间排序的旅行城市；补充推荐指数/标签供家/到站卡片展示
+    const homeMeta=await getCityMeta(home.cityKey);
+    const route=[{
+      cityKey:home.cityKey, name:home.name, value:home.value,
+      visitMonth:'', isHome:true,
+      rating:Math.max(0,Math.min(5,Math.round(Number(homeMeta.rating)||0))),
+      tags:(homeMeta.tags||[]).map(t=>t&&t.text).filter(Boolean)
+    }];
+    for(const c of travel){
+      const meta=await getCityMeta(c.cityKey);
+      route.push({
+        cityKey:c.cityKey, name:c.name, value:c.value, visitMonth:c.visitMonth||'', isHome:false,
+        rating:Math.max(0,Math.min(5,Math.round(Number(meta.rating)||0))),
+        tags:(meta.tags||[]).map(t=>t&&t.text).filter(Boolean)
+      });
+    }
+    const segKm=[],cumKm=[0];let totalKm=0;
+    for(let i=0;i<route.length-1;i++){
+      const k=fpHavKm(route[i].value,route[i+1].value);
+      segKm.push(k);totalKm+=k;cumKm.push(totalKm);
+    }
+    fpState={
+      route,homeKey:home.cityKey,px:null,seg:0,t:0,playing:true,speed:1,planeAng:0,
+      holdUntil:performance.now()+650,lastTs:0,done:false,raf:0,
+      arrived:[],dots:[],pulses:[],paths:[],cards:{},cardOff:{},totalKm,segKm,cumKm
+    };
+    fpStatusDistEl.hidden=false;
+    fpLayerEl.hidden=false; fpPanelEl.hidden=false;
+    fpBtnEl.classList.add('active');
+    fpPlayBtnEl.textContent='⏸'; fpSpeedBtnEl.textContent='1x';
+    fpBuildSvg();
+    fpSyncGeometry();
+    fpShowCityCard(0);          // 家卡片：与省份视图卡片同构（🏠徽章），并作为首张卡片参与后续避让
+    if(!fpRoamHooked&&myChart){ fpRoamHooked=true; myChart.on('georoam',fpRequestSync); }
+    fpUpdateStatus();
+    fpState.raf=requestAnimationFrame(fpTick);
+  }
+  async function toggleFootprint(){
+    if(fpState){ fpStopAll(); return; }
+    if(!myChart){ toast('地图尚未就绪，请稍后再试',true); return; }
+    if(!citiesWithPhotos.size){ toast('还没有点亮任何城市，先去记录你的足迹吧',true); return; }
+    await fpStart();
+  }
+
+  // ---- 选择家的城市弹窗 ----
+  function openFpHomePicker(mode){
+    fpPickerMode=mode;
+    fpHomeSearchEl.value='';
+    renderFpHomeList('');
+    fpHomeOverlayEl.hidden=false;
+    setTimeout(()=>fpHomeSearchEl.focus(),60);
+  }
+  function closeFpHomePicker(){ fpHomeOverlayEl.hidden=true; }
+  function renderFpHomeList(q){
+    q=(q||'').trim();
+    const home=getFootprintHome();
+    const list=q?cityPoints.filter(c=>c.name.indexOf(q)>-1):cityPoints;
+    fpHomeListEl.innerHTML='';
+    if(!list.length){
+      fpHomeListEl.innerHTML='<div class="fp-home-empty">未找到匹配的城市</div>';
+      return;
+    }
+    const frag=document.createDocumentFragment();
+    for(const c of list){
+      const isHome=home&&home.cityKey===c.cityKey;
+      const n=photoCountByCity.get(c.cityKey)||0;
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='fp-home-item'+(isHome?' is-home':'');
+      b.innerHTML='<span class="fp-home-city-name">'+c.name+'</span>'
+        +(isHome?'<span class="cnt">当前家</span>'
+          :(n?'<span class="cnt">📷 '+n+' 张</span>':''));
+      b.addEventListener('click',()=>{
+        setFootprintHome(c.cityKey);
+        closeFpHomePicker();
+        toast('家的城市已设置为「'+c.name+'」');
+        updateTotalTripKm();                 // 换家后城市视图统计卡的总计行程同步重算
+        if(fpState) fpStopAll();
+        fpStart();
+      });
+      frag.append(b);
+    }
+    fpHomeListEl.append(frag);
+  }
+
+  // ---- 事件绑定 ----
+  fpBtnEl.addEventListener('click',toggleFootprint);
+  fpCloseBtnEl.addEventListener('click',fpStopAll);
+  fpRestartBtnEl.addEventListener('click',()=>{ if(fpState){ fpStopAll(); fpStart(); } });
+  fpPlayBtnEl.addEventListener('click',()=>{
+    const s=fpState;
+    if(!s||s.done) return;
+    s.playing=!s.playing;
+    if(s.playing) s.lastTs=0;
+    fpPlayBtnEl.textContent=s.playing?'⏸':'▶';
+  });
+  fpSpeedBtnEl.addEventListener('click',()=>{
+    const s=fpState;
+    if(!s) return;
+    s.speed=FP_SPEEDS[(FP_SPEEDS.indexOf(s.speed)+1)%FP_SPEEDS.length];
+    fpSpeedBtnEl.textContent=s.speed+'x';
+  });
+  fpHomeBtnEl.addEventListener('click',()=>openFpHomePicker(fpState?'restart':'start'));
+  fpHomeCloseEl.addEventListener('click',closeFpHomePicker);
+  fpHomeOverlayEl.addEventListener('click',e=>{ if(e.target===fpHomeOverlayEl) closeFpHomePicker(); });
+  fpHomeSearchEl.addEventListener('input',()=>renderFpHomeList(fpHomeSearchEl.value));
+  fpHomeSearchEl.addEventListener('keydown',e=>{ if(e.key==='Escape') closeFpHomePicker(); });
+  window.addEventListener('resize',fpRequestSync);
 
   // 年月格式化：YYYY-MM → "YYYY.M"（简洁格式，无多余文字）
   function formatMonthShort(ym){
