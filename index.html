@@ -94,6 +94,120 @@
     --z-modal:50; --z-grain:60; --z-nav:80; --z-transition:100; --z-top:999;
     --pad:22px;
   }
+
+  /* ===== 深色/浅色主题切换：body.light-theme 覆盖全局变量（默认深色不变）===== */
+  body.light-theme{
+    --ink:#1f2a37;              /* 主文字：深墨蓝（浅色下用深字）*/
+    --muted:#5b6b7c;            /* 次要文字：中灰蓝 */
+    --accent:#0284c7;           /* 浅色下加深青蓝保证对比度 */
+    --accent-d:#0369a1;
+    --accent-l:#0ea5e9;
+    --blue:#0284c7;--blue-d:#0369a1;
+    --card:#ffffff;
+    --line:rgba(31,42,55,.12);
+    --line-2:rgba(31,42,55,.07);
+    --bg1:#f5f7fa;--bg2:#e9eef5;
+    --sea1:#dbe9f6;--sea2:#c9dcf0;
+    --shadow:0 8px 28px rgba(31,42,55,.10);
+    --shadow-sm:0 3px 12px rgba(31,42,55,.07);
+    --shadow-hover:0 14px 36px rgba(31,42,55,.14);
+  }
+  /* 深色硬编码表面 → 浅色修正 */
+  body.light-theme header{background:rgba(255,255,255,.88);box-shadow:0 2px 10px rgba(31,42,55,.05);}
+  body.light-theme .brand h1{
+    background-image:linear-gradient(135deg,#0ea5e9 0%,#0ea5e9 42%,#7dd3fc 50%,#0ea5e9 58%,#0ea5e9 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  body.light-theme .brand .sub{
+    background-image:linear-gradient(135deg,#0284c7 0%,#0284c7 42%,#38bdf8 50%,#0284c7 58%,#0284c7 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  body.light-theme .stat{background:#ffffff;}
+  body.light-theme .dash-card{background:rgba(255,255,255,.94);}
+  body.light-theme .legend{background:rgba(255,255,255,.86);}
+  body.light-theme .map-search .input,body.light-theme .map-search #search-icon,
+  body.light-theme .map-search-results,body.light-theme .modal-head,body.light-theme .icon-btn,
+  body.light-theme .thumb,body.light-theme .empty,body.light-theme .view-tab.active,
+  body.light-theme .city-card-thumb,body.light-theme .month-picker,
+  body.light-theme .month-picker input[type=month],body.light-theme .tag-add-row input[type=text],
+  body.light-theme .tag-add-row select,body.light-theme .timeline-empty,body.light-theme .timeline-modal,
+  body.light-theme .grid-card,body.light-theme .cover-section,body.light-theme .cover-preview-wrap,
+  body.light-theme .attraction-item,body.light-theme .attraction-name-input,
+  body.light-theme .attraction-date-input,body.light-theme .attraction-notes,
+  body.light-theme .attraction-upload-btn{background:#ffffff;}
+  body.light-theme .panel-collapse-toggle:active{background:#e2e8f0;}
+  body.light-theme .map-search #input-mask{background:linear-gradient(90deg,transparent,#ffffff);}
+  body.light-theme .modal-landmark{background:linear-gradient(90deg,#ffffff,rgba(255,255,255,0));}
+  body.light-theme .grid-card-cover-placeholder{background:linear-gradient(135deg,#e2ecf7,#cfe0f0);color:#64748b;}
+  body.light-theme .tl-anim-hint{color:var(--accent-d);background:rgba(255,255,255,.92);}
+  body.light-theme .tl-btn{background:rgba(255,255,255,.72);border:1px solid var(--line);}
+  body.light-theme #fsBackBtn{color:#0c4a6e;background:rgba(255,255,255,.72);}
+  body.light-theme.fullscreen-grid #cityCardsPanel > div:first-child{background:#ffffff;}
+  body.light-theme.fullscreen-grid .fs-province-filter{background:#ffffff;}
+  body.light-theme.fullscreen-grid .fs-province-filter .prov-pill.active{background:#ffffff;color:var(--accent-d);}
+  body.light-theme.fullscreen-grid .grid-card .fs-badge{background:rgba(255,255,255,.92);color:var(--accent-d);}
+  /* 地图上的省份卡片与连线：浅色下改为白底深字 */
+  body.light-theme .province-map-card{
+    background:rgba(255,255,255,.97);border-color:rgba(2,132,199,.30);
+    box-shadow:0 14px 34px rgba(31,42,55,.16);
+  }
+  body.light-theme .province-map-card:hover{border-color:rgba(2,132,199,.55);box-shadow:0 18px 42px rgba(31,42,55,.20);}
+  body.light-theme .province-map-card-image,body.light-theme .province-map-card-image-empty{background:#e2ecf7;}
+  body.light-theme .province-map-card-name{color:#1f2a37;}
+  body.light-theme .province-map-card-rating{color:#0369a1;}
+  body.light-theme .province-map-card-intro{color:#5b6b7c;}
+  body.light-theme .province-focus-more{background:rgba(255,255,255,.94);color:#0c4a6e;border-color:rgba(2,132,199,.28);}
+  body.light-theme .province-focus-lines path{stroke:#0284c7;}
+  body.light-theme .province-focus-lines circle{fill:#0284c7;filter:drop-shadow(0 0 4px rgba(2,132,199,.35));}
+  /* 全屏城市卡片视图（"全部"展开）：整页容器/筛选胶囊/视图切换轨道 */
+  body.light-theme.fullscreen-grid .dash-panel{background:#f5f7fa;}
+  body.light-theme .view-tabs,body.light-theme.fullscreen-grid .view-tabs{background:#e6ebf2;}
+  body.light-theme.fullscreen-grid .fs-province-filter .prov-pill{background:#ffffff;color:#5b6b7c;border-color:transparent;}
+  body.light-theme.fullscreen-grid .fs-province-filter .prov-pill:hover:not(.active){background:#eef3f9;color:#1f2a37;text-shadow:none;}
+  /* 左右面板折叠箭头按钮 */
+  body.light-theme .panel-collapse-toggle{
+    background:rgba(255,255,255,.96);color:var(--accent-d);
+    box-shadow:0 2px 10px rgba(31,42,55,.10);
+  }
+  body.light-theme .panel-collapse-toggle:hover{background:#f0f5fb;}
+  /* Toast 提示条（底部居中提示）*/
+  body.light-theme .toast{background:rgba(255,255,255,.98);color:#1f2a37;border-color:rgba(2,132,199,.22);}
+  body.light-theme .toast-title{color:#1f2a37;}
+  body.light-theme .toast-message{color:#5b6b7c;}
+  body.light-theme .toast-action,body.light-theme .toast-close{
+    color:#0369a1;background:rgba(2,132,199,.08);border-color:rgba(2,132,199,.30);
+  }
+  body.light-theme .toast-action:hover,body.light-theme .toast-close:hover{background:rgba(2,132,199,.16);}
+  body.light-theme .toast.error{background:#fef2f2;border-color:rgba(220,38,38,.25);}
+  body.light-theme .toast.error .toast-message{color:#b91c1c;}
+  /* 滚动条 */
+  body.light-theme ::-webkit-scrollbar-thumb{background:#c3cedb !important;}
+  /* 其他遗漏深色表面：全屏视图整页背景/统计单元格/弹窗遮罩/关闭按钮/图标按钮 */
+  body.light-theme.fullscreen-grid #mapWrap{background:#f5f7fa;}
+  body.light-theme .stat-cell{background:#ffffff;}
+  body.light-theme .prog-bar{background:#e2e8f0;}   /* 进度条轨道：深黑 → 浅灰 */
+  body.light-theme .modal-overlay{background:rgba(31,42,55,.28);}
+  body.light-theme .icon-btn:hover{background:#f0f5fb;}
+  body.light-theme .timeline-modal-head .tl-close{background:#ffffff;border:1px solid var(--line);}
+  body.light-theme .timeline-modal-head .tl-close:hover{background:#eef3f9;}
+  /* 城市详情弹窗：星级行/简介行/底部操作栏/简介输入框/空星/标签添加按钮 */
+  body.light-theme .rating-row,body.light-theme .city-desc-row{background:#ffffff;}
+  body.light-theme .city-desc-input{background:#f5f8fb;border-color:rgba(31,42,55,.14);color:#1f2a37;}
+  body.light-theme .city-desc-input:focus{border-color:rgba(2,132,199,.5);}
+  body.light-theme .modal-foot{background:rgba(245,247,250,.96);}
+  body.light-theme .star-rating .star{color:#b6c2d0;}
+  body.light-theme .star-display .star.empty{color:#b6c2d0;}
+  body.light-theme .tag-add-row .btn{background:#ffffff;}
+  /* 主题切换按钮（与账号按钮同款胶囊风格）*/
+  .theme-toggle-btn{
+    min-height:38px;padding:0 14px;border:1px solid rgba(125,211,252,.28);
+    border-radius:var(--radius-pill);background:rgba(14,165,233,.08);color:var(--ink);
+    display:flex;align-items:center;gap:7px;font:600 12px/1 inherit;letter-spacing:.2px;
+    cursor:pointer;transition:border-color .2s ease,background .2s ease,transform .2s ease;
+  }
+  .theme-toggle-btn:hover{border-color:rgba(125,211,252,.65);background:rgba(14,165,233,.14);}
+  .theme-toggle-btn:active{transform:scale(.98);}
+  .theme-toggle-btn svg{display:block;}
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
   /* 【SKILL.md 6.B REDUCED MOTION】全局覆盖：禁用所有无限循环动画（流星、边缘光辉、粒子、自转等），
@@ -140,9 +254,9 @@
     line-height:1.3;
     /* Shiny Text 闪光效果（参考 reactbits shiny-text: spread=135, speed=1.6s, delay=1.4s, yoyo, pauseOnHover）*/
     background:linear-gradient(135deg,
-      #3a4a5c 0%, #3a4a5c 42%,
+      #7dd3fc 0%, #7dd3fc 42%,
       #ffffff 50%,
-      #3a4a5c 58%, #3a4a5c 100%);
+      #7dd3fc 58%, #7dd3fc 100%);
     background-size:250% 100%;
     -webkit-background-clip:text;background-clip:text;color:transparent;
     animation:shinyTextYoyo 6s ease-in-out infinite;
@@ -150,9 +264,9 @@
   .brand .sub{
     margin:4px 0 0;font-size:12px;line-height:1.4;letter-spacing:.3px;
     background:linear-gradient(135deg,
-      var(--muted) 0%, var(--muted) 42%,
-      #b8c2cc 50%,
-      var(--muted) 58%, var(--muted) 100%);
+      #93c9ef 0%, #93c9ef 42%,
+      #eaf7ff 50%,
+      #93c9ef 58%, #93c9ef 100%);
     background-size:250% 100%;
     -webkit-background-clip:text;background-clip:text;color:transparent;
     animation:shinyTextYoyo 6s ease-in-out infinite;
@@ -200,6 +314,47 @@
     overflow:hidden;
   }
   #map{position:absolute;inset:0;}
+  /* 省份聚焦层：地图负责省份高亮，DOM 层负责城市照片卡片与连接线 */
+  .province-focus-layer{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden;}
+  .province-focus-layer[hidden]{display:none;}
+  .province-focus-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
+  .province-focus-lines path{
+    fill:none;
+    stroke:rgba(56,189,248,.72);stroke-width:1.25;vector-effect:non-scaling-stroke;
+    filter:drop-shadow(0 0 5px rgba(56,189,248,.5));
+  }
+  .province-focus-lines circle{fill:#7dd3fc;filter:drop-shadow(0 0 6px rgba(56,189,248,.8));}
+  .province-map-card{
+    position:absolute;width:154px;height:70px;display:grid;grid-template-columns:62px 1fr;
+    overflow:hidden;pointer-events:auto;cursor:pointer;border:1px solid rgba(125,211,252,.28);
+    border-radius:var(--radius-sm);background:rgba(5,10,16,.96);box-shadow:0 14px 34px rgba(0,0,0,.58);
+    padding:0;text-align:left;font:inherit;color:inherit;
+    transform-origin:center;animation:provinceCardIn .24s cubic-bezier(.16,1,.3,1) both;
+  }
+  .province-map-card:hover{border-color:rgba(125,211,252,.68);box-shadow:0 18px 42px rgba(0,0,0,.66),0 0 20px rgba(56,189,248,.13);}
+  .province-map-card:focus-visible{outline:2px solid var(--accent-l);outline-offset:3px;}
+  .province-map-card{touch-action:none;-webkit-user-select:none;user-select:none;cursor:grab;}
+  .province-map-card.dragging{cursor:grabbing;animation:none;z-index:10;border-color:#7dd3fc;box-shadow:0 22px 50px rgba(0,0,0,.72),0 0 24px rgba(56,189,248,.22);}
+  .province-map-card-image,.province-map-card-image-empty{
+    width:62px;height:70px;display:block;background:#0b1722;
+    pointer-events:none;-webkit-user-drag:none;user-drag:none;
+  }
+  .province-map-card-image{object-fit:cover;}
+  .province-map-card-image-empty{display:grid;place-items:center;color:#64748b;font-size:10px;text-align:center;line-height:1.25;}
+  .province-map-card-copy{min-width:0;padding:7px 8px;display:flex;flex-direction:column;justify-content:center;gap:2px;}
+  .province-map-card-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f8fafc;font-size:13px;font-weight:800;}
+  .province-map-card-rating{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7dd3fc;font-size:10px;font-weight:700;}
+  .province-map-card-intro{
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#94a3b8;font-size:10px;line-height:1.25;
+  }
+  .province-focus-more{
+    position:absolute;left:50%;bottom:20px;transform:translateX(-50%);padding:7px 12px;
+    border:1px solid rgba(125,211,252,.24);border-radius:var(--radius-pill);
+    background:rgba(5,10,16,.92);color:#bae6fd;font-size:11px;font-weight:700;
+    box-shadow:0 8px 24px rgba(0,0,0,.42);
+  }
+  @keyframes provinceCardIn{from{opacity:0;transform:translateY(7px) scale(.96)}to{opacity:1;transform:none}}
+  body.fullscreen-grid .province-focus-layer{display:none;}
   /* 左侧数据面板 —— 紧贴最左端，纵向堆叠统计+时间轴 */
   .left-panel{
     position:absolute;left:0;top:0;z-index:6;
@@ -897,11 +1052,6 @@
     background:rgba(20,28,38,.55);backdrop-filter:blur(2px);color:#fff;font-size:11px;
     font-weight:700;display:grid;place-items:center;padding:0 4px;pointer-events:none;
   }
-  .thumb-name{
-    position:absolute;left:0;right:0;bottom:0;padding:4px 6px;font-size:10px;color:#fff;
-    background:linear-gradient(transparent,rgba(0,0,0,.6));
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  }
   .empty{
     text-align:center;color:var(--muted);font-size:13px;line-height:1.7;
     padding:32px 12px;border:1px dashed var(--line);border-radius:10px;background:#080808;
@@ -1071,10 +1221,13 @@
     .panel-collapse-toggle{width:32px;height:60px;}
     .panel-collapse-toggle-left{left:0;top:42%;}
     .panel-collapse-toggle-right{right:0;top:58%;}
+    .province-map-card{width:128px;height:58px;grid-template-columns:52px 1fr;}
+    .province-map-card-image,.province-map-card-image-empty{width:52px;height:58px;}
   }
 
   @media (prefers-reduced-motion:reduce){
     .left-panel,.dash-panel,.panel-collapse-toggle,.panel-collapse-toggle .panel-toggle-arrow{transition:none;}
+    .province-map-card{animation:none;}
   }
 
   /* 视图切换标签 —— 0.2s 柔和底色过渡 */
@@ -3325,6 +3478,10 @@
         <div class="stat"><span id="cityStat">0</span><label>座城市</label></div>
         <div class="stat"><span id="photoStat">0</span><label>张照片</label></div>
       </div>
+      <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="切换深色/浅色主题">
+        <span class="theme-toggle-icon" id="themeToggleIcon" aria-hidden="true"></span>
+        <span id="themeToggleLabel">浅色</span>
+      </button>
       <button class="account-btn" id="accountBtn" type="button" aria-haspopup="dialog">
         <span class="account-dot" aria-hidden="true"></span>
         <span class="account-label" id="accountLabel">登录账号</span>
@@ -3334,6 +3491,11 @@
 
   <main id="mapWrap">
     <div id="map"></div>
+    <div class="province-focus-layer" id="provinceFocusLayer" hidden aria-live="polite">
+      <svg class="province-focus-lines" id="provinceFocusLines" aria-hidden="true"></svg>
+      <div id="provinceFocusCards"></div>
+      <div class="province-focus-more" id="provinceFocusMore" hidden></div>
+    </div>
     <div class="legend">
       <div class="title">图例</div>
       <div class="row"><i class="dot blue"></i>未记录城市</div>
@@ -3570,7 +3732,7 @@
           <input id="fileInput" type="file" accept="image/*" multiple hidden />
         </label>
         <!-- 【取消点亮】清空当前城市所有上传编辑内容（照片/景点/标签/封面/星级/年月） -->
-        <button class="btn" id="unlightBtn" style="background:#2a1414;color:#ff6b6b;border:1px solid #5a2424;">取消点亮</button>
+        <button class="btn" id="unlightBtn" style="background:#9f1239;color:#ffffff;border:1px solid #be123c;">取消点亮</button>
         <span class="hint">支持多张同时上传 · 拖拽照片可交换位置 · 本地永久保存</span>
       </div>
     </div>
@@ -4423,7 +4585,9 @@
   /* ---------- DOM 引用 ---------- */
   const $ = id => document.getElementById(id);
   const mapEl=$('map'), mapLoader=$('mapLoader'), loaderText=$('loaderText'),
-        mapError=$('mapError');
+        mapError=$('mapError'), mapWrapEl=$('mapWrap'),
+        provinceFocusLayer=$('provinceFocusLayer'), provinceFocusLines=$('provinceFocusLines'),
+        provinceFocusCards=$('provinceFocusCards'), provinceFocusMore=$('provinceFocusMore');
   const cityStatEl=$('cityStat'), photoStatEl=$('photoStat');
   // 数字自增动画：从当前值平滑过渡到目标值
   function animateCount(el,target){
@@ -4641,6 +4805,10 @@
   let totalPhotoCount=0;
   let currentCity=null;                    // 当前打开的城市点
   let geoLoaded=false;
+  let selectedProvinceName='';             // 当前点击聚焦的省份
+  let provinceFocusCities=[];              // 当前省份悬浮卡片对应城市
+  let provinceFocusRenderToken=0;          // 避免快速切换省份时旧异步结果覆盖新结果
+  let provinceFocusLayoutRaf=0;
 
   /* ---------- ECharts 多 CDN 加载 ---------- */
   const ECHARTS_CDNS=[
@@ -4805,11 +4973,96 @@
     updateDashboard();
   }
 
+  /* ---------- 深色/浅色主题切换 ---------- */
+  const THEME_KEY='travelTheme';
+  const ICON_SUN='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.4"/><path d="M12 2.5v2.2M12 19.3v2.2M4.9 4.9l1.6 1.6M17.5 17.5l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.9 19.1l1.6-1.6M17.5 6.5l1.6-1.6"/></svg>';
+  const ICON_MOON='<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.6 14.2A8.8 8.8 0 0 1 9.8 3.4a8.8 8.8 0 1 0 10.8 10.8z"/></svg>';
+  function isLightTheme(){return document.body.classList.contains('light-theme');}
+  // 地图配色随主题取值：浅色=浅底深字/深青蓝；深色=黑底亮字/亮青蓝（原有配色）
+  function chartThemeColors(){
+    return isLightTheme()?{
+      area:'#e9eef5',border:'#94a3b8',
+      emArea:'#d9e7f5',emBorder:'#64748b',
+      label:'#475569',labelShadow:'rgba(255,255,255,.95)',emLabel:'#1e293b',emLabelShadow:'rgba(255,255,255,.9)',
+      markerBorder:'#ffffff',cityLabel:'#e11d48',cityLabelShadow:'rgba(255,255,255,.95)',
+      normalLabel:'#4338ca',normalLabelShadow:'rgba(255,255,255,.9)',
+      unvisitedArea:'#e9eef5',unvisitedBorder:'#94a3b8',unvisitedShadow:'rgba(31,42,55,.08)',
+      visitedArea:'rgba(2,132,199,.18)',visitedBorder:'#38bdf8',
+      selectedArea:'rgba(2,132,199,.28)',selectedBorder:'#0284c7',
+      selectedShadow:'rgba(2,132,199,.30)',visitedShadow:'rgba(2,132,199,.14)',
+      selectedLabel:'#be123c',
+      tooltipBg:'rgba(255,255,255,.97)',tooltipBorder:'rgba(100,116,139,.35)',tooltipText:'#1f2a37'
+    }:{
+      area:'#050505',border:'#475569',
+      emArea:'#0a0f1a',emBorder:'#64748b',
+      label:'#94a3b8',labelShadow:'transparent',emLabel:'#f8fafc',emLabelShadow:'rgba(248,250,252,.25)',
+      markerBorder:'#020202',cityLabel:'#38bdf8',cityLabelShadow:'rgba(0,0,0,.9)',
+      normalLabel:'#a8bfd4',normalLabelShadow:'rgba(0,0,0,.9)',
+      unvisitedArea:'#050505',unvisitedBorder:'#475569',unvisitedShadow:'rgba(120,100,70,.12)',
+      visitedArea:'rgba(56,189,248,.21)',visitedBorder:'#38bdf8',
+      selectedArea:'rgba(14,165,233,.34)',selectedBorder:'#7dd3fc',
+      selectedShadow:'rgba(56,189,248,.45)',visitedShadow:'rgba(56,189,248,.18)',
+      selectedLabel:'#e0f7ff',
+      tooltipBg:'rgba(8,8,8,.97)',tooltipBorder:'rgba(71,85,105,.5)',tooltipText:'#f8fafc'
+    };
+  }
+  function refreshThemeToggleBtn(){
+    const icon=document.getElementById('themeToggleIcon'),label=document.getElementById('themeToggleLabel');
+    if(!icon||!label) return;
+    const light=isLightTheme();
+    icon.innerHTML=light?ICON_MOON:ICON_SUN;   // 显示"点击后将切换到"的主题图标与文字
+    label.textContent=light?'深色':'浅色';
+  }
+  // 主题切换后同步 ECharts 配色（地图底色/省界/省份文字/城市点描边/城市名标签/tooltip）
+  function applyChartTheme(){
+    if(!myChart) return;
+    const t=chartThemeColors();
+    myChart.setOption({
+      tooltip:{
+        backgroundColor:t.tooltipBg,borderColor:t.tooltipBorder,
+        textStyle:{color:t.tooltipText,fontSize:12}
+      },
+      geo:[{
+        itemStyle:{areaColor:t.area,borderColor:t.border},
+        emphasis:{
+          itemStyle:{areaColor:t.emArea,borderColor:t.emBorder},
+          label:{color:t.emLabel,textShadowColor:t.emLabelShadow}
+        },
+        label:{color:t.label}
+      }],
+      series:[
+        {itemStyle:{borderColor:t.markerBorder},emphasis:{itemStyle:{borderColor:t.markerBorder}}},  // 系列0 城市
+        {label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow}},                                 // 系列1 已记录（标签跟随主题）
+        {label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow}}                               // 系列2 已记录城市名
+      ]
+    });
+    applyProvinceRegionStyles();
+    if(typeof updateScatterData==='function') updateScatterData();   // 数据项级城市名标签颜色写死在数据里，需重建刷新
+    if(typeof recomputeLabelPositions==='function') recomputeLabelPositions();
+  }
+  function toggleTheme(){
+    const light=!isLightTheme();
+    document.body.classList.toggle('light-theme',light);
+    try{localStorage.setItem(THEME_KEY,light?'light':'dark');}catch(e){}
+    refreshThemeToggleBtn();
+    applyChartTheme();
+  }
+  // 启动时恢复上次选择的主题（默认深色），并接好按钮
+  try{
+    if(localStorage.getItem(THEME_KEY)==='light') document.body.classList.add('light-theme');
+  }catch(e){}
+  refreshThemeToggleBtn();
+  const themeToggleBtnEl=document.getElementById('themeToggleBtn');
+  if(themeToggleBtnEl) themeToggleBtnEl.addEventListener('click',toggleTheme);
+
   /* ---------- ECharts 初始化 ---------- */
   function initChart(){
     myChart=echarts.init(mapEl,{renderer:'canvas'});
+    const tc=chartThemeColors();   // 首次渲染即按当前主题配色（避免浅色主题启动闪黑）
     const option={
       backgroundColor:'transparent',
+      // 地图全局字体（省份名/城市名/tooltip 统一继承）
+      textStyle:{fontFamily:'-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif'},
       // 性能优化：关闭所有动画，消除缩放/拖拽时的拖影和延迟
       animation:false,
       animationDuration:0,
@@ -4821,10 +5074,10 @@
       hoverAnimation:false,
       tooltip:{
         trigger:'item',
-        backgroundColor:'rgba(8,8,8,.97)',
-        borderColor:'rgba(71,85,105,.5)',borderWidth:1,
+        backgroundColor:tc.tooltipBg,
+        borderColor:tc.tooltipBorder,borderWidth:1,
         extraCssText:'box-shadow:0 8px 24px rgba(31,42,55,.16);border-radius:10px;max-width:280px;',
-        textStyle:{color:'#f8fafc',fontSize:12},  /* 【提亮】地图 tooltip 文字：#1f2a37 → 冷亮白 #f8fafc，适配黑色科技基底 */
+        textStyle:{color:tc.tooltipText,fontSize:12},  /* 【提亮】地图 tooltip 文字：#1f2a37 → 冷亮白 #f8fafc，适配黑色科技基底 */
         padding:[10,14],
         formatter:p=>{
           if(p.seriesType==='scatter'||p.seriesType==='effectScatter'){
@@ -4848,15 +5101,15 @@
                 }
                 html+='</div>';
               }
-              html+='<div style="color:#38bdf8;font-weight:600">● 已记录 '+n+' 张照片';
+              html+='<div style="color:'+(isLightTheme()?'#0284c7':'#38bdf8')+';font-weight:600">● 已记录 '+n+' 张照片';
               if(n>MAX_THUMBS) html+='（预览前'+MAX_THUMBS+'张）';
               html+='</div>';
-              html+='<div style="color:#9aa5b1;margin-top:2px;font-size:13px">点击查看全部照片</div>';
+              html+='<div style="color:'+(isLightTheme()?'#5b6b7c':'#9aa5b1')+';margin-top:2px;font-size:13px">点击查看全部照片</div>';
               return html;
             }
             // 未记录城市：原始尺寸
             let html='<div style="font-weight:700;font-size:13px;margin-bottom:4px;text-shadow:0 0 8px rgba(248,250,252,.25)">'+p.data.name+'</div>';  /* 【提亮】未记录城市名发光 */
-            html+='<div style="color:#38bdf8;margin-top:2px">点击标记，记录你的照片</div>';
+            html+='<div style="color:'+(isLightTheme()?'#0284c7':'#38bdf8')+';margin-top:2px">点击标记，记录你的照片</div>';
             return html;
           }
           return p.name||'';
@@ -4874,8 +5127,8 @@
           progressiveThreshold:3000,
           z:1,
           itemStyle:{
-            areaColor:'#050505',
-            borderColor:'#475569',
+            areaColor:tc.area,
+            borderColor:tc.border,
             borderWidth:0.7,
             borderType:'solid',
             shadowColor:'rgba(120,100,70,.12)',
@@ -4884,17 +5137,19 @@
             shadowOffsetY:6
           },
           emphasis:{
-            itemStyle:{areaColor:'#0a0f1a',borderColor:'#64748b',borderWidth:1,shadowBlur:0},
-            label:{show:true,color:'#f8fafc',fontSize:13,lineHeight:18,formatter:p=>provinceShort(p.name),textShadowColor:'rgba(248,250,252,.25)',textShadowBlur:8}  /* 【提亮】省份悬浮标签：#94a3b8 → 冷亮白 #f8fafc + 发光 */
+            itemStyle:{areaColor:tc.emArea,borderColor:tc.emBorder,borderWidth:1,shadowBlur:0},
+            label:{show:true,color:tc.emLabel,fontSize:13,lineHeight:18,formatter:p=>provinceShort(p.name),textShadowColor:tc.emLabelShadow,textShadowBlur:8}  /* 【提亮】省份悬浮标签：#94a3b8 → 冷亮白 #f8fafc + 发光 */
           },
           select:{disabled:true},
           label:{
             show:true,
             formatter:p=>provinceShort(p.name),
-            color:'#94a3b8',
+            color:tc.label,
             fontSize:13,
-            fontWeight:500,
-            lineHeight:18
+            fontWeight:600,
+            lineHeight:18,
+            textShadowColor:tc.labelShadow,
+            textShadowBlur:3
           },
           labelLayout:{hideOverlap:true}
         }
@@ -4903,11 +5158,11 @@
         {
           name:'城市',type:'scatter',coordinateSystem:'geo',data:[],
           symbolSize:p=>(isCapital(p)?13:7)*markerScale(),z:5,
-          itemStyle:{color:'#38bdf8',opacity:.9,borderColor:'#020202',borderWidth:1.2},
+          itemStyle:{color:'#38bdf8',opacity:.9,borderColor:tc.markerBorder,borderWidth:1.2},
           label:{show:false},
           emphasis:{
             scale:1.8,
-            itemStyle:{color:'#0ea5e9',borderColor:'#020202',borderWidth:1.5},
+            itemStyle:{color:'#0ea5e9',borderColor:tc.markerBorder,borderWidth:1.5},
             label:{show:false}
           }
         },
@@ -4921,10 +5176,10 @@
             show:false,
             formatter:p=>p.data.name,
             position:'right',
-            color:'#38bdf8',
+            color:tc.cityLabel,
             fontSize:11.5,
             fontWeight:700,
-            textShadowColor:'rgba(0,0,0,.9)',
+            textShadowColor:tc.cityLabelShadow,
             textShadowBlur:3,
             distance:3,
             overflow:'truncate',
@@ -4934,7 +5189,27 @@
           labelLayout:{hideOverlap:false,moveOverlap:'shiftY'},
           emphasis:{
             scale:1.35,
-            label:{show:true,fontSize:12.5,fontWeight:800,color:'#f8fafc',textShadowColor:'rgba(248,250,252,.25)',textShadowBlur:8}  /* 【提亮】城市悬浮标签：补冷亮白 #f8fafc + 发光 */
+            label:{show:true,fontSize:12.5,fontWeight:800,color:tc.emLabel,textShadowColor:tc.emLabelShadow,textShadowBlur:8}  /* 【提亮】城市悬浮标签：补冷亮白 #f8fafc + 发光 */
+          }
+        },
+        {
+          // 已点亮城市名标注系列：effectScatter 数据项标签在部分环境下不稳定，
+          // 改由独立 scatter 系列（symbolSize 0.1 不可见、silent 不响应鼠标）专职承载城市名
+          name:'已记录城市名',type:'scatter',coordinateSystem:'geo',data:[],
+          symbolSize:0.1,silent:true,z:7,
+          label:{
+            show:false,
+            formatter:p=>p.data.name,
+            position:'right',
+            color:tc.cityLabel,
+            fontSize:11.5,
+            fontWeight:700,
+            textShadowColor:tc.cityLabelShadow,
+            textShadowBlur:3,
+            distance:3,
+            overflow:'truncate',
+            ellipsis:'…',
+            width:70
           }
         }
       ]
@@ -4942,7 +5217,7 @@
     myChart.setOption(option);
 
     // 根据缩放级别动态切换城市标签：缩小→不显示；放大到阈值→显示并智能错开
-    const LABEL_ZOOM_THRESHOLD=2.5;
+    const LABEL_ZOOM_THRESHOLD=1.5;
     // 智能分配标签方向：为每个已点亮城市选择与邻近标签冲突最小的位置
      function computeLabelPositions(){
        const opt=myChart.getOption();
@@ -4983,6 +5258,27 @@
        // 贪心：按像素 x 排序，逐个选择与已选标签冲突最少的方向
        pts.sort((a,b)=>a.px[0]-b.px[0]);
        const placed=[];
+       // 省内未点亮城市的灰色标签（series[0]）作为障碍物预置，避免青色名字压上去
+       (opt.series[0].data||[]).forEach(d=>{
+         if(!d.label||!d.label.show) return;
+         const px=myChart.convertToPixel('geo',d.value);
+         if(!px) return;
+         const w=Math.max(d.name.length*7.5+10,44),h=17;
+         placed.push({rect:{x1:px[0]+4,y1:px[1]-h/2,x2:px[0]+4+w,y2:px[1]+h/2},gray:true});
+       });
+       // 省份焦点卡片（DOM 元素）同样作为障碍物，避免城市名被卡片盖住
+       const mapDom=myChart.getDom();
+       if(mapDom){
+         const baseRect=mapDom.getBoundingClientRect();
+         document.querySelectorAll('.province-map-card').forEach(el=>{
+           const r=el.getBoundingClientRect();
+           if(r.width<=0||r.height<=0) return;
+           placed.push({rect:{
+             x1:r.left-baseRect.left-4,y1:r.top-baseRect.top-4,
+             x2:r.right-baseRect.left+4,y2:r.bottom-baseRect.top+4
+           },card:true});
+         });
+       }
        for(const p of pts){
          let best=null,bestScore=-1;
          for(const c of candidates){
@@ -5005,9 +5301,16 @@
        }
        const newData=visited.map(d=>{
          const p=pts.find(x=>x.cityKey===d.cityKey);
-         return Object.assign({},d,{label:{position:p&&p.chosen?p.chosen.pos:'right'}});
+         const t=chartThemeColors();
+         const label={position:p&&p.chosen?p.chosen.pos:'right'};
+         label.show=visitedNameShouldShow(d.adcode);
+         label.formatter=q=>q.data.name;
+         label.color=t.cityLabel;label.fontSize=11.5;label.fontWeight=700;
+         label.textShadowColor=t.cityLabelShadow;label.textShadowBlur=3;
+         label.distance=3;label.overflow='truncate';label.ellipsis='…';label.width=70;
+         return Object.assign({},d,{label});
        });
-       myChart.setOption({series:[{},{data:newData}]});
+       myChart.setOption({series:[{},{},{data:newData}]});
      }
      recomputeLabelPositions=computeLabelPositions;
     // 即时同步：georoam 触发时立即同步散点大小 + 省份标签
@@ -5023,10 +5326,13 @@
         const opt=myChart.getOption();
         const zoom=opt.geo[0].zoom||1.18;
         currentZoom=zoom;
+        // 省份卡片交给布局函数自判：缩放/容器无实质变化时只重绘连线，卡片绝不动
+        if(selectedProvinceName||currentView==='province') requestProvinceFocusLayout();
         // 【性能优化】纯平移(zoom 未变)时标签字号无需更新，跳过昂贵 setOption，大幅减少拖拽卡顿
         if(Math.abs(zoom-lastSyncedZoom)<0.001) return;
         lastSyncedZoom=zoom;
-        const showLabel=zoom>=LABEL_ZOOM_THRESHOLD;
+        // 城市名显示条件：放大到阈值 / 省份视图 / 已选中省份，三者其一即需要标签布局
+        const showLabel=zoom>=LABEL_ZOOM_THRESHOLD||currentView==='province'||!!selectedProvinceName;
         const s=markerScale();
         const pf=provinceFontSize();
         myChart.setOption({
@@ -5038,16 +5344,17 @@
               // 省份汉字始终显示，fontSize 随缩放自适应
               label:{show:true,fontSize:pf,fontWeight:pf>=12?600:500,lineHeight:Math.round(pf*1.4)},
               labelLayout:{hideOverlap:true},
-              emphasis:{label:{show:true,fontSize:Math.min(pf+3,26),lineHeight:Math.round((pf+3)*1.4),color:'#f8fafc',formatter:p=>provinceShort(p.name),textShadowColor:'rgba(248,250,252,.25)',textShadowBlur:8}}  /* 【提亮】省份悬浮标签：#94a3b8 → 冷亮白 #f8fafc + 发光 */
+              emphasis:{label:{show:true,fontSize:Math.min(pf+3,26),lineHeight:Math.round((pf+3)*1.4),color:chartThemeColors().emLabel,formatter:p=>provinceShort(p.name),textShadowColor:chartThemeColors().emLabelShadow,textShadowBlur:8}}  /* 省份悬浮标签颜色跟随主题（浅色=亮靛蓝/深色=冷亮白） */
             }
           ],
           series:[
             {symbolSize:p=>(isCapital(p)?13:7)*s},
             {symbolSize:p=>(isCapital(p)?20:15)*s,
-             rippleEffect:{brushType:'stroke',scale:4.2*(s<0.8?0.65:1),period:4.5},
-             label:{show:showLabel},labelLayout:{hideOverlap:false,moveOverlap:'shiftY'}}
+             rippleEffect:{brushType:'stroke',scale:4.2*(s<0.8?0.65:1),period:4.5}}
           ]
         });
+        // 缩放跨越阈值时同步刷新已点亮城市名的显隐（标注系列的数据项级 show）
+        refreshVisitedNameLabels();
         // 【性能优化】标签位置计算很重(convertToPixel 逐城市)，仅在缩放停止后才执行：
         // 用 150ms 防抖，拖拽/缩放过程中不重算，停止后才算一次，消除拖拽卡顿
         if(showLabel){
@@ -5075,25 +5382,37 @@
           // 点亮城市：外框放大1.2倍
           myChart.setOption({tooltip:{
             extraCssText:'box-shadow:0 10px 29px rgba(31,42,55,.16);border-radius:12px;max-width:336px;',
-            textStyle:{color:'#f8fafc',fontSize:14},  /* 【提亮】点亮城市 tooltip 文字：#1f2a37 → #f8fafc */
+            textStyle:{color:chartThemeColors().tooltipText,fontSize:14},
             padding:[12,17]
           }});
         }else{
           // 未记录城市：原始尺寸
           myChart.setOption({tooltip:{
             extraCssText:'box-shadow:0 8px 24px rgba(31,42,55,.16);border-radius:10px;max-width:280px;',
-            textStyle:{color:'#f8fafc',fontSize:12},  /* 【提亮】未记录城市 tooltip 文字：#1f2a37 → #f8fafc */
+            textStyle:{color:chartThemeColors().tooltipText,fontSize:12},
             padding:[10,14]
           }});
         }
       }
     });
 
+    // 【拖动≠点击】地图拖动（roam 平移）结束后，zrender/chart 仍可能派发 click，
+    // 会误触省份切换、清空聚焦并重建卡片——表现为"拖一下地图，卡片全部换位置"
+    // 判定：按下/松开位移 >5px 视为拖动手势；mouseup 先于 click 派发，届时固化标志供 click 读取
+    let zrDownPos=null,zrWasDrag=false;
+    myChart.getZr().on('mousedown',e=>{zrDownPos=[e.offsetX,e.offsetY];zrWasDrag=false;});
+    myChart.getZr().on('mouseup',e=>{
+      if(zrDownPos&&e&&Number.isFinite(e.offsetX)&&Number.isFinite(e.offsetY))
+        zrWasDrag=Math.hypot(e.offsetX-zrDownPos[0],e.offsetY-zrDownPos[1])>5;
+    });
+    const wasDragMove=()=>zrWasDrag;
+
     // 点击散点 → 打开城市弹窗
     // 【单击/双击冲突解决】已点亮城市延迟 250ms 打开弹窗，为双击跳转留出窗口；
     // 未点亮城市立即响应单击（无双击需求）
     let pendingClickTimer=null;
     myChart.on('click',params=>{
+      if(wasDragMove()) return;   // 拖动地图后的松开不算点击
       if(params.seriesType==='scatter'||params.seriesType==='effectScatter'){
         const ck=params.data&&params.data.cityKey;
         const isLit=ck&&photoCountByCity&&photoCountByCity.has(ck);
@@ -5108,7 +5427,19 @@
           // 未点亮城市：立即响应
           openCityModal(params.data);
         }
+      }else if(params.componentType==='geo'&&params.name){
+        selectProvinceFocus(params.name);
       }
+    });
+
+    // 点击地图空白区域（海洋/省份外）→ 取消省份高亮，恢复未点击省份时的状态
+    // zrender 层点击事件：空白处点击不带 e.target（省份/城市点等图形元素才有）
+    myChart.getZr().on('click',e=>{
+      if(e.target) return;
+      if(!selectedProvinceName) return;
+      if(wasDragMove()) return;   // 空白处按下并拖动地图后松开 ≠ 点击，不清聚焦（否则卡片会被重建换位）
+      clearProvinceFocus();
+      if(currentView==='province') renderProvinceFocusCards('');
     });
 
     // 【新增逻辑】双击已点亮城市散点 → 直接跳转城市详情页（虚化封面背景 + 景点网格）
@@ -5127,6 +5458,7 @@
     // 窗口 resize：同步重绘地图 + 迷你时间轴 + 弹窗时间轴（如弹窗打开中）
     window.addEventListener('resize',()=>{
       myChart&&myChart.resize();
+      requestProvinceFocusLayout();
       renderMiniTimeline&&renderMiniTimeline();
       // 弹窗打开时窗口缩放 → 重新读取容器尺寸并完整重绘蛇形时间轴
       if(timelineModalOverlay.classList.contains('show')){
@@ -5135,20 +5467,63 @@
     });
   }
 
-  // 按是否有照片拆分两个系列并刷新
+  // 已点亮城市名显示规则（单一判定源）：
+  // 基础显隐=省份视图或缩放≥1.5（原本显示的保持显示）；选中省份→省内额外强制显示
+  function visitedNameShouldShow(adcode){
+    const base=currentView==='province'||currentZoom>=1.5;
+    const inFocusProv=selectedProvinceName&&provinceOf(adcode)===selectedProvinceName;
+    return base||inFocusProv;
+  }
+
+  // 按是否有照片拆分系列并刷新：series[0] 未点亮、series[1] 已点亮散点、series[2] 已点亮城市名标注
   function updateScatterData(){
     if(!myChart||!cityPoints.length) return;
-    const normal=[],visited=[];
+    const focus=selectedProvinceName;
+    const normal=[],visited=[],nameTags=[];
     for(const cp of cityPoints){
       const pt={name:cp.name,value:cp.value,cityKey:cp.cityKey,adcode:cp.adcode};
-      if(citiesWithPhotos.has(cp.cityKey)) visited.push(pt); else normal.push(pt);
+      const inFocus=focus&&provinceOf(cp.adcode)===focus;
+      if(citiesWithPhotos.has(cp.cityKey)){
+        visited.push(pt);
+        // 城市名统一由标注系列（series[2]）渲染，避开 effectScatter 标签不稳定问题
+        const tcVisited=chartThemeColors();
+        nameTags.push({name:cp.name,value:cp.value,cityKey:cp.cityKey,adcode:cp.adcode,label:{
+          show:visitedNameShouldShow(cp.adcode),
+          position:'right',
+          formatter:p=>p.data.name,
+          color:tcVisited.cityLabel,fontSize:11.5,fontWeight:700,
+          textShadowColor:tcVisited.cityLabelShadow,textShadowBlur:3,
+          distance:3,overflow:'truncate',ellipsis:'…',width:70
+        }});
+      }else{
+        if(inFocus){const tcNormal=chartThemeColors();pt.label={
+          show:true,position:'right',
+          formatter:p=>p.data.name,
+          color:tcNormal.normalLabel,fontSize:10.5,fontWeight:600,
+          textShadowColor:tcNormal.normalLabelShadow,textShadowBlur:3,
+          distance:3,overflow:'truncate',ellipsis:'…',width:64
+        };}
+        normal.push(pt);
+      }
     }
-    myChart.setOption({series:[{data:normal},{data:visited}]});
-    // 数据更新后若标签处于显示状态，重新计算标签方向避免重叠
+    myChart.setOption({series:[{data:normal,labelLayout:{hideOverlap:true}},{data:visited},{data:nameTags}]});
+    // 数据更新后若标签处于显示状态，重新计算标签方向避免重叠（选中省份/省份视图强制执行，处理聚集城市）
     if(recomputeLabelPositions){
       const zoom=myChart.getOption().geo[0].zoom||1.18;
-      if(zoom>=2.5) setTimeout(recomputeLabelPositions,50);
+      if(selectedProvinceName||currentView==='province'||zoom>=1.5) setTimeout(recomputeLabelPositions,50);
     }
+  }
+
+  // 按当前省份选中态/视图/缩放级别，刷新已点亮城市名标注系列的显隐
+  function refreshVisitedNameLabels(){
+    if(!myChart) return;
+    const opt=myChart.getOption();
+    const s2=opt.series[2];
+    if(!s2||!s2.data||!s2.data.length) return;
+    const nd=s2.data.map(d=>{
+      return Object.assign({},d,{label:Object.assign({},d.label,{show:visitedNameShouldShow(d.adcode)})});
+    });
+    myChart.setOption({series:[{},{},{data:nd}]});
   }
 
   /* ---------- IndexedDB 封装 ---------- */
@@ -5289,6 +5664,484 @@
     }),8000,'读取全部城市元数据超时');
     metas.forEach(m=>cityMetaCache.set(m.cityKey,m));
     return metas;
+  }
+
+  /* ---------- 省份点击聚焦：城市照片卡片 + 地图连接线 ---------- */
+  function clearProvinceFocus(){
+    selectedProvinceName='';
+    provinceFocusCities=[];
+    provinceFocusRenderToken++;
+    provinceFocusCards.innerHTML='';
+    provinceFocusLines.innerHTML='';
+    provinceFocusMore.hidden=true;
+    provinceFocusLayer.hidden=true;
+    applyProvinceRegionStyles();
+    updateScatterData();
+  }
+
+  async function selectProvinceFocus(provinceName){
+    if(!provinceName||!Object.values(PROVINCE_MAP).includes(provinceName)) return;
+    if(selectedProvinceName===provinceName){
+      clearProvinceFocus();
+      if(currentView==='province') await renderProvinceFocusCards('');
+      return;
+    }
+    selectedProvinceName=provinceName;
+    applyProvinceRegionStyles();
+    updateScatterData();
+    await renderProvinceFocusCards(provinceName);
+  }
+
+  async function renderProvinceFocusCards(provinceName){
+    const token=++provinceFocusRenderToken;
+    const showAllLitCities=currentView==='province'&&!provinceName;
+    const provinceCities=cityPoints
+      .filter(city=>citiesWithPhotos.has(city.cityKey)&&(showAllLitCities||provinceOf(city.adcode)===provinceName))
+      .sort((a,b)=>(photoCountByCity.get(b.cityKey)||0)-(photoCountByCity.get(a.cityKey)||0));
+    const visibleLimit=showAllLitCities?provinceCities.length:(window.innerWidth<=640?1:4);
+    const visibleCities=provinceCities.slice(0,visibleLimit);
+    const cardCities=await Promise.all(visibleCities.map(async city=>{
+      const meta=await getCityMeta(city.cityKey);
+      return {
+        city,
+        cover:meta.coverImage||'',
+        rating:Math.max(0,Math.min(5,Math.round(Number(meta.rating)||0))),
+        description:(meta.description||'').trim()
+      };
+    }));
+    const viewStillMatches=showAllLitCities
+      ?currentView==='province'&&!selectedProvinceName
+      :selectedProvinceName===provinceName;
+    if(token!==provinceFocusRenderToken||!viewStillMatches) return;
+
+    provinceFocusCards.innerHTML='';
+    provinceFocusLines.innerHTML='';
+    provinceFocusCities=cardCities;
+    provinceFocusLayer.hidden=!cardCities.length;
+    provinceFocusMore.hidden=provinceCities.length<=visibleLimit;
+    provinceFocusMore.textContent=provinceCities.length>visibleLimit
+      ?'另有 '+(provinceCities.length-visibleLimit)+' 个已记录城市，可在右侧列表查看'
+      :'';
+
+    cardCities.forEach((item,index)=>{
+      const card=document.createElement('button');
+      card.type='button';
+      card.className='province-map-card';
+      card.dataset.cityKey=item.city.cityKey;
+      card.style.animationDelay=(index*45)+'ms';
+      card.setAttribute('aria-label','打开'+item.city.name+'旅行记录');
+
+      const image=item.cover?document.createElement('img'):document.createElement('span');
+      image.className=item.cover?'province-map-card-image':'province-map-card-image-empty';
+      if(item.cover){
+        image.src=item.cover;
+        image.alt=item.city.name+'城市封面';
+        image.draggable=false;
+      }else{
+        image.textContent='未上传封面';
+      }
+
+      const copy=document.createElement('span');
+      copy.className='province-map-card-copy';
+      const name=document.createElement('span');
+      name.className='province-map-card-name';
+      name.textContent=item.city.name;
+      const rating=document.createElement('span');
+      rating.className='province-map-card-rating';
+      rating.textContent=item.rating?'推荐 '+('★'.repeat(item.rating))+('☆'.repeat(5-item.rating)):'推荐 暂未评分';
+      const intro=document.createElement('span');
+      intro.className='province-map-card-intro';
+      intro.textContent=item.description||'暂无城市简介';
+      intro.title=intro.textContent;
+      copy.append(name,rating,intro);
+      card.append(image,copy);
+      // 位置缓存命中：直接落在历史位置并跳过入场动画，重建前后位置完全一致，杜绝"换位"观感
+      const cached=cardPosCache[item.city.cityKey];
+      if(cached){
+        const ins=provinceCardInsets();
+        const cw=mapWrapEl.clientWidth,ch=mapWrapEl.clientHeight;
+        const maxX=Math.max(ins.left,cw-ins.right-ins.w),maxY=Math.max(ins.top,ch-ins.bottom-ins.h);
+        card.style.left=Math.max(ins.left,Math.min(maxX,cached.xPct*cw))+'px';
+        card.style.top=Math.max(ins.top,Math.min(maxY,cached.yPct*ch))+'px';
+        card.style.animation='none';
+      }
+      card.addEventListener('click',()=>openCityModal(item.city));
+      attachProvinceCardDrag(card,item.city);
+      provinceFocusCards.appendChild(card);
+    });
+    requestProvinceFocusLayout();   // 新卡片无像素位置 → 布局只做初始摆放
+    provinceFocusLastPoints=null;   // 城市集合已变化，平移检测基线失效，待布局后重建
+  }
+
+  function requestProvinceFocusLayout(){
+    if(provinceFocusLayoutRaf) cancelAnimationFrame(provinceFocusLayoutRaf);
+    provinceFocusLayoutRaf=requestAnimationFrame(()=>{
+      provinceFocusLayoutRaf=0;
+      layoutProvinceFocusCards();
+    });
+  }
+
+  /* ---------- 卡片拖拽固定位置 ---------- */
+  const CARD_PINS_KEY='travelCardPins';
+  let cardPins=(function(){try{return JSON.parse(localStorage.getItem(CARD_PINS_KEY))||{}}catch(e){return{}}})();
+  function saveCardPins(){try{localStorage.setItem(CARD_PINS_KEY,JSON.stringify(cardPins))}catch(e){}}
+  // 卡片位置缓存（按城市 cityKey 记忆百分比位置）：视图切换/省份点击/空白点击会销毁重建卡片 DOM，
+  // 重建时从缓存直接落回历史位置并跳过入场动画——配合"布局永不移动已摆放卡片"，
+  // 实现卡片唯一移动方式 = 鼠标拖动卡片
+  const CARD_POS_CACHE_KEY='travelCardPosCache';
+  let cardPosCache=(function(){try{return JSON.parse(localStorage.getItem(CARD_POS_CACHE_KEY))||{}}catch(e){return{}}})();
+  function saveCardPosCache(){try{localStorage.setItem(CARD_POS_CACHE_KEY,JSON.stringify(cardPosCache))}catch(e){}}
+  // 平移跟随期间位置持续变化，localStorage 持久化做防抖，避免拖动中高频写盘
+  let cardPosSaveTimer=null;
+  function saveCardPositionsDebounced(){
+    clearTimeout(cardPosSaveTimer);
+    cardPosSaveTimer=setTimeout(()=>{saveCardPosCache();saveCardPins();},400);
+  }
+  // 上一次各城市的屏幕像素坐标，作为平移检测基线（城市集合变化时置 null）
+  let provinceFocusLastPoints=null;
+
+  // 城市点→卡片锚点的贝塞尔连线路径（自动布局与拖拽共用，保证线条跟随一致）
+  // 锚点=卡片边界上离城市最近的点；城市点进入卡片范围时投影到最近边，避免线长归零消失
+  function provinceCardLinkPath(point,rect,bendSign){
+    let endX=Math.max(rect.x,Math.min(point[0],rect.x+rect.w));
+    let endY=Math.max(rect.y,Math.min(point[1],rect.y+rect.h));
+    if(point[0]>rect.x&&point[0]<rect.x+rect.w&&point[1]>rect.y&&point[1]<rect.y+rect.h){
+      const dl=point[0]-rect.x,dr=rect.x+rect.w-point[0],dt=point[1]-rect.y,db=rect.y+rect.h-point[1];
+      const m=Math.min(dl,dr,dt,db);
+      if(m===dt){endX=point[0];endY=rect.y;}
+      else if(m===db){endX=point[0];endY=rect.y+rect.h;}
+      else if(m===dl){endX=rect.x;endY=point[1];}
+      else{endX=rect.x+rect.w;endY=point[1];}
+    }
+    const dx=endX-point[0],dy=endY-point[1];
+    const distance=Math.hypot(dx,dy)||1;
+    const inset=8;
+    const lineEndX=endX+dx/distance*inset,lineEndY=endY+dy/distance*inset;
+    const bend=Math.min(40,Math.max(14,distance*.22))*bendSign;
+    const controlX=(point[0]+lineEndX)/2-(dy/distance)*bend;
+    const controlY=(point[1]+lineEndY)/2+(dx/distance)*bend;
+    return 'M '+point[0]+' '+point[1]+' Q '+controlX+' '+controlY+' '+lineEndX+' '+lineEndY;
+  }
+
+  // 卡片可放置区域的边缘留白（与 layoutProvinceFocusCards 保持一致）
+  function provinceCardInsets(){
+    const mobile=window.innerWidth<=640;
+    return {
+      left:mobile?10:(document.body.classList.contains('left-panel-collapsed')?18:398),
+      right:mobile?10:(document.body.classList.contains('right-panel-collapsed')?18:398),
+      top:mobile?12:18,bottom:mobile?12:58,
+      w:154,h:70
+    };
+  }
+
+  function attachProvinceCardDrag(card,city){
+    if(card._dragBound) return;
+    card._dragBound=true;
+    let dragging=false,moved=false,startX=0,startY=0,origX=0,origY=0;
+    card.addEventListener('pointerdown',e=>{
+      if(e.button!==0) return;
+      dragging=true;moved=false;
+      card._suppressClick=false;
+      startX=e.clientX;startY=e.clientY;
+      origX=parseFloat(card.style.left)||0;
+      origY=parseFloat(card.style.top)||0;
+      try{card.setPointerCapture(e.pointerId)}catch(err){}
+    });
+    card.addEventListener('pointermove',e=>{
+      if(!dragging) return;
+      const dx=e.clientX-startX,dy=e.clientY-startY;
+      if(!moved){
+        if(Math.hypot(dx,dy)<4) return;
+        moved=true;
+        card.classList.add('dragging');
+      }
+      const ins=provinceCardInsets();
+      const width=mapWrapEl.clientWidth,height=mapWrapEl.clientHeight;
+      const maxX=Math.max(ins.left,width-ins.right-ins.w);
+      const maxY=Math.max(ins.top,height-ins.bottom-ins.h);
+      const x=Math.max(ins.left,Math.min(maxX,origX+dx));
+      const y=Math.max(ins.top,Math.min(maxY,origY+dy));
+      card.style.left=x+'px';card.style.top=y+'px';
+      // 连线实时跟随卡片
+      if(myChart){
+        const point=myChart.convertToPixel('geo',city.value);
+        if(point&&Number.isFinite(point[0])&&Number.isFinite(point[1])){
+          const path=provinceFocusLines.querySelector('path[data-city="'+city.cityKey+'"]');
+          if(path){
+            const bendSign=Number(card.dataset.bendSign)||1;
+            path.setAttribute('d',provinceCardLinkPath(point,{x,y,w:ins.w,h:ins.h},bendSign));
+          }
+        }
+      }
+      e.preventDefault();
+    });
+    const endDrag=()=>{
+      if(!dragging) return;
+      dragging=false;
+      card.classList.remove('dragging');
+      if(!moved) return;
+      card._suppressClick=true;
+      const ins=provinceCardInsets();
+      const width=mapWrapEl.clientWidth,height=mapWrapEl.clientHeight;
+      const maxX=Math.max(ins.left,width-ins.right-ins.w);
+      const maxY=Math.max(ins.top,height-ins.bottom-ins.h);
+      const clamp=(px,py)=>({
+        x:Math.max(ins.left,Math.min(maxX,px)),
+        y:Math.max(ins.top,Math.min(maxY,py)),
+        w:ins.w,h:ins.h
+      });
+      let rect=clamp(parseFloat(card.style.left)||0,parseFloat(card.style.top)||0);
+      // 与其他固定卡片重叠时，就近寻找不重叠的落点
+      const hitPinned=r=>Object.keys(cardPins).some(k=>{
+        if(k===city.cityKey) return false;
+        const p=cardPins[k];
+        const o=clamp(p.xPct*width,p.yPct*height);
+        return r.x<o.x+o.w-4&&r.x+r.w-4>o.x&&r.y<o.y+o.h-4&&r.y+r.h-4>o.y;
+      });
+      if(hitPinned(rect)){
+        const offsets=[[-(ins.w+12),0],[ins.w+12,0],[0,-(ins.h+12)],[0,ins.h+12],
+          [-(ins.w+12),-(ins.h+12)],[ins.w+12,-(ins.h+12)],[-(ins.w+12),ins.h+12],[ins.w+12,ins.h+12]];
+        const options=offsets
+          .map(d=>({rect:clamp(rect.x+d[0],rect.y+d[1]),cost:Math.abs(d[0])+Math.abs(d[1])}))
+          .filter(o=>!hitPinned(o.rect))
+          .sort((a,b)=>a.cost-b.cost);
+        if(options.length) rect=options[0].rect;
+      }
+      card.style.left=rect.x+'px';card.style.top=rect.y+'px';
+      // 按地图容器百分比存储，窗口尺寸变化后仍可还原
+      cardPins[city.cityKey]={xPct:width?+(rect.x/width).toFixed(4):0,yPct:height?+(rect.y/height).toFixed(4):0};
+      saveCardPins();
+      // 拖动落点同步写入位置缓存，保证后续重建（视图切换/省份点击）落回拖动后的位置
+      cardPosCache[city.cityKey]={xPct:cardPins[city.cityKey].xPct,yPct:cardPins[city.cityKey].yPct};
+      saveCardPosCache();
+      card.classList.add('is-pinned');
+      // 卡片冻结：拖动是唯一移动方式，其他卡片不避让；此处仅按最终落点重绘连线
+      requestProvinceFocusLayout();
+    };
+    card.addEventListener('pointerup',endDrag);
+    card.addEventListener('pointercancel',endDrag);
+    // 右键点击已固定卡片 → 取消固定并恢复自动布局
+    card.addEventListener('contextmenu',e=>{
+      if(!cardPins[city.cityKey]) return;
+      e.preventDefault();
+      delete cardPins[city.cityKey];
+      saveCardPins();
+      card.classList.remove('is-pinned');
+      // 卡片冻结：取消固定仅移除图钉标记，卡片位置保持不变，只重绘连线
+      requestProvinceFocusLayout();
+      if(recomputeLabelPositions) recomputeLabelPositions();
+    });
+  }
+  // 拖动结束后抑制一次点击（避免误开城市弹窗）：捕获阶段在卡片自身监听器之前拦截
+  provinceFocusCards.addEventListener('click',e=>{
+    const card=e.target&&e.target.closest?e.target.closest('.province-map-card'):null;
+    if(card&&card._suppressClick){
+      card._suppressClick=false;
+      e.stopPropagation();
+      e.preventDefault();
+    }
+  },true);
+
+  // 纯平移地图时：卡片位置保持不动，仅按城市最新像素位置重绘连线
+  function updateProvinceCardLines(){
+    if(!myChart||(!selectedProvinceName&&currentView!=='province')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
+    const cards=Array.from(provinceFocusCards.querySelectorAll('.province-map-card'));
+    if(!cards.length) return;
+    const width=mapWrapEl.clientWidth,height=mapWrapEl.clientHeight;
+    provinceFocusLines.setAttribute('viewBox','0 0 '+width+' '+height);
+    provinceFocusLines.innerHTML='';
+    provinceFocusCities.forEach((item,index)=>{
+      const card=cards[index];
+      if(!card) return;
+      const point=myChart.convertToPixel('geo',item.city.value);
+      if(!point||!Number.isFinite(point[0])||!Number.isFinite(point[1])) return;
+      const x=parseFloat(card.style.left),y=parseFloat(card.style.top);
+      if(!Number.isFinite(x)||!Number.isFinite(y)) return;
+      const w=card.offsetWidth||154,h=card.offsetHeight||70;
+      const bendSign=Number(card.dataset.bendSign)||(index%2===0?1:-1);
+      const line=document.createElementNS('http://www.w3.org/2000/svg','path');
+      line.setAttribute('data-city',item.city.cityKey);
+      line.setAttribute('d',provinceCardLinkPath(point,{x,y,w,h},bendSign));
+      const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx',point[0]);dot.setAttribute('cy',point[1]);dot.setAttribute('r','3');
+      provinceFocusLines.append(line,dot);
+    });
+  }
+
+  // 【跟随城市】地图平移/缩放/混合操作时，每张卡片按各自城市的屏幕位移量同步移动，
+  // 卡片与城市的相对位置保持不变，连线长短/弯曲完全固定；同步更新位置缓存（防抖持久化）
+  function panFollowCards(cards){
+    const points=provinceFocusCities.map(item=>myChart.convertToPixel('geo',item.city.value));
+    const valid=points.length>0&&points.every(p=>p&&Number.isFinite(p[0])&&Number.isFinite(p[1]));
+    if(valid&&provinceFocusLastPoints&&provinceFocusLastPoints.length===points.length){
+      let moved=false;
+      const w=mapWrapEl.clientWidth,h=mapWrapEl.clientHeight;
+      cards.forEach((card,i)=>{
+        const it=provinceFocusCities[i];
+        if(!it) return;
+        const dx=points[i][0]-provinceFocusLastPoints[i][0];
+        const dy=points[i][1]-provinceFocusLastPoints[i][1];
+        if(Math.abs(dx)<0.01&&Math.abs(dy)<0.01) return;
+        const l=parseFloat(card.style.left),t=parseFloat(card.style.top);
+        if(!Number.isFinite(l)||!Number.isFinite(t)) return;
+        card.style.left=(l+dx)+'px';
+        card.style.top=(t+dy)+'px';
+        moved=true;
+        if(w&&h){
+          const pct={xPct:+((l+dx)/w).toFixed(4),yPct:+((t+dy)/h).toFixed(4)};
+          cardPosCache[it.city.cityKey]=pct;
+          if(cardPins[it.city.cityKey]) cardPins[it.city.cityKey]=pct;
+        }
+      });
+      if(moved) saveCardPositionsDebounced();
+    }
+    if(valid) provinceFocusLastPoints=points;
+  }
+
+  function layoutProvinceFocusCards(){
+    if(!myChart||(!selectedProvinceName&&currentView!=='province')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
+    const cards=Array.from(provinceFocusCards.querySelectorAll('.province-map-card'));
+    if(!cards.length) return;
+    // 【卡片冻结·逐卡判定】已有像素位置的卡片绝不再被布局移动——唯一移动方式 = 鼠标拖动卡片
+    // 全部卡片均已摆放时：先跟随城市（平移/缩放各自城市位移→连线长短固定），再按城市最新像素位置重绘连线
+    if(cards.every(c=>Number.isFinite(parseFloat(c.style.left))&&Number.isFinite(parseFloat(c.style.top)))){
+      panFollowCards(cards);
+      updateProvinceCardLines();
+      return;
+    }
+    const width=mapWrapEl.clientWidth,height=mapWrapEl.clientHeight;
+    const points=provinceFocusCities.map(item=>myChart.convertToPixel('geo',item.city.value));
+    provinceFocusLines.setAttribute('viewBox','0 0 '+width+' '+height);
+    provinceFocusLines.innerHTML='';
+    const mobile=window.innerWidth<=640;
+    const leftInset=mobile?10:(document.body.classList.contains('left-panel-collapsed')?18:398);
+    const rightInset=mobile?10:(document.body.classList.contains('right-panel-collapsed')?18:398);
+    const topInset=mobile?12:18,bottomInset=mobile?12:58;
+    const cardW=154,cardH=70;
+    const placed=[];
+    const minX=leftInset,maxX=Math.max(leftInset,width-rightInset-cardW);
+    const minY=topInset,maxY=Math.max(topInset,height-bottomInset-cardH);
+    const overlaps=(rect,other,padding=8)=>
+      rect.x<other.x+other.w+padding&&rect.x+rect.w+padding>other.x&&
+      rect.y<other.y+other.h+padding&&rect.y+rect.h+padding>other.y;
+    const clampRect=(x,y)=>({
+      x:Math.max(minX,Math.min(maxX,x)),
+      y:Math.max(minY,Math.min(maxY,y)),
+      w:cardW,
+      h:cardH
+    });
+    const gridSlots=[];
+    const stepX=cardW+10,stepY=cardH+10;
+    for(let y=minY;y<=maxY+.5;y+=stepY){
+      for(let x=minX;x<=maxX+.5;x+=stepX) gridSlots.push(clampRect(x,y));
+    }
+    const usedGridSlots=new Set();
+    const linkSegments=[];
+    const segCross=(p1,p2,p3,p4)=>{
+      const d1=(p4.x-p3.x)*(p1.y-p3.y)-(p4.y-p3.y)*(p1.x-p3.x);
+      const d2=(p4.x-p3.x)*(p2.y-p3.y)-(p4.y-p3.y)*(p2.x-p3.x);
+      const d3=(p2.x-p1.x)*(p3.y-p1.y)-(p2.y-p1.y)*(p3.x-p1.x);
+      const d4=(p2.x-p1.x)*(p4.y-p1.y)-(p2.y-p1.y)*(p4.x-p1.x);
+      return ((d1>0&&d2<0)||(d1<0&&d2>0))&&((d3>0&&d4<0)||(d3<0&&d4>0));
+    };
+    const crossesExisting=(x1,y1,x2,y2)=>linkSegments.some(seg=>segCross(
+      {x:x1,y:y1},{x:x2,y:y2},{x:seg.x1,y:seg.y1},{x:seg.x2,y:seg.y2}
+    ));
+
+    // 用户固定的卡片位置优先：按容器百分比还原并预占矩形，自动布局避让
+    const pinnedCardRects={};
+    provinceFocusCities.forEach(item=>{
+      const pin=cardPins[item.city.cityKey];
+      if(!pin) return;
+      const rect=clampRect(pin.xPct*width,pin.yPct*height);
+      pinnedCardRects[item.city.cityKey]=rect;
+      placed.push(rect);
+    });
+
+    provinceFocusCities.forEach((item,index)=>{
+      const card=cards[index];
+      if(!card) return;
+      const point=points[index];
+      if(!point||!Number.isFinite(point[0])||!Number.isFinite(point[1])) return;
+      const bendSign=index%2===0?1:-1;
+      const pinned=pinnedCardRects[item.city.cityKey];
+      // 已摆放卡片：位置冻结（初始摆放与鼠标拖动是仅有的两种定位来源），布局绝不改写
+      const prevX=parseFloat(card.style.left),prevY=parseFloat(card.style.top);
+      const hasPrev=Number.isFinite(prevX)&&Number.isFinite(prevY);
+      const radii=mobile?[48,86,128,170]:[96,138,184,232,284];
+      const angles=[-35,35,-145,145,-75,75,-105,105,0,180];
+      const anchorOf=rect=>({
+        x:Math.max(rect.x,Math.min(point[0],rect.x+rect.w)),
+        y:Math.max(rect.y,Math.min(point[1],rect.y+rect.h))
+      });
+      const scoreRect=rect=>{
+        const a=anchorOf(rect);
+        return {rect,cross:crossesExisting(point[0],point[1],a.x,a.y),
+          dist:Math.hypot(a.x-point[0],a.y-point[1]),
+          move:hasPrev?Math.hypot(rect.x-prevX,rect.y-prevY):0};
+      };
+      let best;
+      if(hasPrev){
+        // 冻结：沿用卡片当前像素位置，仅重绘连线（布局永不移动已摆放卡片）
+        best={x:prevX,y:prevY,w:card.offsetWidth||cardW,h:card.offsetHeight||cardH};
+      }else if(pinned){
+        best=pinned;
+      }else{
+        const candidates=[];
+        radii.forEach(radius=>angles.forEach(angle=>{
+          const rad=angle*Math.PI/180;
+          candidates.push(clampRect(
+            point[0]+Math.cos(rad)*radius-(Math.cos(rad)<0?cardW:0),
+            point[1]+Math.sin(rad)*radius-cardH/2
+          ));
+        }));
+        best=candidates
+          .filter(rect=>!placed.some(other=>overlaps(rect,other)))
+          .map(scoreRect)
+          .sort((a,b)=>(a.cross?1:0)-(b.cross?1:0)||a.move-b.move||a.dist-b.dist)[0];
+        if(best) best=best.rect;
+        if(!best){
+          const rankedSlots=gridSlots
+            .map((rect,slotIndex)=>Object.assign(scoreRect(rect),{slotIndex}))
+            .filter(slot=>!usedGridSlots.has(slot.slotIndex)&&!placed.some(other=>overlaps(slot.rect,other)))
+            .sort((a,b)=>(a.cross?1:0)-(b.cross?1:0)||a.move-b.move||a.dist-b.dist);
+          if(rankedSlots.length){
+            best=rankedSlots[0].rect;
+            usedGridSlots.add(rankedSlots[0].slotIndex);
+          }
+        }
+        // 完全放不下时贴城市就近放置，避免遗留旧位置造成重叠
+        if(!best) best=clampRect(point[0]+12,point[1]-cardH-12);
+      }
+      if(hasPrev) placed.push(best);        // 冻结卡片矩形作为后续新卡片的避让障碍
+      else if(!pinned) placed.push(best);   // 自动摆放卡片预占矩形（固定卡片的矩形已在上方预占）
+      const segEndX=Math.max(best.x,Math.min(point[0],best.x+best.w));
+      const segEndY=Math.max(best.y,Math.min(point[1],best.y+best.h));
+      linkSegments.push({x1:point[0],y1:point[1],x2:segEndX,y2:segEndY});
+      card.classList.toggle('is-pinned',!!pinned);
+      card.dataset.bendSign=bendSign;
+      card.style.left=best.x+'px';
+      card.style.top=best.y+'px';
+
+      const line=document.createElementNS('http://www.w3.org/2000/svg','path');
+      line.setAttribute('data-city',item.city.cityKey);
+      line.setAttribute('d',provinceCardLinkPath(point,best,bendSign));
+      const dot=document.createElementNS('http://www.w3.org/2000/svg','circle');
+      dot.setAttribute('cx',point[0]);dot.setAttribute('cy',point[1]);dot.setAttribute('r','3');
+      provinceFocusLines.append(line,dot);
+    });
+    // 摆放完成 → 写入位置缓存：此后任何卡片重建（视图切换/省份点击/空白点击）都直接落回此位置
+    cards.forEach((c,i)=>{
+      const it=provinceFocusCities[i];
+      if(!it) return;
+      const px=parseFloat(c.style.left),py=parseFloat(c.style.top);
+      if(!Number.isFinite(px)||!Number.isFinite(py)) return;
+      cardPosCache[it.city.cityKey]={xPct:+(px/width).toFixed(4),yPct:+(py/height).toFixed(4)};
+    });
+    saveCardPosCache();
+    provinceFocusLastPoints=points;   // 建立平移检测基线：此后纯平移 → 卡片整体跟随
+    // 卡片位置确定后重算城市名标签（卡片异步渲染晚于标签计算，需按卡片矩形避让一次）
+    if(recomputeLabelPositions&&placed.length) recomputeLabelPositions();
   }
 
   /* ---------- Supabase 账号与云端同步 ---------- */
@@ -5985,6 +6838,29 @@
   let currentView='city'; // 'city' | 'province'
   let visitedProvinces=new Set();
 
+  function applyProvinceRegionStyles(){
+    if(!myChart) return;
+    const t=chartThemeColors();
+    const regions=Object.keys(PROVINCE_MAP).map(code=>{
+      const name=PROVINCE_MAP[code];
+      const selected=name===selectedProvinceName;
+      const provinceView=currentView==='province';
+      const visited=provinceView&&visitedProvinces.has(name);
+      return {
+        name,
+        itemStyle:{
+          areaColor:selected?t.selectedArea:(visited?t.visitedArea:t.unvisitedArea),
+          borderColor:selected?t.selectedBorder:(visited?t.visitedBorder:t.unvisitedBorder),
+          borderWidth:selected?2:(visited?1.35:.8),
+          shadowColor:selected?t.selectedShadow:(visited?t.visitedShadow:t.unvisitedShadow),
+          shadowBlur:selected?18:(visited?7:0)
+        },
+        label:selected?{show:true,color:t.selectedLabel,fontWeight:800}:undefined
+      };
+    });
+    myChart.setOption({geo:[{regions}]});
+  }
+
   function updateDashboard(){
     const litCity=citiesWithPhotos.size;
     const totalCity=cityPoints.length||0;
@@ -6008,11 +6884,19 @@
     // 省份进度
     provProgCurEl.textContent=litProv;
     provProgFillEl.style.width=(litProv/TOTAL_PROVINCES*100)+'%';
+    applyProvinceRegionStyles();
   }
 
   /* ---------- 省份视图切换 ---------- */
-  function setView(view){
-    if(view===currentView) return;
+  async function setView(view){
+    if(view===currentView){
+      if(view==='province'&&selectedProvinceName){
+        clearProvinceFocus();
+        await renderProvinceFocusCards('');
+      }
+      return;
+    }
+    if(selectedProvinceName||provinceFocusCities.length) clearProvinceFocus();
     currentView=view;
     // ===== 修复点：仅操作顶部地图切换按钮组，不影响右侧「列表/全部」按钮 =====
     // 原代码 document.querySelectorAll('.view-tab') 会选中所有按钮导致互斥高亮串扰
@@ -6021,36 +6905,10 @@
       t.classList.toggle('active',t.dataset.view===view);
     });
     if(!myChart) return;
-    if(view==='province'){
-      // 省份视图：已点亮省份的区域高亮金色
-      const provSet=new Set();
-      for(const cp of cityPoints){
-        if(citiesWithPhotos.has(cp.cityKey)){
-          const prov=provinceOf(cp.adcode);
-          if(prov) provSet.add(prov);
-        }
-      }
-      myChart.setOption({
-        geo:[{
-          regions:cityPoints.length?null:undefined,
-          itemStyle:{areaColor:'#050505',borderColor:'#475569'}
-        }]
-      });
-      // 通过 regions 给已点亮省份上色
-      const regions=Object.keys(PROVINCE_MAP).map(code=>{
-        const name=PROVINCE_MAP[code];
-        const lit=provSet.has(name);
-        return {name:name,itemStyle:{areaColor:lit?'rgba(56,189,248,.18)':'#050505',borderColor:lit?'#38bdf8':'#475569',borderWidth:lit?1.2:0.8}};
-      });
-      myChart.setOption({geo:[{regions:regions}]});
-    }else{
-      // 城市视图：恢复所有省份默认颜色
-      const regions=Object.keys(PROVINCE_MAP).map(code=>{
-        const name=PROVINCE_MAP[code];
-        return {name:name,itemStyle:{areaColor:'#050505',borderColor:'#475569',borderWidth:0.8}};
-      });
-      myChart.setOption({geo:[{regions:regions}]});
-    }
+    applyProvinceRegionStyles();
+    // 视图切换后刷新城市名显隐（currentView 在上方已更新，标签需按新视图规则重算）
+    updateScatterData();
+    if(view==='province') await renderProvinceFocusCards('');
   }
 
   // ===== 修复点：事件绑定限定到顶部地图切换按钮组，避免右侧按钮误触发 setView =====
@@ -6664,7 +7522,7 @@
       svg+='<g class="tl-node" data-idx="'+i+'">';
       // 圆点初始状态：第一个城市显示，其余隐藏（光带抵达后淡入）
       const dotClass=(i===0)?'tl-dot tl-dot-show':'tl-dot tl-dot-hidden';
-      svg+='<circle class="'+dotClass+'" cx="'+pos.x+'" cy="'+pos.y+'" r="5" fill="#38bdf8" stroke="#020202" stroke-width="2" />';
+      svg+='<circle class="'+dotClass+'" cx="'+pos.x+'" cy="'+pos.y+'" r="5" fill="#38bdf8" stroke="'+(isLightTheme()?'#ffffff':'#020202')+'" stroke-width="2" />';
       // 城市名（初始隐藏，光带抵达后淡入浮现）—— CSS .tl-label 默认 opacity:0
       svg+='<text class="tl-label" x="'+pos.x+'" y="'+ly.labelY+'" text-anchor="middle">'+city.name+'</text>';
       // 年月胶囊衬底：浅橙圆角矩形 + 年月文字（初始隐藏）
@@ -7233,7 +8091,7 @@
         svg+='</g>';
       }
       // 节点圆点（层级在照片之上，确保不被遮挡）
-      svg+='<circle class="tl-modal-dot" cx="'+pos.x+'" cy="'+pos.y+'" r="8" fill="#38bdf8" stroke="#020202" stroke-width="3" />';
+      svg+='<circle class="tl-modal-dot" cx="'+pos.x+'" cy="'+pos.y+'" r="8" fill="#38bdf8" stroke="'+(isLightTheme()?'#ffffff':'#020202')+'" stroke-width="3" />';
       // 城市名（防碰撞算法决定上/下方位）
       svg+='<text class="tl-modal-label" x="'+pos.x+'" y="'+ly.labelY+'" text-anchor="middle">'+city.name+'</text>';
       // 年月胶囊衬底：浅橙圆角矩形 + 年月文字
@@ -7594,6 +8452,7 @@
       // 刷新弯曲时间轴（收集已点亮城市并渲染迷你时间轴）
       timelineCities=await collectTimelineCities();
       renderMiniTimeline();
+      if(selectedProvinceName||currentView==='province') await renderProvinceFocusCards(selectedProvinceName);
     }catch(e){
       console.error(e);
       toast('本地数据读取失败：'+(e.message||e),true);
@@ -9125,9 +9984,7 @@
       const del=document.createElement('button');
       del.className='thumb-del'; del.innerHTML='&times;'; del.title='删除这张照片';
       del.addEventListener('click',e=>{ e.stopPropagation(); onDeletePhoto(p.id); });
-      const name=document.createElement('div');
-      name.className='thumb-name'; name.textContent=p.name||'';
-      card.append(ord,img,del,name);
+      card.append(ord,img,del);
       thumbsGrid.append(card);
     });
     bindDragSort();
@@ -9766,6 +10623,10 @@
         collapsed=!collapsed;
         applyState();
         try{localStorage.setItem(config.storageKey,collapsed?'1':'0');}catch(e){}
+        setTimeout(()=>{
+          if(myChart) myChart.resize();
+          requestProvinceFocusLayout();
+        },300);
       });
       applyState();
     });
