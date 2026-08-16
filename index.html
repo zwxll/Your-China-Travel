@@ -548,6 +548,7 @@
   }
   .legend .title{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.5px;margin-bottom:2px;}
   .legend .row{display:flex;align-items:center;gap:8px;}
+  .legend .op-hint{margin-left:2px;font-size:10px;color:var(--muted);opacity:.9;}
   .dot{width:12px;height:12px;border-radius:50%;display:inline-block;}
   .dot.blue{background:var(--blue);box-shadow:0 0 0 2px rgba(56,189,248,.25);}
   .dot.gold{
@@ -981,6 +982,8 @@
     background:rgba(20,28,38,.5);backdrop-filter:blur(4px);
   }
   .modal-overlay.show{display:flex;animation:fade .2s ease;}
+  /* 编辑弹窗叠加在城市详情页上层：详情页 z:10001、全屏网格 z:9999 均被覆盖，不跳转不退出当前页 */
+  .modal-overlay.over-att-detail{z-index:10010;}
   @keyframes fade{from{opacity:0}to{opacity:1}}
   /* =====【滚动隔离核心】弹窗打开时锁定底层所有可滚动容器，仅弹窗内部可滚动 ===== */
   body.modal-open .left-panel,
@@ -2147,6 +2150,15 @@
     display:grid;place-items:center;transition:.25s;
   }
   .att-detail-close:hover{background:rgba(255,255,255,.15);color:#fff;transform:rotate(90deg);}
+  /* 右上角"编辑城市信息"按钮：位于关闭按钮左侧，同排玻璃拟态风格 */
+  .att-detail-edit{
+    position:fixed;top:24px;right:84px;z-index:30;
+    height:42px;padding:0 18px;border-radius:21px;border:1px solid rgba(255,255,255,.18);
+    background:rgba(20,24,30,.5);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    font-size:14px;font-weight:600;cursor:pointer;color:rgba(255,255,255,.88);
+    display:inline-flex;align-items:center;gap:7px;transition:.25s;
+  }
+  .att-detail-edit:hover{background:rgba(255,255,255,.15);color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.3);}
   /* 城市主标题：大号衬线字体 + 象牙白暖渐变（柔和高级，贴合深色旅行回忆底色） */
   .att-detail-city-name{
     font-family:'Noto Serif SC','Source Han Serif SC',serif;
@@ -3532,8 +3544,8 @@
     </div>
     <div class="legend">
       <div class="title">图例</div>
-      <div class="row"><i class="dot blue"></i>未记录城市</div>
-      <div class="row"><i class="dot gold"></i>已记录城市</div>
+      <div class="row"><i class="dot blue"></i>未记录城市<span class="op-hint">单击编辑</span></div>
+      <div class="row"><i class="dot gold"></i>已记录城市<span class="op-hint">单击编辑 · 双击查看</span></div>
     </div>
     <!-- 左侧数据面板：城市视图统计 + 蛇形时间轴 -->
     <div class="left-panel" id="leftPanel">
@@ -3807,6 +3819,7 @@
   <div id="attDetailOverlay" class="att-detail-overlay">
     <!-- 底层：虚化城市封面背景（保留不动） -->
     <div class="att-detail-bg" id="attDetailBg"></div>
+    <button class="att-detail-edit" id="attDetailEditBtn" title="编辑城市信息">✎ 编辑城市信息</button>
     <button class="att-detail-close" id="attDetailCloseBtn" title="返回总览">✕</button>
 
     <!-- ===== 全局轻量化科技装饰层（z-index:5，介于背景与内容之间，不遮挡主体）===== -->
@@ -4780,7 +4793,7 @@
         cityDescInput=$('cityDescInput'), cityDescSaveBtn=$('cityDescSaveBtn');
   // 景点详情页元素
   const attDetailOverlay=$('attDetailOverlay'), attDetailCityName=$('attDetailCityName'),
-        attDetailBody=$('attDetailBody'), attDetailCloseBtn=$('attDetailCloseBtn'),
+        attDetailBody=$('attDetailBody'), attDetailCloseBtn=$('attDetailCloseBtn'), attDetailEditBtn=$('attDetailEditBtn'),
         attDetailBg=$('attDetailBg'), attDetailDesc=$('attDetailDesc'),
         attGridTitle=$('attGridTitle'),
         attEditOverlay=$('attEditOverlay'), attEditPanel=$('attEditPanel');
@@ -5034,7 +5047,7 @@
     }:{
       area:'#050505',border:'#475569',
       emArea:'#0a0f1a',emBorder:'#64748b',
-      label:'#94a3b8',labelShadow:'transparent',emLabel:'#f8fafc',emLabelShadow:'rgba(248,250,252,.25)',
+      label:'#38bdf8',labelShadow:'rgba(0,0,0,.9)',emLabel:'#f8fafc',emLabelShadow:'rgba(248,250,252,.25)',
       markerBorder:'#020202',cityLabel:'#38bdf8',cityLabelShadow:'rgba(0,0,0,.9)',
       markerVisited:'#38bdf8',markerVisitedShadow:'rgba(56,189,248,.6)',
       markerNormal:'#38bdf8',markerNormalHover:'#0ea5e9',
@@ -5187,7 +5200,7 @@
             formatter:p=>provinceShort(p.name),
             color:tc.label,
             fontSize:13,
-            fontWeight:600,
+            fontWeight:700,
             lineHeight:18,
             textShadowColor:tc.labelShadow,
             textShadowBlur:3
@@ -5448,7 +5461,7 @@
     });
     const wasDragMove=()=>zrWasDrag;
 
-    // 点击散点 → 打开城市弹窗
+    // 点击散点 → 打开城市编辑弹窗；城市详情页（双击进入）右上角提供"编辑城市信息"入口
     // 【单击/双击冲突解决】已点亮城市延迟 250ms 打开弹窗，为双击跳转留出窗口；
     // 未点亮城市立即响应单击（无双击需求）
     let pendingClickTimer=null;
@@ -8459,6 +8472,13 @@
   // 景点详情页：关闭按钮 + 点击空白处关闭
   attDetailCloseBtn.addEventListener('click',closeAttractionDetail);
   attDetailOverlay.addEventListener('click',e=>{ if(e.target===attDetailOverlay) closeAttractionDetail(); });
+  // 城市信息页右上角"编辑城市信息"：编辑弹窗直接叠加在详情页上层，不关闭不跳转
+  attDetailEditBtn.addEventListener('click',()=>{
+    const city=attDetailCity;
+    if(!city) return;
+    modalOverlay.classList.add('over-att-detail');
+    openCityModal(city);
+  });
 
   /* ---------- 状态刷新 ---------- */
   async function refreshState(){
@@ -8550,7 +8570,7 @@
       attGridTitle.innerHTML='';
       renderAttractionDetailList(attractions);
       // ===== 新增：填充城市基础数据玻璃信息栏（4项实时数据） =====
-      fillCityInfoBar(meta,attractions);
+      fillCityInfoBar(meta,attractions,city.cityKey);
       // ===== 新增：初始化角落漂浮粒子（每次打开重置） =====
       initTechParticles();
       // ===== 新增：GSAP timeline 入场动画（分层渲染，不卡顿） =====
@@ -8566,6 +8586,14 @@
    */
   function closeAttractionDetail(){
     attDetailOverlay.classList.remove('show');
+    // 终止详情页残留动画：12 个无限循环粒子 tween + 入场时间线若不清除会持续占用主线程
+    if(window.gsap){
+      gsap.killTweensOf('.att-tech-particle');
+      gsap.killTweensOf(['#attDetailCityName','#attDescWrap','#attInfoBar','.att-tech-side']);
+      gsap.killTweensOf('#attDetailBody .att-card');
+    }
+    const pc=document.getElementById('attTechParticles');
+    if(pc) pc.innerHTML='';
     attDetailCity=null;
     attDetailMeta=null;
     attDetailCoverUrl='';
@@ -8576,7 +8604,7 @@
   /* ================================================================ */
   /* ===== 新增：城市基础数据玻璃信息栏填充（游玩年月/星级/景点数/照片数）===== */
   /* ================================================================ */
-  function fillCityInfoBar(meta,attractions){
+  function fillCityInfoBar(meta,attractions,cityKey){
     const elMonth=document.getElementById('attInfoMonth');
     const elRating=document.getElementById('attInfoRating');
     const elCount=document.getElementById('attInfoCount');
@@ -8595,10 +8623,9 @@
     }
     // 景点总数
     if(elCount){elCount.textContent=(attractions||[]).length+' 个';}
-    // 相册影像数（该城市所有景点合计照片总数）
+    // 相册影像数（该城市相册全部照片总数，含未挂到景点的照片，而非仅景点照片合计）
     if(elPhotos){
-      let total=0;
-      (attractions||[]).forEach(a=>{total+=((a&&a.photos)?a.photos.length:0);});
+      const total=(cityKey&&photoCountByCity&&photoCountByCity.has(cityKey))?photoCountByCity.get(cityKey):0;
       elPhotos.textContent=total+' 张';
     }
   }
@@ -8638,6 +8665,7 @@
   function initTechParticles(){
     const container=document.getElementById('attTechParticles');
     if(!container) return;
+    if(window.gsap) gsap.killTweensOf('.att-tech-particle');   // 先终止旧粒子的无限循环 tween，防止累积
     container.innerHTML='';
     // 生成 12 个随机位置粒子，用 GSAP 做缓慢漂浮动画
     for(let i=0;i<12;i++){
@@ -9329,10 +9357,18 @@
     renderCityCards();
   }
   function closeModal(){
+    const wasOverDetail=modalOverlay.classList.contains('over-att-detail');
     modalOverlay.classList.remove('show');
+    modalOverlay.classList.remove('over-att-detail');
     currentCity=null;
     /* =====【滚动隔离核心】弹窗关闭时恢复底层页面滚动 ===== */
     document.body.classList.remove('modal-open');
+    // 编辑弹窗叠加在详情页时：关闭后原地刷新详情数据（星级/年月/景点/相册数已变更）；
+    // 若城市已被"取消点亮"，详情页随之关闭
+    if(wasOverDetail&&attDetailOverlay.classList.contains('show')&&attDetailCity){
+      if(photoCountByCity&&photoCountByCity.has(attDetailCity.cityKey)) openAttractionDetail(attDetailCity);
+      else closeAttractionDetail();
+    }
   }
 
   /* =====【取消点亮】清空当前城市所有上传编辑内容 =====
@@ -10584,17 +10620,19 @@
   });
   // ===== 【新增】返回上一页按钮：点击切回列表视图，恢复进入「全部」前的上一个浏览状态 =====
   const fsBackBtn=$('fsBackBtn');
-  fsBackBtn.addEventListener('click',()=>{
-    if(!document.body.classList.contains('fullscreen-grid')) return;  // 仅全屏模式可点击
-    // 切回列表视图（与 ESC 退出全屏逻辑一致，恢复三栏布局）
+  // 退出全屏网格模式：恢复三栏布局（返回按钮 / 详情页编辑入口共用）
+  // resizeDelay：地图 resize 延时，编辑入口传大值避开弹窗淡入动画
+  function exitFullscreenGrid(resizeDelay=100){
+    if(!document.body.classList.contains('fullscreen-grid')) return;
     document.body.classList.remove('fullscreen-grid');
     viewTabsEl.querySelectorAll('.view-tab').forEach(t=>t.classList.remove('active'));
     viewTabsEl.querySelector('.view-tab[data-view="list"]').classList.add('active');
     currentCardView='list';
     listViewEl.style.display=''; gridViewEl.style.display='none';
     removeFab();
-    if(myChart) setTimeout(()=>myChart.resize(),100);
-  });
+    if(myChart) setTimeout(()=>myChart.resize(),resizeDelay);
+  }
+  fsBackBtn.addEventListener('click',exitFullscreenGrid);
   // 浮动添加按钮
   function addFab(){
     if(document.querySelector('.fs-fab')) return;
