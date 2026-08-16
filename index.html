@@ -97,29 +97,30 @@
 
   /* ===== 深色/浅色主题切换：body.light-theme 覆盖全局变量（默认深色不变）===== */
   body.light-theme{
-    --ink:#1f2a37;              /* 主文字：深墨蓝（浅色下用深字）*/
-    --muted:#5b6b7c;            /* 次要文字：中灰蓝 */
-    --accent:#0284c7;           /* 浅色下加深青蓝保证对比度 */
-    --accent-d:#0369a1;
-    --accent-l:#0ea5e9;
-    --blue:#0284c7;--blue-d:#0369a1;
+    --ink:#1f2a37;              /* 主文字：深墨蓝（v1.2 配色）*/
+    --muted:#7a8694;            /* 次要文字：中灰 */
+    --accent:#e8943c;           /* 主强调：柔和橘 */
+    --accent-d:#d97a1f;
+    --accent-l:#f5a623;
+    --blue:#3d7fb8;--blue-d:#2b6cb0;   /* 中蓝 */
     --card:#ffffff;
-    --line:rgba(31,42,55,.12);
-    --line-2:rgba(31,42,55,.07);
-    --bg1:#f5f7fa;--bg2:#e9eef5;
-    --sea1:#dbe9f6;--sea2:#c9dcf0;
-    --shadow:0 8px 28px rgba(31,42,55,.10);
-    --shadow-sm:0 3px 12px rgba(31,42,55,.07);
-    --shadow-hover:0 14px 36px rgba(31,42,55,.14);
+    --line:#e3e9f0;
+    --line-2:rgba(227,233,240,.6);
+    --bg1:#eaf1f8;--bg2:#d4e3f3;
+    --sea1:#bed8ee;--sea2:#aacde7;   /* 海洋底色：整体调浅一档，保持小幅渐变 */
+    --shadow:0 14px 40px rgba(31,42,55,.18);
+    --shadow-sm:0 4px 14px rgba(31,42,55,.10);
+    --shadow-hover:0 18px 46px rgba(31,42,55,.22);
   }
   /* 深色硬编码表面 → 浅色修正 */
-  body.light-theme header{background:rgba(255,255,255,.88);box-shadow:0 2px 10px rgba(31,42,55,.05);}
+  body.light-theme header{background:rgba(255,255,255,.82);box-shadow:0 2px 10px rgba(31,42,55,.04);}
+  /* 浅色标题闪光：深墨底 + 橙色高光带扫过（v1.2 墨/橙配色），动画复用深色主题的扫光，流畅不卡顿 */
   body.light-theme .brand h1{
-    background-image:linear-gradient(135deg,#0ea5e9 0%,#0ea5e9 42%,#7dd3fc 50%,#0ea5e9 58%,#0ea5e9 100%);
+    background-image:linear-gradient(135deg,#1f2a37 0%,#1f2a37 42%,#e8943c 50%,#1f2a37 58%,#1f2a37 100%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
   }
   body.light-theme .brand .sub{
-    background-image:linear-gradient(135deg,#0284c7 0%,#0284c7 42%,#38bdf8 50%,#0284c7 58%,#0284c7 100%);
+    background-image:linear-gradient(135deg,#7a8694 0%,#7a8694 42%,#aab6c4 50%,#7a8694 58%,#7a8694 100%);
     -webkit-background-clip:text;background-clip:text;color:transparent;
   }
   body.light-theme .stat{background:#ffffff;}
@@ -135,68 +136,96 @@
   body.light-theme .attraction-item,body.light-theme .attraction-name-input,
   body.light-theme .attraction-date-input,body.light-theme .attraction-notes,
   body.light-theme .attraction-upload-btn{background:#ffffff;}
-  body.light-theme .panel-collapse-toggle:active{background:#e2e8f0;}
+  body.light-theme .panel-collapse-toggle:active{background:#e8edf3;}
   body.light-theme .map-search #input-mask{background:linear-gradient(90deg,transparent,#ffffff);}
-  body.light-theme .modal-landmark{background:linear-gradient(90deg,#ffffff,rgba(255,255,255,0));}
-  body.light-theme .grid-card-cover-placeholder{background:linear-gradient(135deg,#e2ecf7,#cfe0f0);color:#64748b;}
+  body.light-theme .modal-landmark{background:linear-gradient(90deg,#fff8f0,rgba(255,248,240,0));}
+  body.light-theme .grid-card-cover-placeholder{background:linear-gradient(135deg,#e8d5b8,#d4c9b8);color:#8a7e6a;}
   body.light-theme .tl-anim-hint{color:var(--accent-d);background:rgba(255,255,255,.92);}
   body.light-theme .tl-btn{background:rgba(255,255,255,.72);border:1px solid var(--line);}
-  body.light-theme #fsBackBtn{color:#0c4a6e;background:rgba(255,255,255,.72);}
+  body.light-theme #fsBackBtn{color:var(--accent-d);background:rgba(255,255,255,.72);}
   body.light-theme.fullscreen-grid #cityCardsPanel > div:first-child{background:#ffffff;}
   body.light-theme.fullscreen-grid .fs-province-filter{background:#ffffff;}
   body.light-theme.fullscreen-grid .fs-province-filter .prov-pill.active{background:#ffffff;color:var(--accent-d);}
   body.light-theme.fullscreen-grid .grid-card .fs-badge{background:rgba(255,255,255,.92);color:var(--accent-d);}
-  /* 地图上的省份卡片与连线：浅色下改为白底深字 */
+  /* 地图上的省份卡片与连线：浅色下白底深字 + 柔和橘强调 */
   body.light-theme .province-map-card{
-    background:rgba(255,255,255,.97);border-color:rgba(2,132,199,.30);
+    background:rgba(255,255,255,.97);border-color:rgba(232,148,60,.45);
     box-shadow:0 14px 34px rgba(31,42,55,.16);
   }
-  body.light-theme .province-map-card:hover{border-color:rgba(2,132,199,.55);box-shadow:0 18px 42px rgba(31,42,55,.20);}
-  body.light-theme .province-map-card-image,body.light-theme .province-map-card-image-empty{background:#e2ecf7;}
+  body.light-theme .province-map-card:hover{border-color:rgba(232,148,60,.75);box-shadow:0 18px 42px rgba(31,42,55,.20);}
+  body.light-theme .province-map-card-image,body.light-theme .province-map-card-image-empty{background:#f0f3f7;}
   body.light-theme .province-map-card-name{color:#1f2a37;}
-  body.light-theme .province-map-card-rating{color:#0369a1;}
-  body.light-theme .province-map-card-intro{color:#5b6b7c;}
-  body.light-theme .province-focus-more{background:rgba(255,255,255,.94);color:#0c4a6e;border-color:rgba(2,132,199,.28);}
-  body.light-theme .province-focus-lines path{stroke:#0284c7;}
-  body.light-theme .province-focus-lines circle{fill:#0284c7;filter:drop-shadow(0 0 4px rgba(2,132,199,.35));}
+  body.light-theme .province-map-card-rating{color:#d97a1f;}
+  body.light-theme .province-map-card-intro{color:#7a8694;}
+  body.light-theme .province-focus-more{background:rgba(255,255,255,.94);color:var(--accent-d);border-color:rgba(232,148,60,.45);}
+  /* 地图卡片连线：两主题统一青蓝（对齐提交版地图配色）*/
   /* 全屏城市卡片视图（"全部"展开）：整页容器/筛选胶囊/视图切换轨道 */
-  body.light-theme.fullscreen-grid .dash-panel{background:#f5f7fa;}
-  body.light-theme .view-tabs,body.light-theme.fullscreen-grid .view-tabs{background:#e6ebf2;}
+  body.light-theme.fullscreen-grid .dash-panel{background:#f0f2f5;}
+  body.light-theme .view-tabs,body.light-theme.fullscreen-grid .view-tabs{background:#f0f2f5;}
   body.light-theme.fullscreen-grid .fs-province-filter .prov-pill{background:#ffffff;color:#5b6b7c;border-color:transparent;}
-  body.light-theme.fullscreen-grid .fs-province-filter .prov-pill:hover:not(.active){background:#eef3f9;color:#1f2a37;text-shadow:none;}
+  body.light-theme.fullscreen-grid .fs-province-filter .prov-pill:hover:not(.active){background:#e8edf3;color:#1f2a37;text-shadow:none;}
   /* 左右面板折叠箭头按钮 */
   body.light-theme .panel-collapse-toggle{
     background:rgba(255,255,255,.96);color:var(--accent-d);
     box-shadow:0 2px 10px rgba(31,42,55,.10);
   }
-  body.light-theme .panel-collapse-toggle:hover{background:#f0f5fb;}
-  /* Toast 提示条（底部居中提示）*/
-  body.light-theme .toast{background:rgba(255,255,255,.98);color:#1f2a37;border-color:rgba(2,132,199,.22);}
-  body.light-theme .toast-title{color:#1f2a37;}
-  body.light-theme .toast-message{color:#5b6b7c;}
+  body.light-theme .panel-collapse-toggle:hover{background:#f7f9fc;}
+  /* Toast 提示条：v1.2 深底白字风格 */
+  body.light-theme .toast{background:rgba(20,28,38,.92);color:#ffffff;border-color:transparent;}
+  body.light-theme .toast-title{color:#ffffff;}
+  body.light-theme .toast-message{color:rgba(255,255,255,.78);}
   body.light-theme .toast-action,body.light-theme .toast-close{
-    color:#0369a1;background:rgba(2,132,199,.08);border-color:rgba(2,132,199,.30);
+    color:#ffffff;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28);
   }
-  body.light-theme .toast-action:hover,body.light-theme .toast-close:hover{background:rgba(2,132,199,.16);}
-  body.light-theme .toast.error{background:#fef2f2;border-color:rgba(220,38,38,.25);}
-  body.light-theme .toast.error .toast-message{color:#b91c1c;}
+  body.light-theme .toast-action:hover,body.light-theme .toast-close:hover{background:rgba(255,255,255,.22);}
+  body.light-theme .toast.error{background:rgba(120,20,20,.95);}
+  body.light-theme .toast.error .toast-message{color:#fecaca;}
+  /* 标签胶囊：v1.2 浅色语义色 */
+  body.light-theme .tag-pill.scenic{background:#e8f5e9;color:#2e7d32;}
+  body.light-theme .tag-pill.food{background:#fff3e0;color:#e65100;}
+  body.light-theme .tag-pill.other{background:#e3f2fd;color:#1565c0;}
+  /* 地图加载层与弹窗头部：v1.2 */
+  body.light-theme .map-loader{background:rgba(238,243,248,.7);}
+  body.light-theme .modal-head{background:linear-gradient(135deg,#fff8f0,#ffffff);}
+  body.light-theme.fullscreen-grid .grid-card .fs-badge.no-photos{color:#9aa5b1;}
   /* 滚动条 */
-  body.light-theme ::-webkit-scrollbar-thumb{background:#c3cedb !important;}
+  body.light-theme ::-webkit-scrollbar-thumb{background:#d4dde8 !important;}
+  /* 图例圆点与进度条填充：浅色下柔和蓝灰（未记录）/ 橙（已记录），替代深色主题的亮青蓝 */
+  body.light-theme .dot.blue{box-shadow:0 0 0 2px rgba(255,255,255,.85);}
+  body.light-theme .dot.gold{box-shadow:0 0 8px rgba(232,148,60,.75);}
+  body.light-theme .prog-fill.blue{background:linear-gradient(90deg,#3d7fb8,#2b6cb0);}
+  /* 星星评分与旅行轨迹曲线：浅色下橙色强调替代亮青蓝 */
+  body.light-theme .star-rating .star.active{color:#f5a623;}
+  body.light-theme .star-rating .star:hover{color:#f5c46a;}
+  body.light-theme .star-display .star{color:#f5a623;}
+  body.light-theme .tl-curve,body.light-theme .tl-seg{stroke:#e8943c;}
+  /* 搜索过滤/清除按钮：浅色下白底灰蓝图标（对齐 v1.2 .icon-btn 规范）*/
+  body.light-theme .map-search #filter-icon,body.light-theme .map-search .map-search-clear{
+    background:#ffffff;color:#7a8694;border-color:#e3e9f0;
+  }
+  body.light-theme .map-search .map-search-clear:hover{background:#f7f9fc;color:#1f2a37;}
+  body.light-theme .attraction-upload-btn{background:#ffffff;color:#d97a1f;border-color:#d4dde8;}
+  body.light-theme .map-search-item-icon.att{background:linear-gradient(135deg,#e8943c,#d97a1f);}
+  body.fullscreen-grid .grid-card .fs-badge.has-photos{color:var(--accent);}
+  /* VP 标题基色 / 时间线按钮 / 全屏封面占位：浅色下柔和替代亮青蓝 */
+  body.light-theme .vp-title{color:#7a8694;text-shadow:none;}
+  body.light-theme .tl-btn{background:rgba(255,255,255,.85);color:#d97a1f;border:1px solid var(--line);}
+  body.light-theme .grid-card-cover{background:linear-gradient(135deg,#e8d5b8,#d4c9b8);}
   /* 其他遗漏深色表面：全屏视图整页背景/统计单元格/弹窗遮罩/关闭按钮/图标按钮 */
-  body.light-theme.fullscreen-grid #mapWrap{background:#f5f7fa;}
+  body.light-theme.fullscreen-grid #mapWrap{background:#f0f2f5;}
   body.light-theme .stat-cell{background:#ffffff;}
-  body.light-theme .prog-bar{background:#e2e8f0;}   /* 进度条轨道：深黑 → 浅灰 */
+  body.light-theme .prog-bar{background:#e3e9f0;}   /* 进度条轨道：深黑 → 浅灰蓝（v1.2）*/
   body.light-theme .modal-overlay{background:rgba(31,42,55,.28);}
-  body.light-theme .icon-btn:hover{background:#f0f5fb;}
+  body.light-theme .icon-btn:hover{background:#f7f9fc;}
   body.light-theme .timeline-modal-head .tl-close{background:#ffffff;border:1px solid var(--line);}
   body.light-theme .timeline-modal-head .tl-close:hover{background:#eef3f9;}
   /* 城市详情弹窗：星级行/简介行/底部操作栏/简介输入框/空星/标签添加按钮 */
   body.light-theme .rating-row,body.light-theme .city-desc-row{background:#ffffff;}
-  body.light-theme .city-desc-input{background:#f5f8fb;border-color:rgba(31,42,55,.14);color:#1f2a37;}
-  body.light-theme .city-desc-input:focus{border-color:rgba(2,132,199,.5);}
-  body.light-theme .modal-foot{background:rgba(245,247,250,.96);}
-  body.light-theme .star-rating .star{color:#b6c2d0;}
-  body.light-theme .star-display .star.empty{color:#b6c2d0;}
+  body.light-theme .city-desc-input{background:#f9fafb;border-color:#e3e9f0;color:#1f2a37;}
+  body.light-theme .city-desc-input:focus{border-color:rgba(232,148,60,.55);}
+  body.light-theme .modal-foot{background:#fbfcfe;}
+  body.light-theme .star-rating .star{color:#ddd;}
+  body.light-theme .star-display .star.empty{color:#ddd;}
   body.light-theme .tag-add-row .btn{background:#ffffff;}
   /* 主题切换按钮（与账号按钮同款胶囊风格）*/
   .theme-toggle-btn{
@@ -1074,6 +1103,11 @@
     box-shadow:0 6px 14px rgba(232,148,60,.35);
   }
   .btn.primary:hover{filter:brightness(1.05);transform:translateY(-1px);}
+  /* 取消点亮：深色=暗玫红实底；浅色=浅玫瑰底玫红字（适配 v1.2 柔和浅色界面）*/
+  #unlightBtn{background:#9f1239;color:#ffffff;border:1px solid #be123c;}
+  #unlightBtn:hover{background:#be123c;}
+  body.light-theme #unlightBtn{background:#fdf0f2;color:#9f1239;border:1px solid rgba(159,18,57,.30);}
+  body.light-theme #unlightBtn:hover{background:#f9dfe5;}
   .hint{font-size:12px;color:var(--muted);}
 
   /* 灯箱 */
@@ -3732,7 +3766,7 @@
           <input id="fileInput" type="file" accept="image/*" multiple hidden />
         </label>
         <!-- 【取消点亮】清空当前城市所有上传编辑内容（照片/景点/标签/封面/星级/年月） -->
-        <button class="btn" id="unlightBtn" style="background:#9f1239;color:#ffffff;border:1px solid #be123c;">取消点亮</button>
+        <button class="btn" id="unlightBtn">取消点亮</button>
         <span class="hint">支持多张同时上传 · 拖拽照片可交换位置 · 本地永久保存</span>
       </div>
     </div>
@@ -4619,19 +4653,22 @@
   // gaussian 衰减，radius=110px。颜色 RGB 插值形成"光斑跟随鼠标"效果。
   (function(){
     const VP_RADIUS=110, VP_FROM=400, VP_TO=800;
-    // 颜色插值：基色 #38bdf8 (56,189,248) → 高光色 #e0f7ff (224,247,255)
-    const VP_BASE=[56,189,248], VP_GLOW=[224,247,255];
+    // 颜色插值：深色 基色#38bdf8→高光#e0f7ff；浅色 基色#46708f→高光#5eead4（teal，白底可见）
+    const VP_DARK_BASE=[56,189,248], VP_DARK_GLOW=[224,247,255];
+    const VP_LIGHT_BASE=[122,134,148], VP_LIGHT_GLOW=[245,166,35];
     let mx=-9999, my=-9999;
     let vpMouseDirty=false;        // 【性能优化】鼠标移动才标记 dirty，未移动时跳过全部计算
     let vpCharCache=[];            // 【性能优化】缓存字符中心坐标，避免每帧 getBoundingClientRect 强制重排
     let vpCacheValid=false;
     // Gaussian 衰减：距离越近影响越大
     function gauss(d,r){return Math.exp(-(d*d)/(2*r*r));}
-    // RGB 颜色插值：t=0 返回基色，t=1 返回高光色
+    // RGB 颜色插值：t=0 返回基色，t=1 返回高光色（按当前主题取端点，切换主题即时生效）
     function lerpColor(t){
-      const r=Math.round(VP_BASE[0]+(VP_GLOW[0]-VP_BASE[0])*t);
-      const g=Math.round(VP_BASE[1]+(VP_GLOW[1]-VP_BASE[1])*t);
-      const b=Math.round(VP_BASE[2]+(VP_GLOW[2]-VP_BASE[2])*t);
+      const light=document.body.classList.contains('light-theme');
+      const base=light?VP_LIGHT_BASE:VP_DARK_BASE, glow=light?VP_LIGHT_GLOW:VP_DARK_GLOW;
+      const r=Math.round(base[0]+(glow[0]-base[0])*t);
+      const g=Math.round(base[1]+(glow[1]-base[1])*t);
+      const b=Math.round(base[2]+(glow[2]-base[2])*t);
       return 'rgb('+r+','+g+','+b+')';
     }
     // 【性能优化】仅在 resize 时重算字符中心坐标（标题在固定面板内，地图拖拽时位置不变）
@@ -4985,6 +5022,8 @@
       emArea:'#d9e7f5',emBorder:'#64748b',
       label:'#475569',labelShadow:'rgba(255,255,255,.95)',emLabel:'#1e293b',emLabelShadow:'rgba(255,255,255,.9)',
       markerBorder:'#ffffff',cityLabel:'#e11d48',cityLabelShadow:'rgba(255,255,255,.95)',
+      markerVisited:'#38bdf8',markerVisitedShadow:'rgba(56,189,248,.6)',
+      markerNormal:'#3d7fb8',markerNormalHover:'#2b6cb0',
       normalLabel:'#4338ca',normalLabelShadow:'rgba(255,255,255,.9)',
       unvisitedArea:'#e9eef5',unvisitedBorder:'#94a3b8',unvisitedShadow:'rgba(31,42,55,.08)',
       visitedArea:'rgba(2,132,199,.18)',visitedBorder:'#38bdf8',
@@ -4997,6 +5036,8 @@
       emArea:'#0a0f1a',emBorder:'#64748b',
       label:'#94a3b8',labelShadow:'transparent',emLabel:'#f8fafc',emLabelShadow:'rgba(248,250,252,.25)',
       markerBorder:'#020202',cityLabel:'#38bdf8',cityLabelShadow:'rgba(0,0,0,.9)',
+      markerVisited:'#38bdf8',markerVisitedShadow:'rgba(56,189,248,.6)',
+      markerNormal:'#38bdf8',markerNormalHover:'#0ea5e9',
       normalLabel:'#a8bfd4',normalLabelShadow:'rgba(0,0,0,.9)',
       unvisitedArea:'#050505',unvisitedBorder:'#475569',unvisitedShadow:'rgba(120,100,70,.12)',
       visitedArea:'rgba(56,189,248,.21)',visitedBorder:'#38bdf8',
@@ -5031,8 +5072,8 @@
         label:{color:t.label}
       }],
       series:[
-        {itemStyle:{borderColor:t.markerBorder},emphasis:{itemStyle:{borderColor:t.markerBorder}}},  // 系列0 城市
-        {label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow}},                                 // 系列1 已记录（标签跟随主题）
+        {itemStyle:{color:t.markerNormal,borderColor:t.markerBorder},emphasis:{itemStyle:{color:t.markerNormalHover,borderColor:t.markerBorder}}},  // 系列0 城市
+        {itemStyle:{color:t.markerVisited,shadowColor:t.markerVisitedShadow},label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow}},   // 系列1 已记录（点+标签跟随主题）
         {label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow}}                               // 系列2 已记录城市名
       ]
     });
@@ -5104,12 +5145,12 @@
               html+='<div style="color:'+(isLightTheme()?'#0284c7':'#38bdf8')+';font-weight:600">● 已记录 '+n+' 张照片';
               if(n>MAX_THUMBS) html+='（预览前'+MAX_THUMBS+'张）';
               html+='</div>';
-              html+='<div style="color:'+(isLightTheme()?'#5b6b7c':'#9aa5b1')+';margin-top:2px;font-size:13px">点击查看全部照片</div>';
+              html+='<div style="color:'+(isLightTheme()?'#9aa5b1':'#9aa5b1')+';margin-top:2px;font-size:13px">点击查看全部照片</div>';
               return html;
             }
             // 未记录城市：原始尺寸
             let html='<div style="font-weight:700;font-size:13px;margin-bottom:4px;text-shadow:0 0 8px rgba(248,250,252,.25)">'+p.data.name+'</div>';  /* 【提亮】未记录城市名发光 */
-            html+='<div style="color:'+(isLightTheme()?'#0284c7':'#38bdf8')+';margin-top:2px">点击标记，记录你的照片</div>';
+            html+='<div style="color:'+(isLightTheme()?'#3d7fb8':'#38bdf8')+';margin-top:2px">点击标记，记录你的照片</div>';
             return html;
           }
           return p.name||'';
@@ -5158,11 +5199,11 @@
         {
           name:'城市',type:'scatter',coordinateSystem:'geo',data:[],
           symbolSize:p=>(isCapital(p)?13:7)*markerScale(),z:5,
-          itemStyle:{color:'#38bdf8',opacity:.9,borderColor:tc.markerBorder,borderWidth:1.2},
+          itemStyle:{color:tc.markerNormal,opacity:.9,borderColor:tc.markerBorder,borderWidth:1.2},
           label:{show:false},
           emphasis:{
             scale:1.8,
-            itemStyle:{color:'#0ea5e9',borderColor:tc.markerBorder,borderWidth:1.5},
+            itemStyle:{color:tc.markerNormalHover,borderColor:tc.markerBorder,borderWidth:1.5},
             label:{show:false}
           }
         },
@@ -5170,7 +5211,7 @@
           name:'已记录',type:'effectScatter',coordinateSystem:'geo',data:[],
           symbolSize:p=>(isCapital(p)?20:15)*markerScale(),z:6,showEffectOn:'render',
           rippleEffect:{brushType:'stroke',scale:4.2,period:4.5},
-          itemStyle:{color:'#38bdf8',shadowBlur:14,shadowColor:'rgba(56,189,248,.6)'},
+          itemStyle:{color:tc.markerVisited,shadowBlur:14,shadowColor:tc.markerVisitedShadow},
           // 已记录城市标签：默认缩小状态下不显示，放大到阈值后显示并自动错开
           label:{
             show:false,
@@ -7498,9 +7539,9 @@
     let svg='<svg viewBox="0 0 '+params.w+' '+h+'" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;display:block;">';
     // 渐变定义保留（全屏弹窗大图仍需要）
     svg+='<defs><linearGradient id="tlGrad" x1="0%" y1="0%" x2="100%" y2="0%">';
-    svg+='<stop offset="0%" stop-color="#38bdf8" stop-opacity="0.5"/>';
-    svg+='<stop offset="50%" stop-color="#38bdf8" stop-opacity="0.8"/>';
-    svg+='<stop offset="100%" stop-color="#7dd3fc" stop-opacity="0.5"/>';
+    svg+='<stop offset="0%" stop-color="'+(isLightTheme()?'#e8943c':'#38bdf8')+'" stop-opacity="0.5"/>';
+    svg+='<stop offset="50%" stop-color="'+(isLightTheme()?'#e8943c':'#38bdf8')+'" stop-opacity="0.8"/>';
+    svg+='<stop offset="100%" stop-color="'+(isLightTheme()?'#f5c46a':'#7dd3fc')+'" stop-opacity="0.5"/>';
     svg+='</linearGradient></defs>';
     // ===== 初始状态：完全隐藏连接线，不预渲染任何线段 =====
     // 隐藏的完整曲线（保留占位，初始 opacity:0，点击动画后也不显示此曲线）
@@ -7522,7 +7563,7 @@
       svg+='<g class="tl-node" data-idx="'+i+'">';
       // 圆点初始状态：第一个城市显示，其余隐藏（光带抵达后淡入）
       const dotClass=(i===0)?'tl-dot tl-dot-show':'tl-dot tl-dot-hidden';
-      svg+='<circle class="'+dotClass+'" cx="'+pos.x+'" cy="'+pos.y+'" r="5" fill="#38bdf8" stroke="'+(isLightTheme()?'#ffffff':'#020202')+'" stroke-width="2" />';
+      svg+='<circle class="'+dotClass+'" cx="'+pos.x+'" cy="'+pos.y+'" r="5" fill="'+(isLightTheme()?'#e8943c':'#38bdf8')+'" stroke="'+(isLightTheme()?'#ffffff':'#020202')+'" stroke-width="2" />';
       // 城市名（初始隐藏，光带抵达后淡入浮现）—— CSS .tl-label 默认 opacity:0
       svg+='<text class="tl-label" x="'+pos.x+'" y="'+ly.labelY+'" text-anchor="middle">'+city.name+'</text>';
       // 年月胶囊衬底：浅橙圆角矩形 + 年月文字（初始隐藏）
@@ -7691,12 +7732,12 @@
     let svg='';
     svg+='<g class="tl-walker">';
     // 外层扩散发光光晕：哆啦A梦脚下光环
-    svg+='<circle class="tl-walker-glow" cx="0" cy="0" r="14" fill="#bae6fd" opacity="0.18"/>';
+    svg+='<circle class="tl-walker-glow" cx="0" cy="0" r="14" fill="'+(isLightTheme()?'#f5c46a':'#bae6fd')+'" opacity="0.18"/>';
     // 拖尾光轨：4 个递减透明度的圆点，渐变暖橙发光
-    svg+='<circle class="tl-walker-tail" cx="0" cy="0" r="3" fill="#38bdf8" opacity="0.12"/>';
-    svg+='<circle class="tl-walker-tail" cx="0" cy="0" r="3.5" fill="#38bdf8" opacity="0.22"/>';
-    svg+='<circle class="tl-walker-tail" cx="0" cy="0" r="4" fill="#7dd3fc" opacity="0.38"/>';
-    svg+='<circle class="tl-walker-tail" cx="0" cy="0" r="4.5" fill="#bae6fd" opacity="0.58"/>';
+    svg+='<circle class="tl-walker-tail" cx="0" cy="0" r="3" fill="'+(isLightTheme()?'#d97a1f':'#38bdf8')+'" opacity="0.12"/>';
+    svg+='<circle class="tl-walker-tail" cx="0" cy="0" r="3.5" fill="'+(isLightTheme()?'#e8943c':'#38bdf8')+'" opacity="0.22"/>';
+    svg+='<circle class="tl-walker-tail" cx="0" cy="0" r="4" fill="'+(isLightTheme()?'#f5c46a':'#7dd3fc')+'" opacity="0.38"/>';
+    svg+='<circle class="tl-walker-tail" cx="0" cy="0" r="4.5" fill="'+(isLightTheme()?'#fde8cc':'#bae6fd')+'" opacity="0.58"/>';
     // 哆啦A梦：嵌套 g 缩放居中，foreignObject 包裹 HTML 卡通形象
     // scale(s) translate(-113,-70) 使哆啦A梦中心(113,70)对齐到外层 g 原点(0,0)
     // ===== Bug2修复：哆啦A梦容器加 tl-walker-char 标识，CSS 强制置顶层级，不被光晕拖尾遮挡 =====
@@ -8049,9 +8090,9 @@
     let svg='<svg viewBox="0 0 '+params.w+' '+h+'" preserveAspectRatio="xMidYMid meet" style="width:100%;height:auto;display:block;min-height:'+Math.max(containerH,h)+'px;">';
     // 渐变定义：柔和橙→浅蓝渐变曲线（弹窗版）
     svg+='<defs><linearGradient id="tlModalGrad" x1="0%" y1="0%" x2="100%" y2="0%">';
-    svg+='<stop offset="0%" stop-color="#38bdf8" stop-opacity="0.5"/>';
-    svg+='<stop offset="50%" stop-color="#38bdf8" stop-opacity="0.85"/>';
-    svg+='<stop offset="100%" stop-color="#7dd3fc" stop-opacity="0.5"/>';
+    svg+='<stop offset="0%" stop-color="'+(isLightTheme()?'#e8943c':'#38bdf8')+'" stop-opacity="0.5"/>';
+    svg+='<stop offset="50%" stop-color="'+(isLightTheme()?'#e8943c':'#38bdf8')+'" stop-opacity="0.85"/>';
+    svg+='<stop offset="100%" stop-color="'+(isLightTheme()?'#f5c46a':'#7dd3fc')+'" stop-opacity="0.5"/>';
     svg+='</linearGradient></defs>';
     svg+='<path class="tl-modal-curve" d="'+pathD+'" style="opacity:0;" />';
     // 逐段路径容器（弹窗版）：用于行走过线动画
@@ -8091,7 +8132,7 @@
         svg+='</g>';
       }
       // 节点圆点（层级在照片之上，确保不被遮挡）
-      svg+='<circle class="tl-modal-dot" cx="'+pos.x+'" cy="'+pos.y+'" r="8" fill="#38bdf8" stroke="'+(isLightTheme()?'#ffffff':'#020202')+'" stroke-width="3" />';
+      svg+='<circle class="tl-modal-dot" cx="'+pos.x+'" cy="'+pos.y+'" r="8" fill="'+(isLightTheme()?'#e8943c':'#38bdf8')+'" stroke="'+(isLightTheme()?'#ffffff':'#020202')+'" stroke-width="3" />';
       // 城市名（防碰撞算法决定上/下方位）
       svg+='<text class="tl-modal-label" x="'+pos.x+'" y="'+ly.labelY+'" text-anchor="middle">'+city.name+'</text>';
       // 年月胶囊衬底：浅橙圆角矩形 + 年月文字
