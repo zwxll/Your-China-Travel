@@ -7297,6 +7297,24 @@
     localStorage.setItem(key,JSON.stringify(merged));
     markCloudDirty();
   }
+  function migrateProfileToAccount(userId){
+    const localKey=PROFILE_KEY_PREFIX+'local';
+    const userKey=PROFILE_KEY_PREFIX+userId;
+    try{
+      const localRaw=localStorage.getItem(localKey);
+      if(!localRaw) return;
+      const localProfile=JSON.parse(localRaw);
+      if(!localProfile.nickname&&!localProfile.avatarUrl) return;
+      const userRaw=localStorage.getItem(userKey);
+      if(userRaw){
+        const userProfile=JSON.parse(userRaw);
+        if(userProfile.nickname||userProfile.avatarUrl) return;
+      }
+      localStorage.setItem(userKey,localRaw);
+      localStorage.removeItem(localKey);
+      markCloudDirty();
+    }catch(e){}
+  }
   function saveLocalProfileOnly(profile){
     const key=getProfileKey();
     const existing=getUserProfile();
@@ -7725,7 +7743,7 @@
     cloudPrepareUserId=user.id;
     cloudPreparePromise=(async ()=>{
       setStorageMode('cloud');startCloudWatcher();
-      cloudUser=user;updateAccountUI();setSyncStatus('连接中','syncing');
+      cloudUser=user;migrateProfileToAccount(user.id);updateAccountUI();setSyncStatus('连接中','syncing');
       const owner=localStorage.getItem(CLOUD_OWNER_KEY),dirty=localStorage.getItem(CLOUD_DIRTY_KEY)==='1';
       try{
         if(owner&&owner!==user.id){
