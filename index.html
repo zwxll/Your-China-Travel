@@ -225,7 +225,7 @@
   body.light-theme .city-desc-input:focus{border-color:rgba(232,148,60,.55);}
   body.light-theme .modal-foot{background:#fbfcfe;}
   body.light-theme .star-rating .star{color:#ddd;}
-  body.light-theme .star-display .star.empty{color:#ddd;}
+  body.light-theme .star-display .star.empty{color:#dbe3ec;}
   body.light-theme .tag-add-row .btn{background:#ffffff;}
   /* 主题切换按钮（与账号按钮同款胶囊风格）*/
   .theme-toggle-btn{
@@ -271,7 +271,7 @@
     0%{transform:scale(.25);opacity:.95;}
     100%{transform:scale(3);opacity:0;}
   }
-  .fp-plane{position:absolute;left:0;top:0;width:30px;height:30px;margin:-15px 0 0 -15px;will-change:transform;}
+  .fp-plane{position:absolute;left:0;top:0;width:48px;height:48px;margin:-24px 0 0 -24px;will-change:transform;}
   .fp-plane[hidden]{display:none;}
   .fp-plane svg{display:block;width:100%;height:100%;filter:drop-shadow(0 0 7px var(--fp-glow));}
   .fp-plane .plane-top{fill:var(--fp-plane-a);}
@@ -295,7 +295,7 @@
     100%{opacity:1;transform:translateY(0) scale(1);}
   }
   .fp-city-card .fp-card-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f1f5f9;font-size:11.5px;line-height:1.3;font-weight:800;text-shadow:0 1px 3px rgba(0,0,0,.6);}
-  .fp-city-card .fp-card-rating{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7dd3fc;font-size:10px;line-height:1.3;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.55);}
+  .fp-city-card .fp-card-rating{display:inline-flex;align-items:center;gap:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7dd3fc;font-size:10px;line-height:1.3;font-weight:700;text-shadow:0 1px 3px rgba(0,0,0,.55);}
   .fp-city-card .fp-card-tags{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#a8bfd4;font-size:10px;line-height:1.3;text-shadow:0 1px 3px rgba(0,0,0,.5);}
   body.light-theme .fp-city-card .fp-card-name{color:#1f2a37;text-shadow:0 1px 2px rgba(255,255,255,.7);}
   body.light-theme .fp-city-card .fp-card-rating{color:#4f46e5;text-shadow:0 1px 2px rgba(255,255,255,.7);}
@@ -531,7 +531,7 @@
   .province-map-card-image-empty{display:grid;place-items:center;color:#64748b;font-size:10px;text-align:center;line-height:1.25;}
   .province-map-card-copy{min-width:0;padding:7px 8px;display:flex;flex-direction:column;justify-content:center;gap:2px;}
   .province-map-card-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f8fafc;font-size:13px;font-weight:800;}
-  .province-map-card-rating{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7dd3fc;font-size:10px;font-weight:700;}
+  .province-map-card-rating{display:inline-flex;align-items:center;gap:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#7dd3fc;font-size:10px;font-weight:700;}
   .province-map-card-intro{
     overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#94a3b8;font-size:10px;line-height:1.25;
   }
@@ -1272,6 +1272,265 @@
   body.light-theme #unlightBtn:hover{background:#f9dfe5;}
   .hint{font-size:12px;color:var(--muted);}
 
+  /* ===== 城市点评弹窗 ===== */
+  .review-entry-btn{
+    flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;
+    padding:6px 14px;border-radius:7px;border:1px solid rgba(56,189,248,.35);
+    background:rgba(14,165,233,.12);color:#38bdf8;font-size:12px;font-weight:600;
+    cursor:pointer;transition:.2s ease;white-space:nowrap;
+  }
+  .review-entry-btn:hover{
+    border-color:rgba(56,189,248,.65);background:rgba(14,165,233,.22);
+    box-shadow:0 0 12px rgba(56,189,248,.2);transform:translateY(-1px);
+  }
+  body.light-theme .review-entry-btn{
+    border-color:rgba(79,70,229,.35);background:rgba(79,70,229,.08);color:#4f46e5;
+  }
+  body.light-theme .review-entry-btn:hover{
+    border-color:rgba(79,70,229,.6);background:rgba(79,70,229,.16);
+    box-shadow:0 0 12px rgba(79,70,229,.18);
+  }
+  /* 查看点评：底部操作栏内右对齐，与其他按钮同行等高，不遮挡照片区域 */
+  .modal-foot .review-entry-btn{margin-left:auto;padding:8px 14px;}
+  .reviews-overlay{
+    position:fixed;inset:0;z-index:10020;display:none;
+    align-items:center;justify-content:center;padding:16px;
+    background:rgba(20,28,38,.55);backdrop-filter:blur(6px);
+  }
+  .reviews-overlay.show{display:flex;animation:fade .2s ease;}
+  .reviews-panel{
+    width:min(640px,100%);max-height:85vh;display:flex;flex-direction:column;
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    overflow:hidden;animation:pop .22s cubic-bezier(.2,.8,.3,1.1);
+  }
+  .reviews-head{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:14px 22px;border-bottom:1px solid var(--line);
+    background:linear-gradient(135deg,#080808,#080808);
+    flex:0 0 auto;
+  }
+  .reviews-head h2{margin:0;font-size:17px;font-weight:700;color:var(--ink);}
+  .reviews-avg{
+    display:flex;align-items:center;gap:4px;margin-left:auto;margin-right:12px;
+    font-size:13px;font-weight:600;color:var(--muted);white-space:nowrap;
+  }
+  .reviews-avg .avg-stars{display:inline-flex;align-items:center;gap:0;font-size:13px;color:#38bdf8;}
+  .reviews-avg .avg-num{color:#38bdf8;font-weight:700;font-size:13px;margin-right:0;}
+  .reviews-close{
+    flex:0 0 auto;width:30px;height:30px;border-radius:8px;border:1px solid var(--line);
+    background:#080808;color:var(--muted);font-size:18px;line-height:1;cursor:pointer;
+    display:grid;place-items:center;transition:.15s;
+  }
+  .reviews-close:hover{background:#0f0f0f;color:var(--ink);}
+  .reviews-body{
+    flex:1 1 auto;overflow-y:auto;padding:16px 22px;display:flex;flex-direction:column;gap:14px;
+    min-height:0;overscroll-behavior:contain;
+    scrollbar-width:thin;scrollbar-color:rgba(125,211,252,.4) transparent;
+  }
+  .reviews-body::-webkit-scrollbar{width:6px;}
+  .reviews-body::-webkit-scrollbar-track{background:transparent;}
+  .reviews-body::-webkit-scrollbar-thumb{background:rgba(125,211,252,.35);border-radius:4px;}
+  .review-card{
+    background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:10px;
+    padding:10px 14px;transition:border-color .2s;
+  }
+  .review-card:hover{border-color:rgba(56,189,248,.2);}
+  .review-card-top{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;
+  }
+  .review-card-user-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+  .review-card-avatar{
+    width:32px;height:32px;flex:0 0 auto;border-radius:50%;overflow:hidden;
+    background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.2);
+    display:grid;place-items:center;color:#38bdf8;font-size:13px;font-weight:700;
+  }
+  .review-card-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+  .review-card-avatar-letter{line-height:1;}
+  .review-card-user-info{flex:1;min-width:0;display:flex;flex-direction:row;align-items:center;gap:8px;flex-wrap:wrap;}
+  .review-card-user-name{font-size:13px;font-weight:700;color:var(--ink);line-height:1.2;}
+  .review-card-rating{display:flex;align-items:center;gap:3px;}
+  .review-card-rating .r-star{display:inline-flex;align-items:center;font-size:12px;color:#38bdf8;line-height:1;}
+  
+  .review-card-user{font-size:11px;color:var(--muted);}
+  .review-card-intro{font-size:13px;color:var(--ink);line-height:1.55;margin-bottom:6px;}
+  .review-card-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+  .review-card-tags .r-tag{
+    display:inline-block;padding:2px 9px;border-radius:12px;
+    font-size:10px;font-weight:500;white-space:nowrap;
+    background:rgba(56,189,248,.1);color:#38bdf8;border:1px solid rgba(56,189,248,.2);
+  }
+  .review-card-info{
+    display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding-top:6px;
+    border-top:1px solid rgba(255,255,255,.06);font-size:11px;color:var(--muted);
+  }
+  .review-card-info .r-info-item{display:inline-flex;align-items:center;gap:4px;}
+  .review-card-info .r-info-label{color:rgba(255,255,255,.3);}
+  .review-card-photos{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+  .review-card-photos img{
+    width:44px;height:44px;object-fit:cover;border-radius:6px;
+    border:1px solid var(--line);cursor:pointer;transition:transform .15s;
+  }
+  .review-card-photos img:hover{transform:scale(1.08);}
+  .reviews-empty{
+    flex:1 1 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:48px 24px;color:var(--muted);text-align:center;
+  }
+  .reviews-empty-icon{font-size:40px;margin-bottom:12px;opacity:.6;}
+  .reviews-empty p{margin:4px 0;font-size:14px;}
+  .reviews-empty-sub{font-size:12px;color:rgba(255,255,255,.25);}
+  body.light-theme .reviews-head{background:linear-gradient(135deg,#fff8f0,#ffffff);}
+  body.light-theme .reviews-close{background:#fff;}
+  body.light-theme .reviews-close:hover{background:#f7f9fc;}
+  body.light-theme .review-card{background:#fbfcfe;border-color:#e3e9f0;}
+  body.light-theme .review-card:hover{border-color:rgba(79,70,229,.25);}
+  body.light-theme .review-card-rating .r-star{color:#4f46e5;}
+  body.light-theme .review-card-rating .r-star.empty{color:#ddd;}
+  
+  body.light-theme .review-card-avatar{background:rgba(79,70,229,.08);border-color:rgba(79,70,229,.2);color:#4f46e5;}
+  body.light-theme .review-card-info{border-top-color:rgba(0,0,0,.06);}
+  body.light-theme .review-card-tags .r-tag{background:rgba(79,70,229,.08);color:#4f46e5;border-color:rgba(79,70,229,.2);}
+  body.light-theme .reviews-avg .avg-stars{color:#4f46e5;}
+  body.light-theme .reviews-avg .avg-num{color:#4f46e5;}
+  body.light-theme .review-card-info .r-info-label{color:rgba(0,0,0,.35);}
+
+  /* ===== 游客点评：上传我的点评 / 标签页 / 我的点评卡片 ===== */
+  .reviews-upload-btn{
+    flex:0 0 auto;display:inline-flex;align-items:center;gap:4px;
+    padding:6px 14px;border-radius:20px;border:1px solid rgba(56,189,248,.35);
+    background:rgba(56,189,248,.12);color:#38bdf8;font-size:12px;font-weight:600;
+    cursor:pointer;transition:.15s;white-space:nowrap;
+  }
+  .reviews-upload-btn:hover{background:rgba(56,189,248,.22);border-color:rgba(56,189,248,.6);}
+  .reviews-upload-btn.primary{
+    background:#38bdf8;color:#08131f;border-color:#38bdf8;padding:9px 22px;font-size:13px;
+    box-shadow:0 4px 14px rgba(56,189,248,.25);
+  }
+  .reviews-upload-btn.primary:hover{background:#7dd3fc;}
+  body.light-theme .reviews-upload-btn{color:#4f46e5;border-color:rgba(79,70,229,.35);background:rgba(79,70,229,.08);}
+  body.light-theme .reviews-upload-btn:hover{background:rgba(79,70,229,.16);border-color:rgba(79,70,229,.6);}
+  body.light-theme .reviews-upload-btn.primary{background:#4f46e5;color:#fff;border-color:#4f46e5;}
+  body.light-theme .reviews-upload-btn.primary:hover{background:#6366f1;}
+  .reviews-empty .reviews-upload-btn{margin-top:18px;}
+  .reviews-tabs{
+    flex:0 0 auto;display:flex;gap:4px;padding:10px 22px 0;border-bottom:1px solid var(--line);
+    background:var(--card);
+  }
+  .r-tab{
+    padding:7px 16px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;
+    background:transparent;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:.15s;
+  }
+  .r-tab:hover{color:var(--ink);}
+  .r-tab.active{color:#38bdf8;background:rgba(56,189,248,.08);border-color:var(--line);}
+  body.light-theme .r-tab.active{color:#4f46e5;background:rgba(79,70,229,.07);}
+  .review-card-mine{border-color:rgba(56,189,248,.45);}
+  body.light-theme .review-card-mine{border-color:rgba(79,70,229,.4);}
+  .review-badge{
+    display:inline-block;padding:1px 8px;border-radius:10px;font-size:10px;font-weight:700;
+    background:rgba(56,189,248,.15);color:#38bdf8;border:1px solid rgba(56,189,248,.3);margin-left:6px;
+  }
+  body.light-theme .review-badge{background:rgba(79,70,229,.1);color:#4f46e5;border-color:rgba(79,70,229,.3);}
+  .review-time{font-size:10px;color:var(--muted);opacity:.7;margin-left:auto;}
+  .review-card-actions{display:flex;gap:6px;margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,.06);}
+  body.light-theme .review-card-actions{border-top-color:rgba(0,0,0,.06);}
+  .review-action-btn{
+    padding:3px 10px;border-radius:12px;font-size:10px;font-weight:600;cursor:pointer;transition:.15s;
+    border:1px solid var(--line);background:transparent;color:var(--muted);
+  }
+  .review-action-btn:hover{color:var(--ink);border-color:rgba(56,189,248,.4);}
+  body.light-theme .review-action-btn:hover{border-color:rgba(79,70,229,.4);}
+  .review-action-btn.primary{color:#38bdf8;border-color:rgba(56,189,248,.4);background:rgba(56,189,248,.08);}
+  .review-action-btn.primary:hover{background:rgba(56,189,248,.18);}
+  body.light-theme .review-action-btn.primary{color:#4f46e5;border-color:rgba(79,70,229,.4);background:rgba(79,70,229,.08);}
+  .review-action-btn.danger{color:#f87171;border-color:rgba(248,113,113,.35);}
+  .review-action-btn.danger:hover{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.6);}
+  .review-sync-banner{
+    display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+    margin-bottom:8px;padding:6px 10px;border-radius:8px;font-size:11px;
+    background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.3);color:#fbbf24;
+  }
+  body.light-theme .review-sync-banner{color:#b45309;background:rgba(251,191,36,.12);border-color:rgba(180,83,9,.25);}
+  .review-sync-banner .review-action-btn{color:#fbbf24;border-color:rgba(251,191,36,.4);}
+  body.light-theme .review-sync-banner .review-action-btn{color:#b45309;border-color:rgba(180,83,9,.35);}
+
+  /* ===== 发布我的点评：预览弹窗 ===== */
+  .publish-panel{width:min(560px,100%);}
+  .publish-body{flex:1 1 auto;overflow-y:auto;padding:18px 22px;min-height:0;}
+  .publish-body::-webkit-scrollbar{width:6px;}
+  .publish-body::-webkit-scrollbar-track{background:transparent;}
+  .publish-body::-webkit-scrollbar-thumb{background:rgba(125,211,252,.35);border-radius:4px;}
+  .publish-author-row{display:flex;align-items:center;gap:10px;margin-bottom:14px;}
+  .publish-avatar{
+    width:40px;height:40px;border-radius:50%;overflow:hidden;flex:0 0 auto;
+    background:rgba(56,189,248,.1);border:1px solid rgba(56,189,248,.25);
+    display:grid;place-items:center;color:#38bdf8;font-size:16px;font-weight:700;
+  }
+  .publish-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+  body.light-theme .publish-avatar{background:rgba(79,70,229,.08);border-color:rgba(79,70,229,.2);color:#4f46e5;}
+  .publish-author-name{font-size:14px;font-weight:700;color:var(--ink);}
+  .publish-author-sub{font-size:11px;color:var(--muted);}
+  .publish-city-title{font-size:20px;font-weight:800;color:var(--ink);margin:2px 0 4px;}
+  .publish-section{
+    margin-top:14px;padding:12px 14px;border-radius:10px;
+    background:rgba(255,255,255,.04);border:1px solid var(--line);
+  }
+  body.light-theme .publish-section{background:#fbfcfe;}
+  .publish-section-label{
+    font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.5px;
+    margin-bottom:8px;display:flex;align-items:center;gap:6px;
+  }
+  .publish-section-label .pub-toggle{
+    display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:600;cursor:pointer;
+    color:var(--muted);user-select:none;
+  }
+  .pub-toggle input{accent-color:#38bdf8;cursor:pointer;}
+  body.light-theme .pub-toggle input{accent-color:#4f46e5;}
+  .publish-rating{display:inline-flex;align-items:center;gap:2px;font-size:20px;color:#38bdf8;}
+  body.light-theme .publish-rating{color:#4f46e5;}
+  .publish-desc{font-size:13px;color:var(--ink);line-height:1.7;white-space:pre-wrap;}
+  .publish-tags{display:flex;flex-wrap:wrap;gap:6px;}
+  .publish-tags .r-tag{font-size:12px;padding:4px 12px;}
+  .publish-attractions{display:flex;flex-wrap:wrap;gap:6px;}
+  .publish-attraction-chip{
+    display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:14px;font-size:12px;
+    background:rgba(56,189,248,.08);color:#38bdf8;border:1px solid rgba(56,189,248,.2);
+  }
+  body.light-theme .publish-attraction-chip{background:rgba(79,70,229,.07);color:#4f46e5;border-color:rgba(79,70,229,.2);}
+  .publish-photos{display:flex;gap:6px;flex-wrap:wrap;}
+  .publish-photos img{width:56px;height:56px;object-fit:cover;border-radius:8px;border:1px solid var(--line);}
+  .publish-visibility{
+    margin-top:16px;padding:12px 14px;border-radius:10px;
+    background:rgba(56,189,248,.05);border:1px dashed rgba(56,189,248,.3);
+  }
+  body.light-theme .publish-visibility{background:rgba(79,70,229,.04);border-color:rgba(79,70,229,.25);}
+  .publish-visibility-title{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+  .publish-visibility-grid{display:flex;flex-wrap:wrap;gap:8px 16px;}
+  .pub-vis-item{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--ink);cursor:pointer;user-select:none;}
+  .pub-vis-item input{accent-color:#38bdf8;cursor:pointer;}
+  body.light-theme .pub-vis-item input{accent-color:#4f46e5;}
+  .publish-foot{
+    flex:0 0 auto;display:flex;justify-content:flex-end;gap:10px;padding:14px 22px;
+    border-top:1px solid var(--line);background:var(--card);
+  }
+  .publish-cancel-btn{
+    padding:9px 20px;border-radius:20px;border:1px solid var(--line);background:transparent;
+    color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;transition:.15s;
+  }
+  .publish-cancel-btn:hover{color:var(--ink);border-color:rgba(56,189,248,.4);}
+  body.light-theme .publish-cancel-btn:hover{border-color:rgba(79,70,229,.4);}
+  .publish-submit-btn{
+    padding:9px 22px;border-radius:20px;border:none;cursor:pointer;transition:.15s;
+    background:#38bdf8;color:#08131f;font-size:13px;font-weight:700;
+    box-shadow:0 4px 14px rgba(56,189,248,.25);
+  }
+  .publish-submit-btn:hover{background:#7dd3fc;}
+  body.light-theme .publish-submit-btn{background:#4f46e5;color:#fff;}
+  body.light-theme .publish-submit-btn:hover{background:#6366f1;}
+  .publish-empty-tip{
+    display:flex;flex-direction:column;align-items:center;gap:10px;padding:40px 20px;text-align:center;
+  }
+  .publish-empty-tip .publish-empty-icon{font-size:38px;opacity:.6;}
+  .publish-empty-tip p{margin:0;font-size:13px;color:var(--muted);line-height:1.7;}
+
   /* 灯箱 */
   .lightbox{
     position:fixed;inset:0;z-index:60;display:none;
@@ -1388,6 +1647,110 @@
   @media(prefers-reduced-motion:reduce){.account-sync-status.syncing::before{animation:none;}}
   .cloud-blocker{display:none;padding:0 28px 25px;color:#fca5a5;font-size:12px;line-height:1.6;}
   .cloud-blocker.show{display:block;}
+
+  /* ===== 个人资料区域 ===== */
+  .profile-section{display:grid;gap:12px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.08);}
+  .profile-section-title,.account-section-title{
+    font:700 11px/1.2 'Inter',sans-serif;letter-spacing:1.2px;text-transform:uppercase;
+    color:#94a3b8;margin:0;
+  }
+  .account-section-title{margin-top:4px;}
+  .profile-card{
+    display:flex;gap:16px;align-items:flex-start;padding:14px;
+    border:1px solid rgba(148,163,184,.18);border-radius:var(--radius-sm);
+    background:rgba(255,255,255,.025);
+  }
+  .profile-avatar-wrap{
+    position:relative;width:72px;height:72px;flex:0 0 auto;cursor:pointer;border-radius:50%;
+    overflow:hidden;
+  }
+  .profile-avatar{
+    width:72px;height:72px;border-radius:50%;overflow:hidden;
+    border:2px solid rgba(56,189,248,.3);background:#0d1520;
+    display:grid;place-items:center;color:#475569;
+  }
+  .profile-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+  .avatar-default-icon{opacity:.5;}
+  .avatar-hover-mask{
+    position:absolute;inset:0;border-radius:50%;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;gap:2px;
+    background:rgba(0,0,0,.55);color:#e0f7ff;font-size:18px;opacity:0;transition:opacity .2s;
+    pointer-events:none;
+  }
+  .profile-avatar-wrap:hover .avatar-hover-mask{opacity:1;}
+  .avatar-hover-text{font-size:9px;font-weight:600;letter-spacing:.5px;}
+  .profile-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+  .profile-nickname-row{display:flex;align-items:center;gap:8px;}
+  .profile-nickname{font-size:16px;font-weight:700;color:#f8fafc;line-height:1.3;word-break:break-all;}
+  .profile-edit-btn{
+    flex:0 0 auto;width:26px;height:26px;border:1px solid rgba(148,163,184,.2);border-radius:6px;
+    background:transparent;color:#94a3b8;cursor:pointer;display:grid;place-items:center;transition:.15s;
+  }
+  .profile-edit-btn:hover{border-color:var(--accent);color:var(--accent-l);background:rgba(56,189,248,.08);}
+  .profile-nickname-edit{display:grid;gap:8px;}
+  .profile-nickname-edit[hidden]{display:none;}
+  .nickname-input{
+    width:100%;height:38px;border:1px solid rgba(148,163,184,.24);border-radius:var(--radius-sm);
+    background:#080d13;color:#f8fafc;padding:0 12px;font:500 14px/1 'Inter',sans-serif;outline:none;
+  }
+  .nickname-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.12);}
+  .nickname-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .nickname-count{font-size:11px;color:#7f8da0;}
+  .nickname-btns{display:flex;gap:8px;}
+  .nickname-btns .account-action{height:32px;padding:0 14px;font-size:12px;}
+  .nickname-message{margin:0;font-size:11px;line-height:1.4;color:#94a3b8;display:none;}
+  .nickname-message.show{display:block;}
+  .nickname-message.error{color:#fca5a5;}
+  .nickname-message.success{color:#86efac;}
+  .profile-email{font-size:12px;color:#7f8da0;line-height:1.4;word-break:break-all;}
+  .profile-actions{display:flex;gap:10px;}
+  .profile-actions .account-action{flex:1;height:36px;font-size:12px;}
+
+  /* ===== 头像裁剪弹窗 ===== */
+  .avatar-crop-overlay{
+    position:fixed;inset:0;z-index:10030;display:none;place-items:center;padding:20px;
+    background:rgba(0,0,0,.8);backdrop-filter:blur(8px);
+  }
+  .avatar-crop-overlay.show{display:grid;animation:fade .2s ease;}
+  .avatar-crop-panel{
+    width:min(380px,100%);border:1px solid rgba(125,211,252,.22);border-radius:var(--radius);
+    background:linear-gradient(145deg,rgba(12,19,28,.98),rgba(5,8,12,.98));
+    box-shadow:0 28px 90px rgba(0,0,0,.72);overflow:hidden;
+  }
+  .avatar-crop-head{
+    display:flex;align-items:center;justify-content:space-between;padding:18px 22px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .avatar-crop-head h3{margin:0;color:#f8fafc;font:700 16px/1.2 'Inter',sans-serif;}
+  .avatar-crop-close{
+    width:30px;height:30px;border:0;border-radius:var(--radius-xs);background:rgba(255,255,255,.06);
+    color:#cbd5e1;font-size:20px;cursor:pointer;
+  }
+  .avatar-crop-close:hover{background:rgba(255,255,255,.1);color:#fff;}
+  .avatar-crop-body{padding:20px 22px;display:flex;gap:18px;align-items:center;}
+  .avatar-crop-stage{
+    position:relative;width:200px;height:200px;flex:0 0 auto;overflow:hidden;border-radius:var(--radius-sm);
+    background:#000;cursor:grab;
+  }
+  .avatar-crop-stage:active{cursor:grabbing;}
+  .avatar-crop-stage canvas{display:block;position:absolute;top:0;left:0;}
+  .avatar-crop-circle{
+    position:absolute;top:50%;left:50%;width:160px;height:160px;transform:translate(-50%,-50%);
+    border-radius:50%;border:2px solid rgba(255,255,255,.6);
+    box-shadow:0 0 0 1000px rgba(0,0,0,.45);pointer-events:none;
+  }
+  .avatar-crop-hint{
+    position:absolute;bottom:6px;left:0;right:0;text-align:center;font-size:10px;color:rgba(255,255,255,.4);
+    pointer-events:none;
+  }
+  .avatar-crop-preview{display:flex;flex-direction:column;align-items:center;gap:10px;}
+  .avatar-crop-preview-label{font-size:11px;color:#94a3b8;font-weight:600;letter-spacing:.5px;}
+  #avatarPreviewCanvas{
+    width:80px;height:80px;border-radius:50%;border:2px solid rgba(56,189,248,.3);
+  }
+  .avatar-crop-actions{display:flex;gap:10px;padding:0 22px 20px;}
+  .avatar-crop-actions .account-action{flex:1;height:40px;}
+
   @media(max-width:720px){
     header{flex-wrap:nowrap;padding:10px 12px;}
     .header-actions{gap:6px;}
@@ -2622,15 +2985,25 @@
   .grid-card-tags{display:flex;flex-wrap:wrap;gap:3px;margin-top:4px;}
   .grid-card-tags .tag-pill{font-size:9.5px;padding:1px 6px;max-width:60px;}
   /* ===== 星级评分 ===== */
-  .star-rating{display:inline-flex;gap:2px;}
+  .star-rating{display:inline-flex;align-items:center;gap:2px;}
   .star-rating .star{
-    font-size:18px;color:#ddd;cursor:pointer;transition:.15s;line-height:1;user-select:none;
+    display:inline-flex;font-size:18px;color:#ddd;cursor:pointer;transition:.15s;line-height:1;user-select:none;
   }
   .star-rating .star.active{color:#38bdf8;}
   .star-rating .star:hover{color:#f5c46a;}
   .star-display{display:inline-flex;gap:1px;}
-  .star-display .star{font-size:13px;color:#38bdf8;line-height:1;}
-  .star-display .star.empty{color:#ddd;}
+  .star-display .star{font-size:13px;color:#38bdf8;line-height:1;text-shadow:none;}
+  .star-display .star.empty{color:#64748b;}
+  /* ===== 统一星级 SVG =====
+   * 5 颗星完全一致，仅通过颜色区分 active/inactive；
+   * 尺寸用 1em 继承容器 font-size，各容器通过 font-size 控制整体大小 */
+  .star-svg{
+    width:1em;height:1em;flex:0 0 auto;display:inline-block;
+    color:#38bdf8;vertical-align:-0.125em;pointer-events:none;
+  }
+  .star-svg.inactive{color:#64748b;}
+  body.light-theme .star-svg{color:#4f46e5;}
+  body.light-theme .star-svg.inactive{color:#dbe3ec;}
   /* ===== 弹窗增强：封面图 + 景点 ===== */
   /* 【弹窗尺寸放大】封面区内边距水平 18→22px，垂直 10→11px，与各模块统一 */
   .cover-section{padding:11px 22px;border-bottom:1px solid var(--line);background:#080808;flex:0 0 auto;}
@@ -3713,12 +4086,8 @@
       <svg id="footprintLines" aria-hidden="true"></svg>
       <div class="fp-city-cards" id="fpCityCards" aria-hidden="true"></div>
       <div class="fp-plane" id="fpPlane" hidden>
-        <svg viewBox="0 0 28 28" aria-hidden="true">
-          <g transform="rotate(45 14 14)">
-            <path class="plane-top" d="M25.2 2.8 L12.4 15.6 L4 11 Z"/>
-            <path class="plane-bottom" d="M25.2 2.8 L12.4 15.6 L15 24.2 Z"/>
-            <circle class="plane-dot" cx="12.4" cy="15.6" r="1.5"/>
-          </g>
+        <svg viewBox="0 0 612 612" aria-hidden="true">
+          <path class="plane-top" d="M571.771,123.555c25.121-33.626,40.157-68.538,40.23-93.48c-0.031-8.077-1.651-14.389-4.733-19.091c-0.324-0.575-1.212-2.08-2.779-3.563c-1.558-1.546-2.958-2.372-3.261-2.539c-4.932-3.292-11.274-4.88-19.353-4.88c-24.88,0.042-59.802,15.068-93.438,40.23c-27.188,20.345-54.378,48.997-92.017,88.673c-6.385,6.729-13.104,13.804-20.21,21.223l-72.905-21.85l0.219-0.209c3.03-3.062,4.755-7.273,4.713-11.411c0.042-4.368-1.724-8.579-4.765-11.609l-13.166-13.187c-3.041-3.062-7.242-4.817-11.588-4.817c-4.389,0-8.485,1.693-11.547,4.786l-19.697,19.708l-10.429-3.114c2.247-2.853,3.49-6.416,3.448-9.927c0.042-4.431-1.672-8.558-4.754-11.62l-13.229-13.229c-3.02-3.03-7.2-4.765-11.588-4.765c-4.368,0-8.454,1.704-11.484,4.786l-18.077,18.067l-74.128-22.205c-1.661-0.491-3.417-0.752-5.298-0.752c-5.266,0.063-10.146,2.017-13.709,5.549l-26.061,26.071c-2.958,2.957-4.619,6.959-4.587,10.752c-0.094,5.59,2.999,10.752,7.952,13.406l155.884,87.085c0.763,0.428,2.968,2.059,3.783,2.874l44.441,44.431c-41.568,43.793-78.601,86.208-107.461,123.104c-2.696,3.428-5.246,6.771-7.754,10.084L33.827,381.185c-0.585-0.073-1.244-0.126-2.08-0.126c-5.528,0.115-10.93,2.3-14.942,6.176L4.652,399.377c-2.999,2.937-4.692,6.907-4.65,10.742c-0.094,5.852,3.448,11.264,8.767,13.636l84.838,40.293c0.731,0.366,2.633,1.714,3.25,2.33l7.043,6.991c-2.205,6.207-3.323,11.588-3.386,16.312c-0.021,6.321,2.017,11.734,5.915,15.632l0.303,0.262l0.083,0.062c4.002,3.877,9.185,5.852,15.601,5.852c4.619-0.073,9.948-1.17,16.176-3.364l7.147,7.137c0.554,0.585,1.881,2.445,2.226,3.187l40.209,84.651c2.456,5.402,7.753,8.902,13.521,8.902h0.083c3.992,0,7.806-1.599,10.721-4.524l12.445-12.487c3.688-3.887,5.862-9.247,5.945-14.9c0-0.689-0.031-1.223-0.052-1.516l-10.982-121.035c3.302-2.487,6.646-5.047,10.083-7.722c36.949-28.903,79.374-65.968,123.083-107.473l44.473,44.515c0.721,0.689,2.403,2.895,2.895,3.814l86.918,155.602c2.654,5.026,7.764,8.13,13.428,8.13c4.044,0,7.889-1.599,10.836-4.566l26.248-26.229c3.407-3.562,5.319-8.401,5.371-13.688c0-1.776-0.25-3.5-0.71-5.12l-22.205-74.149l18.066-18.098c3.041-3.021,4.766-7.221,4.766-11.536c0-4.337-1.683-8.412-4.744-11.516l-13.25-13.239c-3.03-3.041-7.221-4.775-11.536-4.775c-3.657,0-7.23,1.223-10.021,3.428l-3.104-10.387l19.718-19.718c3.03-3.041,4.755-7.242,4.755-11.568c0-4.357-1.683-8.442-4.755-11.504l-13.188-13.188c-3.041-3.083-7.262-4.828-11.599-4.828c-4.357,0-8.579,1.766-11.557,4.807l-0.136,0.125l-21.84-72.895c7.545-7.189,14.702-14.034,21.547-20.481C522.932,177.766,551.479,150.681,571.771,123.555z"/>
         </svg>
       </div>
     </div>
@@ -3918,11 +4287,11 @@
       <div class="rating-row">
         <label>推荐指数</label>
         <div class="star-rating" id="starRating">
-          <span class="star" data-val="1">★</span>
-          <span class="star" data-val="2">★</span>
-          <span class="star" data-val="3">★</span>
-          <span class="star" data-val="4">★</span>
-          <span class="star" data-val="5">★</span>
+          <span class="star" data-val="1"><svg class="star-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z"/></svg></span>
+          <span class="star" data-val="2"><svg class="star-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z"/></svg></span>
+          <span class="star" data-val="3"><svg class="star-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z"/></svg></span>
+          <span class="star" data-val="4"><svg class="star-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z"/></svg></span>
+          <span class="star" data-val="5"><svg class="star-svg" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z"/></svg></span>
         </div>
       </div>
       <!-- 城市简介输入区（星级正下方，编辑弹窗内填写/修改城市简介） -->
@@ -3979,6 +4348,8 @@
         <!-- 【取消点亮】清空当前城市所有上传编辑内容（照片/景点/标签/封面/星级/年月） -->
         <button class="btn" id="unlightBtn">取消点亮</button>
         <span class="hint">支持多张同时上传 · 拖拽照片可交换位置 · 本地永久保存</span>
+        <!-- 查看点评：底部操作栏最右侧，不遮挡照片区域 -->
+        <button id="reviewBtn" class="review-entry-btn" title="查看点评">💬 查看点评</button>
       </div>
     </div>
   </div>
@@ -4001,6 +4372,44 @@
       <span class="gf-corner br"></span>
     </div>
     <div class="gravity-gallery-hint">拖拽照片可抛掷 · 点击照片放大查看</div>
+  </div>
+
+  <!-- 城市点评弹窗 -->
+  <div id="reviewsOverlay" class="reviews-overlay">
+    <div class="reviews-panel">
+      <div class="reviews-head">
+        <h2 id="reviewsTitle">城市点评</h2>
+        <div class="reviews-avg" id="reviewsAvg"></div>
+        <button id="reviewsUploadBtn" class="reviews-upload-btn" title="上传我的点评">＋ 上传我的点评</button>
+        <button class="reviews-close" id="reviewsClose">✕</button>
+      </div>
+      <div class="reviews-tabs" id="reviewsTabs" style="display:none;">
+        <button class="r-tab active" data-tab="all" type="button">全部点评</button>
+        <button class="r-tab" data-tab="mine" type="button">我的点评</button>
+      </div>
+      <div class="reviews-body" id="reviewsBody"></div>
+      <div class="reviews-empty" id="reviewsEmpty" style="display:none;">
+        <div class="reviews-empty-icon">📝</div>
+        <p>暂无其他游客点评</p>
+        <p class="reviews-empty-sub">成为第一个分享这座城市旅行体验的人吧</p>
+        <button id="reviewsEmptyUploadBtn" class="reviews-upload-btn primary">＋ 上传我的点评</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 发布我的点评：预览弹窗 -->
+  <div id="reviewPublishOverlay" class="reviews-overlay">
+    <div class="reviews-panel publish-panel">
+      <div class="reviews-head">
+        <h2 id="reviewPublishTitle">发布我的点评</h2>
+        <button class="reviews-close" id="reviewPublishClose">✕</button>
+      </div>
+      <div class="publish-body" id="publishBody"></div>
+      <div class="publish-foot">
+        <button class="publish-cancel-btn" id="publishCancelBtn" type="button">取消</button>
+        <button class="publish-submit-btn" id="publishSubmitBtn" type="button">发布我的点评</button>
+      </div>
+    </div>
   </div>
 
   <!-- 时间轴全屏弹窗 -->
@@ -4129,6 +4538,45 @@
       </div>
       <div id="authUserView" hidden>
         <div class="account-panel">
+          <div class="profile-section">
+            <div class="profile-section-title">个人资料</div>
+            <div class="profile-card">
+              <div class="profile-avatar-wrap" id="avatarWrap" title="点击更换头像">
+                <div class="profile-avatar" id="profileAvatar">
+                  <svg viewBox="0 0 24 24" width="32" height="32" fill="currentColor" class="avatar-default-icon">
+                    <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                  </svg>
+                </div>
+                <div class="avatar-hover-mask"><span>📷</span><span class="avatar-hover-text">更换头像</span></div>
+              </div>
+              <input type="file" id="avatarFileInput" accept="image/jpeg,image/png,image/webp" hidden />
+              <div class="profile-info">
+                <div class="profile-nickname-row">
+                  <span class="profile-nickname" id="profileNickname">旅行者</span>
+                  <button class="profile-edit-btn" id="editNicknameBtn" type="button" title="编辑昵称">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.9959.9959 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+                  </button>
+                </div>
+                <div class="profile-nickname-edit" id="nicknameEditRow" hidden>
+                  <input type="text" id="nicknameInput" class="nickname-input" maxlength="20" placeholder="输入昵称（2-20字）" />
+                  <div class="nickname-footer">
+                    <span class="nickname-count" id="nicknameCount">0 / 20</span>
+                    <div class="nickname-btns">
+                      <button class="account-action" id="cancelNicknameBtn" type="button">取消</button>
+                      <button class="account-action primary" id="saveNicknameBtn" type="button">保存</button>
+                    </div>
+                  </div>
+                  <p class="nickname-message" id="nicknameMessage"></p>
+                </div>
+                <div class="profile-email" id="profileEmail"></div>
+              </div>
+            </div>
+            <div class="profile-actions">
+              <button class="account-action" id="changeAvatarBtn" type="button">更换头像</button>
+              <button class="account-action" id="editNicknameBtn2" type="button">编辑昵称</button>
+            </div>
+          </div>
+          <div class="account-section-title">账号与同步</div>
           <div>
             <div class="account-email" id="accountEmail"></div>
             <div class="account-note">你的旅行资料已绑定此账号。上传或修改后会自动同步，也可以手动立即同步。</div>
@@ -4157,6 +4605,31 @@
         </div>
       </div>
       <p class="cloud-blocker" id="cloudBlocker"></p>
+    </section>
+  </div>
+
+  <!-- 头像裁剪弹窗 -->
+  <div class="avatar-crop-overlay" id="avatarCropOverlay" role="dialog" aria-modal="true" aria-labelledby="avatarCropTitle">
+    <section class="avatar-crop-panel">
+      <div class="avatar-crop-head">
+        <h3 id="avatarCropTitle">裁剪头像</h3>
+        <button class="avatar-crop-close" id="avatarCropClose" type="button" aria-label="关闭">&times;</button>
+      </div>
+      <div class="avatar-crop-body">
+        <div class="avatar-crop-stage" id="avatarCropStage">
+          <canvas id="avatarCropCanvas" width="280" height="280"></canvas>
+          <div class="avatar-crop-circle"></div>
+          <div class="avatar-crop-hint">拖动调整位置 · 滚轮缩放</div>
+        </div>
+        <div class="avatar-crop-preview">
+          <div class="avatar-crop-preview-label">预览</div>
+          <canvas id="avatarPreviewCanvas" width="80" height="80"></canvas>
+        </div>
+      </div>
+      <div class="avatar-crop-actions">
+        <button class="account-action" id="avatarCropCancel" type="button">取消</button>
+        <button class="account-action primary" id="avatarCropSave" type="button">保存头像</button>
+      </div>
     </section>
   </div>
 
@@ -4864,6 +5337,13 @@
   const modalOverlay=$('modalOverlay'), cityTitle=$('cityTitle'),
         modalCount=$('modalCount'), thumbsGrid=$('thumbsGrid'),
         modalEmpty=$('modalEmpty'), modalClose=$('modalClose'), fileInput=$('fileInput');
+  const reviewBtn=$('reviewBtn'), reviewsOverlay=$('reviewsOverlay'), reviewsBody=$('reviewsBody'),
+        reviewsTitle=$('reviewsTitle'), reviewsAvg=$('reviewsAvg'), reviewsEmpty=$('reviewsEmpty'),
+        reviewsClose=$('reviewsClose'), reviewsUploadBtn=$('reviewsUploadBtn'),
+        reviewsEmptyUploadBtn=$('reviewsEmptyUploadBtn'), reviewsTabs=$('reviewsTabs');
+  const reviewPublishOverlay=$('reviewPublishOverlay'), publishBody=$('publishBody'),
+        reviewPublishTitle=$('reviewPublishTitle'), reviewPublishClose=$('reviewPublishClose'),
+        publishCancelBtn=$('publishCancelBtn'), publishSubmitBtn=$('publishSubmitBtn');
   const lightbox=$('lightbox'), lightboxImg=$('lightboxImg');
   const toastEl=$('toast'),toastTitleEl=$('toastTitle'),toastMessageEl=$('toastMessage'),
         toastActionEl=$('toastAction'),toastCloseEl=$('toastClose');
@@ -5061,6 +5541,10 @@
   let myChart=null;
   let recomputeLabelPositions=null; // 指向 computeLabelPositions（initChart 内赋值）
   let currentZoom=1.18;             // 当前地图缩放级别（散点大小据此动态调整）
+  const LABEL_ZOOM_THRESHOLD=2;   // 已点亮城市名：缩放达到该值后自动显示
+  const NORMAL_LABEL_ZOOM_THRESHOLD=8; // 未点亮城市名：缩放达到该值后全国自动显示
+  const CITY_BORDER_ZOOM_THRESHOLD=7.5;  // 城市边界线：zoom≥7.5 时显示，避免缩小视图下密集线条干扰
+  let _cityBordersActive=false;          // 城市边界地图是否已加载（zoom<阈值时用 china 轻量地图）
   let cityPoints=[];                       // 所有地级市散点 [{name,value:[lng,lat],cityKey,adcode}]
   let citiesWithPhotos=new Set();          // 有照片的城市 cityKey
   let photoCountByCity=new Map();          // cityKey -> 照片数量
@@ -5255,6 +5739,7 @@
       selectedArea:'rgba(2,132,199,.28)',selectedBorder:'#0284c7',
       selectedShadow:'rgba(2,132,199,.30)',visitedShadow:'rgba(2,132,199,.14)',
       selectedLabel:'#be123c',
+      cityBorder:'rgba(148,163,184,.55)',
       tooltipBg:'rgba(255,255,255,.97)',tooltipBorder:'rgba(100,116,139,.35)',tooltipText:'#1f2a37'
     }:{
       area:'#050505',border:'#475569',
@@ -5269,6 +5754,7 @@
       selectedArea:'rgba(14,165,233,.34)',selectedBorder:'#7dd3fc',
       selectedShadow:'rgba(56,189,248,.45)',visitedShadow:'rgba(56,189,248,.18)',
       selectedLabel:'#e0f7ff',
+      cityBorder:'rgba(71,85,105,.5)',
       tooltipBg:'rgba(8,8,8,.97)',tooltipBorder:'rgba(71,85,105,.5)',tooltipText:'#f8fafc'
     };
   }
@@ -5295,6 +5781,15 @@
           label:{color:t.emLabel,textShadowColor:t.emLabelShadow}
         },
         label:{color:t.label}
+      },{
+        // 地级市边界图层：roam:true 处理缩放，silent:true 让点击穿透；按 _cityBordersActive 动态切换地图
+        map:_cityBordersActive&&cityBoundaries?'china_cities':'china',
+        roam:true,
+        scaleLimit:{min:0.8,max:14},
+        silent:true,
+        itemStyle:{areaColor:'transparent',borderColor:currentZoom>=CITY_BORDER_ZOOM_THRESHOLD&&cityBoundaries?t.cityBorder:'transparent',borderWidth:currentZoom>=CITY_BORDER_ZOOM_THRESHOLD&&cityBoundaries?.5:0,borderType:'dashed',shadowBlur:0},
+        emphasis:{disabled:true},
+        label:{show:false}
       }],
       series:[
         {itemStyle:{color:t.markerNormal,borderColor:t.markerBorder},emphasis:{itemStyle:{color:t.markerNormalHover,borderColor:t.markerBorder}}},  // 系列0 城市
@@ -5328,7 +5823,7 @@
     const option={
       backgroundColor:'transparent',
       // 地图全局字体（省份名/城市名/tooltip 统一继承）
-      textStyle:{fontFamily:'-apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Microsoft YaHei",sans-serif'},
+      textStyle:{fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif'},
       // 性能优化：关闭所有动画，消除缩放/拖拽时的拖影和延迟
       animation:false,
       animationDuration:0,
@@ -5383,8 +5878,8 @@
       },
       geo:[
         {
-          // 省份图层（底层 z:1）：填充色 + 省界实线 + 省份文字，无阴影无发光
-          map:'china',roam:true,zoom:1.18,
+          // 省份图层（底层 z:1）：填充色 + 省界实线 + 省份文字，无阴影无发光；roam:false，由 geo[1] 统一处理缩放
+          map:'china',name:'china',roam:false,zoom:1.18,
           center:[108,35.5],
           scaleLimit:{min:0.8,max:14},
           silent:false,
@@ -5418,11 +5913,34 @@
             textShadowBlur:3
           },
           labelLayout:{hideOverlap:true}
+        },
+        {
+          // 地级市边界图层（上层 z:3）：初始用 china 轻量地图，zoom≥阈值时动态切换为 china_cities
+          map: 'china',
+          name:'china_cities',
+          roam:true,
+          scaleLimit:{min:0.8,max:14},
+          silent:true,
+          z:3,
+          zoom:1.18,
+          center:[108,35.5],
+          animation:false,
+          progressive:30,
+          progressiveThreshold:30,
+          itemStyle:{
+            areaColor:'transparent',
+            borderColor:'transparent',
+            borderWidth:0,
+            borderType:'dashed',
+            shadowBlur:0
+          },
+          emphasis:{disabled:true},
+          label:{show:false}
         }
       ],
       series:[
         {
-          name:'城市',type:'scatter',coordinateSystem:'geo',data:[],
+          name:'城市',type:'scatter',coordinateSystem:'geo',geoIndex:1,data:[],
           symbolSize:p=>(isCapital(p)?13:7)*markerScale(),z:5,
           itemStyle:{color:tc.markerNormal,opacity:.9,borderColor:tc.markerBorder,borderWidth:1.2},
           label:{show:false},
@@ -5433,7 +5951,7 @@
           }
         },
         {
-          name:'已记录',type:'effectScatter',coordinateSystem:'geo',data:[],
+          name:'已记录',type:'effectScatter',coordinateSystem:'geo',geoIndex:1,data:[],
           symbolSize:p=>(isCapital(p)?20:15)*markerScale(),z:6,showEffectOn:'render',
           rippleEffect:{brushType:'stroke',scale:4.2,period:4.5},
           itemStyle:{color:tc.markerVisited,shadowBlur:14,shadowColor:tc.markerVisitedShadow},
@@ -5455,13 +5973,13 @@
           labelLayout:{hideOverlap:false,moveOverlap:'shiftY'},
           emphasis:{
             scale:1.35,
-            label:{show:true,fontSize:12.5,fontWeight:800,color:tc.emLabel,textShadowColor:tc.emLabelShadow,textShadowBlur:8}  /* 【提亮】城市悬浮标签：补冷亮白 #f8fafc + 发光 */
+            label:{show:false}  /* 城市名由系列2（已记录城市名）专职渲染，此处禁用避免重复 */
           }
         },
         {
           // 已点亮城市名标注系列：effectScatter 数据项标签在部分环境下不稳定，
           // 改由独立 scatter 系列（symbolSize 0.1 不可见、silent 不响应鼠标）专职承载城市名
-          name:'已记录城市名',type:'scatter',coordinateSystem:'geo',data:[],
+          name:'已记录城市名',type:'scatter',coordinateSystem:'geo',geoIndex:1,data:[],
           symbolSize:0.1,silent:true,z:7,
           label:{
             show:false,
@@ -5483,7 +6001,6 @@
     myChart.setOption(option);
 
     // 根据缩放级别动态切换城市标签：缩小→不显示；放大到阈值→显示并智能错开
-    const LABEL_ZOOM_THRESHOLD=1.5;
     // 智能分配标签方向：为每个已点亮城市选择与邻近标签冲突最小的位置
      function computeLabelPositions(){
        const opt=myChart.getOption();
@@ -5583,44 +6100,65 @@
     // 【性能优化】整个 syncLabelLayout 用 rAF 节流：roam 高频触发时合并为每帧一次 setOption，消除卡顿拖影
     let labelRafId=null;
     let roamThrottleId=null;
-    let lastSyncedZoom=-1;  // 【性能优化】缓存上次同步的 zoom，纯平移(无缩放变化)时跳过 setOption
+    let lastLabelRefreshState='';  // 【性能优化】缓存标签刷新状态，仅在阈值跨越时调用 refreshCityNameLabels
     function syncLabelLayout(){
       // 【性能优化】roam 每帧只执行一次 setOption：已排队则跳过，避免高频全量更新 option
       if(roamThrottleId) return;
       roamThrottleId=requestAnimationFrame(()=>{
         roamThrottleId=null;
-        const opt=myChart.getOption();
-        const zoom=opt.geo[0].zoom||1.18;
+        doSyncLabelLayout();
+      });
+    }
+    function doSyncLabelLayout(){
+      const opt=myChart.getOption();
+        // geo[1] 在 z:3 处理 roam，从它读取 zoom/center 同步到 geo[0]
+        const zoom=opt.geo[1].zoom||1.18;
         currentZoom=zoom;
         // 省份卡片交给布局函数自判：缩放/容器无实质变化时只重绘连线，卡片绝不动
         if(selectedProvinceName||currentView==='province') requestProvinceFocusLayout();
-        // 【性能优化】纯平移(zoom 未变)时标签字号无需更新，跳过昂贵 setOption，大幅减少拖拽卡顿
-        if(Math.abs(zoom-lastSyncedZoom)<0.001) return;
-        lastSyncedZoom=zoom;
-        // 城市名显示条件：放大到阈值 / 省份视图 / 已选中省份，三者其一即需要标签布局
+      const center=opt.geo[1].center||[108,35.5];
+      // 城市名显示条件：放大到阈值 / 省份视图 / 已选中省份，三者其一即需要标签布局
         const showLabel=zoom>=LABEL_ZOOM_THRESHOLD||currentView==='province'||!!selectedProvinceName;
         const s=markerScale();
         const pf=provinceFontSize();
+        const showCityBorder=zoom>=CITY_BORDER_ZOOM_THRESHOLD&&cityBoundaries;
+        // 【性能优化】zoom 跨越阈值时：切换地图 + 更新边框样式（仅此一次，不在 roam 中重复）
+        if(showCityBorder!==_cityBordersActive){
+          _cityBordersActive=showCityBorder;
+          const borderMap=showCityBorder?'china_cities':'china';
+          const tcPre=chartThemeColors();
+          myChart.setOption({geo:[{},{map:borderMap,itemStyle:{areaColor:'transparent',borderColor:showCityBorder?tcPre.cityBorder:'transparent',borderWidth:showCityBorder?.5:0,borderType:'dashed',shadowBlur:0}}]});
+        }
+        const tc=chartThemeColors();
+        // 【性能优化】roam 同步只更新 geo[0]（省份图层），geo[1] 传 {} 不重绘城市多边形
         myChart.setOption({
           animation:false,
           animationDuration:0,
           animationDurationUpdate:0,
           geo:[
             {
-              // 省份汉字始终显示，fontSize 随缩放自适应
+              // 省份汉字始终显示，fontSize 随缩放自适应；同步 zoom/center 跟上 geo[1]
+              zoom:zoom,center:center,
               label:{show:true,fontSize:pf,fontWeight:700,lineHeight:Math.round(pf*1.4)},
               labelLayout:{hideOverlap:true},
-              emphasis:{label:{show:true,fontSize:Math.min(pf+3,26),lineHeight:Math.round((pf+3)*1.4),color:chartThemeColors().emLabel,formatter:p=>provinceShort(p.name),textShadowColor:chartThemeColors().emLabelShadow,textShadowBlur:8}}  /* 省份悬浮标签颜色跟随主题（浅色=亮靛蓝/深色=冷亮白） */
-            }
+              emphasis:{label:{show:true,fontSize:Math.min(pf+3,26),lineHeight:Math.round((pf+3)*1.4),color:tc.emLabel,formatter:p=>provinceShort(p.name),textShadowColor:tc.emLabelShadow,textShadowBlur:8}}  /* 省份悬浮标签颜色跟随主题（浅色=亮靛蓝/深色=冷亮白） */
+            },
+            {}  // geo[1] 不更新，避免每次 roam 重绘全部城市多边形
           ],
           series:[
             {symbolSize:p=>(isCapital(p)?13:7)*s},
             {symbolSize:p=>(isCapital(p)?20:15)*s,
-             rippleEffect:{brushType:'stroke',scale:4.2*(s<0.8?0.65:1),period:4.5}}
+             rippleEffect:{brushType:'stroke',scale:4.2*(s<0.8?0.65:1),period:4.5},
+             // 城市名统一由系列2静态标签渲染，悬停标签永远禁用，避免与静态标签重复
+             emphasis:{label:{show:false}}}
           ]
         });
-        // 缩放跨越阈值时同步刷新已点亮城市名的显隐（标注系列的数据项级 show）
-        refreshVisitedNameLabels();
+        // 【性能优化】只在标签显隐状态变化时（缩放跨越阈值 / 省份选中变化）才重建城市名标签数据
+        const labelState=zoom.toFixed(1)+'_'+(!!selectedProvinceName)+'_'+(currentView==='province');
+        if(labelState!==lastLabelRefreshState){
+          lastLabelRefreshState=labelState;
+          refreshCityNameLabels();
+        }
         // 【性能优化】标签位置计算很重(convertToPixel 逐城市)，仅在缩放停止后才执行：
         // 用 150ms 防抖，拖拽/缩放过程中不重算，停止后才算一次，消除拖拽卡顿
         if(showLabel){
@@ -5633,7 +6171,6 @@
             });
           },150);
         }
-      });
     }
     myChart.on('georoam',syncLabelLayout);
     // 初始化时立即同步一次散点大小与涟漪效果
@@ -5734,9 +6271,9 @@
   }
 
   // 已点亮城市名显示规则（单一判定源）：
-  // 基础显隐=省份视图或缩放≥1.5（原本显示的保持显示）；选中省份→省内额外强制显示
+  // 基础显隐=省份视图或缩放≥阈值（原本显示的保持显示）；选中省份→省内额外强制显示
   function visitedNameShouldShow(adcode){
-    const base=currentView==='province'||currentZoom>=1.5;
+    const base=currentView==='province'||currentZoom>=LABEL_ZOOM_THRESHOLD;
     const inFocusProv=selectedProvinceName&&provinceOf(adcode)===selectedProvinceName;
     return base||inFocusProv;
   }
@@ -5762,10 +6299,11 @@
           distance:3,overflow:'truncate',ellipsis:'…',width:70
         }});
       }else{
-        if(inFocus){const tcNormal=chartThemeColors();pt.label={
+        // 未点亮城市名：选中省份内或放大到 3.5 阈值后显示（放大显示所有城市名）
+        if(inFocus||currentZoom>=NORMAL_LABEL_ZOOM_THRESHOLD){const tcNormal=chartThemeColors();pt.label={
           show:true,position:'right',
           formatter:p=>p.data.name,
-          color:tcNormal.normalLabel,fontSize:10.5,fontWeight:600,
+          color:tcNormal.normalLabel,fontSize:10.5,fontWeight:700,
           textShadowColor:tcNormal.normalLabelShadow,textShadowBlur:3,
           distance:3,overflow:'truncate',ellipsis:'…',width:64
         };}
@@ -5780,20 +6318,40 @@
     }
   }
 
-  // 按当前省份选中态/视图/缩放级别，刷新已点亮城市名标注系列的显隐
-  function refreshVisitedNameLabels(){
+  // 按当前缩放级别/省份选中态，刷新所有城市名标注的显隐：
+  // series[0] 未点亮城市（放大到阈值后显示）+ series[2] 已点亮城市
+  function refreshCityNameLabels(){
     if(!myChart) return;
     const opt=myChart.getOption();
+    const showAll=currentZoom>=NORMAL_LABEL_ZOOM_THRESHOLD;
+    const patch={series:[{},{},{}]};
+    const s0=opt.series[0];
+    if(s0&&s0.data&&s0.data.length){
+      patch.series[0]={data:s0.data.map(d=>{
+        const inFocus=selectedProvinceName&&provinceOf(d.adcode)===selectedProvinceName;
+        const show=showAll||inFocus;
+        if(!show) return Object.assign({},d,{label:{show:false}});
+        const tc=chartThemeColors();
+        return Object.assign({},d,{label:{
+          show:true,position:'right',
+          formatter:p=>p.data.name,
+          color:tc.normalLabel,fontSize:10.5,fontWeight:700,
+          textShadowColor:tc.normalLabelShadow,textShadowBlur:3,
+          distance:3,overflow:'truncate',ellipsis:'…',width:64
+        }});
+      })};
+    }
     const s2=opt.series[2];
-    if(!s2||!s2.data||!s2.data.length) return;
-    const nd=s2.data.map(d=>{
-      return Object.assign({},d,{label:Object.assign({},d.label,{show:visitedNameShouldShow(d.adcode)})});
-    });
-    myChart.setOption({series:[{},{},{data:nd}]});
+    if(s2&&s2.data&&s2.data.length){
+      patch.series[2]={data:s2.data.map(d=>
+        Object.assign({},d,{label:Object.assign({},d.label,{show:visitedNameShouldShow(d.adcode)})})
+      )};
+    }
+    myChart.setOption(patch);
   }
 
   /* ---------- IndexedDB 封装 ---------- */
-  const DB_NAME='TravelPhotosDB',DB_VERSION=4,STORE='photos',META_STORE='cityMeta';
+  const DB_NAME='TravelPhotosDB',DB_VERSION=5,STORE='photos',META_STORE='cityMeta',REVIEW_STORE='reviews';
   let dbPromise=null;
   // 通用超时包装：个别环境下 IDB 请求回调可能不触发，避免永久挂起
   function withTimeout(p,ms,msg){
@@ -5826,6 +6384,10 @@
         // v3 升级：新增 cityMeta 存储城市元数据（游玩年月、标签）
         if(!db.objectStoreNames.contains(META_STORE)){
           db.createObjectStore(META_STORE,{keyPath:'cityKey'});
+        }
+        // v5 升级：新增 reviews 存储用户公开点评（key: userId|cityKey）
+        if(!db.objectStoreNames.contains(REVIEW_STORE)){
+          db.createObjectStore(REVIEW_STORE,{keyPath:'id'});
         }
       };
       req.onsuccess=()=>resolve(req.result);
@@ -5912,6 +6474,7 @@
     return meta;
   }
   async function saveCityMeta(meta){
+    meta.updatedAt=Date.now();
     const db=await openDB();
     await withTimeout(new Promise((resolve,reject)=>{
       const r=db.transaction(META_STORE,'readwrite').objectStore(META_STORE).put(meta);
@@ -5930,6 +6493,102 @@
     }),8000,'读取全部城市元数据超时');
     metas.forEach(m=>cityMetaCache.set(m.cityKey,m));
     return metas;
+  }
+
+  /* ---------- 公开点评 CRUD（key: userId|cityKey） ---------- */
+  // review 结构: {id:'userId|cityKey', userId, cityKey, cityName, rating, description, visitMonth, tags:[text],
+  //              attractions:[name], photos:[dataUrl], visibility:{rating,description,visitMonth,tags,attractions,photos},
+  //              sourceUpdatedAt, publishedAt, updatedAt, likes, comments}
+  function reviewIdOf(userId,cityKey){return (userId||'guest')+'|'+(cityKey||'');}
+  async function getMyReview(userId,cityKey){
+    const db=await openDB();
+    const id=reviewIdOf(userId,cityKey);
+    return withTimeout(new Promise((resolve,reject)=>{
+      const r=db.transaction(REVIEW_STORE,'readonly').objectStore(REVIEW_STORE).get(id);
+      r.onsuccess=()=>resolve(r.result||null);
+      r.onerror=()=>reject(r.error);
+    }),8000,'读取点评超时');
+  }
+  async function saveMyReview(review){
+    const db=await openDB();
+    await withTimeout(new Promise((resolve,reject)=>{
+      const r=db.transaction(REVIEW_STORE,'readwrite').objectStore(REVIEW_STORE).put(review);
+      r.onsuccess=()=>resolve();
+      r.onerror=()=>reject(r.error);
+    }),8000,'保存点评超时');
+    markCloudDirty();
+  }
+  async function deleteMyReview(userId,cityKey){
+    const db=await openDB();
+    const id=reviewIdOf(userId,cityKey);
+    await withTimeout(new Promise((resolve,reject)=>{
+      const r=db.transaction(REVIEW_STORE,'readwrite').objectStore(REVIEW_STORE).delete(id);
+      r.onsuccess=()=>resolve();
+      r.onerror=()=>reject(r.error);
+    }),8000,'删除点评超时');
+    markCloudDirty();
+  }
+  async function getAllMyReviews(){
+    const db=await openDB();
+    return withTimeout(new Promise((resolve,reject)=>{
+      const r=db.transaction(REVIEW_STORE,'readonly').objectStore(REVIEW_STORE).getAll();
+      r.onsuccess=()=>resolve(r.result||[]);
+      r.onerror=()=>reject(r.error);
+    }),8000,'读取全部点评超时');
+  }
+
+  /* ---------- 云端公开点评（city_reviews 表，best-effort；表未创建时静默降级为本地） ---------- */
+  async function syncPublicReviewToCloud(review){
+    if(!cloudClient||!cloudUser||!cloudUser.id) return;
+    try{
+      const {error}=await cloudClient.from('city_reviews').upsert({
+        user_id:cloudUser.id,
+        city_key:review.cityKey,
+        city_name:review.cityName,
+        nickname:review.nickname||'匿名旅行者',
+        avatar_url:review.avatarUrl||'',
+        rating:review.rating||0,
+        description:review.intro||'',
+        visit_month:review.visitDate||'',
+        tags:review.tags||[],
+        attractions:review.attractions||[],
+        photos:review.photos||[],
+        visibility:review.visibility||{},
+        source_updated_at:new Date(review.sourceUpdatedAt||Date.now()).toISOString(),
+        updated_at:new Date(review.updatedAt||Date.now()).toISOString(),
+      },{onConflict:'user_id,city_key'});
+      if(error&&!isCloudSetupError(error)) console.warn('同步公开点评到云端失败',error);
+    }catch(e){ console.warn('同步公开点评到云端失败',e); }
+  }
+  async function deletePublicReviewFromCloud(cityKey){
+    if(!cloudClient||!cloudUser||!cloudUser.id) return;
+    try{
+      const {error}=await cloudClient.from('city_reviews').delete().eq('user_id',cloudUser.id).eq('city_key',cityKey);
+      if(error&&!isCloudSetupError(error)) console.warn('删除云端公开点评失败',error);
+    }catch(e){ console.warn('删除云端公开点评失败',e); }
+  }
+  async function loadPublicReviews(cityKey){
+    if(!cloudClient) return [];
+    try{
+      const {data,error}=await cloudClient.from('city_reviews').select('*').eq('city_key',cityKey).order('updated_at',{ascending:false});
+      if(error) throw error;
+      // 排除当前用户自己的点评（自己的点评已作为「我的点评」单独展示）
+      const mineId=cloudUser&&cloudUser.id?cloudUser.id+'|'+cityKey:'';
+      return (data||[]).filter(r=>r.user_id!==(cloudUser&&cloudUser.id)).map(r=>({
+        id:r.user_id+'|'+r.city_key,
+        userId:r.user_id,
+        nickname:r.nickname||'匿名旅行者',
+        avatarUrl:r.avatar_url||'',
+        rating:Number(r.rating)||0,
+        intro:r.description||'',
+        visitDate:r.visit_month||'',
+        tags:r.tags||[],
+        attractions:r.attractions||[],
+        photos:r.photos||[],
+        publishedAt:r.updated_at||'',
+        createdAt:r.published_at||'',
+      }));
+    }catch(e){ return []; }
   }
 
   /* ---------- 省份点击聚焦：城市照片卡片 + 地图连接线 ---------- */
@@ -6014,7 +6673,7 @@
       name.textContent=item.city.name;
       const rating=document.createElement('span');
       rating.className='province-map-card-rating';
-      rating.textContent=item.rating?'推荐 '+('★'.repeat(item.rating))+('☆'.repeat(5-item.rating)):'推荐 暂未评分';
+      rating.innerHTML=item.rating?'推荐 '+renderStars(item.rating):'推荐 暂未评分';
       const intro=document.createElement('span');
       intro.className='province-map-card-intro';
       intro.textContent=item.tags.length?item.tags.join(' · '):'暂无标签';
@@ -6432,6 +7091,18 @@
   const newAccountPassword=$('newAccountPassword'),confirmAccountPassword=$('confirmAccountPassword');
   const changePasswordMessage=$('changePasswordMessage'),savePasswordBtn=$('savePasswordBtn'),cancelPasswordBtn=$('cancelPasswordBtn');
   const cloudBlocker=$('cloudBlocker'),authTitle=$('authTitle'),authDesc=$('authDesc');
+  // 个人资料 DOM
+  const profileAvatar=$('profileAvatar'),avatarWrap=$('avatarWrap'),avatarFileInput=$('avatarFileInput');
+  const profileNickname=$('profileNickname'),profileEmail=$('profileEmail');
+  const editNicknameBtn=$('editNicknameBtn'),editNicknameBtn2=$('editNicknameBtn2');
+  const nicknameEditRow=$('nicknameEditRow'),nicknameInput=$('nicknameInput'),nicknameCount=$('nicknameCount');
+  const nicknameMessage=$('nicknameMessage'),cancelNicknameBtn=$('cancelNicknameBtn'),saveNicknameBtn=$('saveNicknameBtn');
+  const changeAvatarBtn=$('changeAvatarBtn');
+  // 头像裁剪 DOM
+  const avatarCropOverlay=$('avatarCropOverlay'),avatarCropClose=$('avatarCropClose');
+  const avatarCropCancel=$('avatarCropCancel'),avatarCropSave=$('avatarCropSave');
+  const avatarCropCanvas=$('avatarCropCanvas'),avatarPreviewCanvas=$('avatarPreviewCanvas');
+  const avatarCropStage=$('avatarCropStage');
   let authMode='login';
 
   function isLocalMode(){return storageMode==='local';}
@@ -6558,6 +7229,7 @@
     authDesc.textContent=signedIn
       ?'同一账号在不同设备登录后，会显示相同的旅行记录。'
       :(localOnly?'当前内容不会上传云端。':'登录后可跨设备同步，也可以选择仅在本机使用。');
+    if(signedIn) loadProfileToUI();
     if(!signedIn){
       setChangePasswordOpen(false);
       setSyncStatus('仅本机','');
@@ -6602,6 +7274,171 @@
     setSyncStatus('待同步','syncing');
     clearTimeout(cloudSyncTimer);
     cloudSyncTimer=setTimeout(()=>syncToCloud().catch(()=>{}),1200);
+  }
+
+  /* ===== 用户资料（头像+昵称）账号级存储 ===== */
+  const PROFILE_KEY_PREFIX='travelUserProfile_';
+  function getProfileKey(){
+    if(cloudUser&&cloudUser.id) return PROFILE_KEY_PREFIX+cloudUser.id;
+    if(cloudUser&&cloudUser.email) return PROFILE_KEY_PREFIX+cloudUser.email;
+    return PROFILE_KEY_PREFIX+'local';
+  }
+  function getUserProfile(){
+    try{
+      const raw=localStorage.getItem(getProfileKey());
+      if(raw) return JSON.parse(raw);
+    }catch(e){}
+    return {nickname:'',avatarUrl:'',email:''};
+  }
+  function saveUserProfile(profile){
+    const key=getProfileKey();
+    const existing=getUserProfile();
+    const merged=Object.assign({},existing,profile,{updatedAt:Date.now()});
+    localStorage.setItem(key,JSON.stringify(merged));
+    markCloudDirty();
+  }
+  // 获取当前用户公开身份（头像+昵称，供点评使用）
+  function getPublicIdentity(){
+    const p=getUserProfile();
+    return {
+      nickname:p.nickname||'匿名旅行者',
+      avatarUrl:p.avatarUrl||'',
+    };
+  }
+
+  /* ===== 头像渲染 ===== */
+  function renderProfileAvatar(avatarUrl){
+    if(avatarUrl){
+      profileAvatar.innerHTML='<img src="'+avatarUrl+'" alt="头像" />';
+    }else{
+      const initial=(getUserProfile().nickname||'旅')[0];
+      profileAvatar.innerHTML='<span style="font-size:28px;font-weight:700;color:#38bdf8;">'+initial+'</span>';
+    }
+  }
+  function loadProfileToUI(){
+    const p=getUserProfile();
+    profileNickname.textContent=p.nickname||'旅行者';
+    profileEmail.textContent=cloudUser?(cloudUser.email||''):'';
+    renderProfileAvatar(p.avatarUrl);
+  }
+
+  /* ===== 昵称编辑 ===== */
+  function openNicknameEdit(){
+    const p=getUserProfile();
+    nicknameInput.value=p.nickname||'';
+    nicknameCount.textContent=(p.nickname||'').length+' / 20';
+    nicknameMessage.textContent='';nicknameMessage.className='nickname-message';
+    profileNickname.style.display='none';
+    editNicknameBtn.style.display='none';
+    nicknameEditRow.hidden=false;
+    setTimeout(()=>nicknameInput.focus(),50);
+  }
+  function closeNicknameEdit(){
+    nicknameEditRow.hidden=true;
+    profileNickname.style.display='';
+    editNicknameBtn.style.display='';
+  }
+  function sanitizeNickname(v){
+    // 去除 HTML 标签和 script 等危险字符
+    return v.replace(/<[^>]*>/g,'').replace(/[<>{}\\]/g,'').trim();
+  }
+  function validateNickname(v){
+    if(!v) return '昵称不能为空';
+    if(v.length<2) return '昵称至少 2 个字符';
+    if(v.length>20) return '昵称不能超过 20 个字符';
+    if(/^\s+$/.test(v)) return '昵称不能全为空格';
+    // 允许中文、英文、数字、部分常用符号
+    if(!/^[\u4e00-\u9fa5a-zA-Z0-9·\-_\.()（）]+$/.test(v)) return '仅支持中英文、数字和常用符号';
+    return null;
+  }
+  function setNicknameMessage(text,type){
+    nicknameMessage.textContent=text;
+    nicknameMessage.className='nickname-message show'+(type?(' '+type):'');
+  }
+
+  /* ===== 头像上传 + 裁剪 ===== */
+  let cropImage=null,cropOffsetX=0,cropOffsetY=0,cropScale=1,cropDragStart=null;
+  const CROP_CANVAS_SIZE=200,CROP_CIRCLE_SIZE=160,CROP_PREVIEW_SIZE=80;
+  function drawCropCanvas(){
+    const ctx=avatarCropCanvas.getContext('2d');
+    ctx.clearRect(0,0,CROP_CANVAS_SIZE,CROP_CANVAS_SIZE);
+    ctx.fillStyle='#000';ctx.fillRect(0,0,CROP_CANVAS_SIZE,CROP_CANVAS_SIZE);
+    if(!cropImage) return;
+    const cx=CROP_CANVAS_SIZE/2+cropOffsetX, cy=CROP_CANVAS_SIZE/2+cropOffsetY;
+    const w=cropImage.width*cropScale, h=cropImage.height*cropScale;
+    ctx.drawImage(cropImage,cx-w/2,cy-h/2,w,h);
+    drawPreviewCanvas();
+  }
+  function drawPreviewCanvas(){
+    const ctx=avatarPreviewCanvas.getContext('2d');
+    ctx.clearRect(0,0,CROP_PREVIEW_SIZE,CROP_PREVIEW_SIZE);
+    if(!cropImage) return;
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(CROP_PREVIEW_SIZE/2,CROP_PREVIEW_SIZE/2,CROP_PREVIEW_SIZE/2,0,Math.PI*2);
+    ctx.clip();
+    // 从裁剪 canvas 中央取圆形区域绘制到预览
+    const srcSize=CROP_CIRCLE_SIZE;
+    const srcCx=CROP_CANVAS_SIZE/2+cropOffsetX, srcCy=CROP_CANVAS_SIZE/2+cropOffsetY;
+    const ratio=CROP_PREVIEW_SIZE/srcSize;
+    const w=cropImage.width*cropScale, h=cropImage.height*cropScale;
+    // 计算源图在 canvas 上的位置，然后取圆形区域映射到预览
+    ctx.drawImage(cropImage,
+      // 源图裁剪起点：圆形左上角相对于图片的坐标
+      (srcCx-srcSize/2-(srcCx-w/2))/cropScale,
+      (srcCy-srcSize/2-(srcCy-h/2))/cropScale,
+      srcSize/cropScale, srcSize/cropScale,
+      // 目标
+      0,0,CROP_PREVIEW_SIZE,CROP_PREVIEW_SIZE
+    );
+    ctx.restore();
+  }
+  function openAvatarCrop(file){
+    const reader=new FileReader();
+    reader.onload=e=>{
+      const img=new Image();
+      img.onload=()=>{
+        cropImage=img;
+        // 初始缩放：让图片短边适配裁剪圆
+        const minDim=Math.min(img.width,img.height);
+        cropScale=(CROP_CIRCLE_SIZE*1.1)/minDim;
+        cropOffsetX=0;cropOffsetY=0;
+        drawCropCanvas();
+        avatarCropOverlay.classList.add('show');
+      };
+      img.src=e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  function closeAvatarCrop(){
+    avatarCropOverlay.classList.remove('show');
+    cropImage=null;avatarFileInput.value='';
+  }
+  function saveCroppedAvatar(){
+    if(!cropImage) return;
+    // 从裁剪 canvas 中央裁取圆形区域，输出 160x160 的 dataURL
+    const out=document.createElement('canvas');
+    out.width=160;out.height=160;
+    const ctx=out.getContext('2d');
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(80,80,80,0,Math.PI*2);
+    ctx.clip();
+    const srcSize=CROP_CIRCLE_SIZE;
+    const srcCx=CROP_CANVAS_SIZE/2+cropOffsetX, srcCy=CROP_CANVAS_SIZE/2+cropOffsetY;
+    const w=cropImage.width*cropScale, h=cropImage.height*cropScale;
+    ctx.drawImage(cropImage,
+      (srcCx-srcSize/2-(srcCx-w/2))/cropScale,
+      (srcCy-srcSize/2-(srcCy-h/2))/cropScale,
+      srcSize/cropScale, srcSize/cropScale,
+      0,0,160,160
+    );
+    ctx.restore();
+    const dataUrl=out.toDataURL('image/jpeg',0.85);
+    saveUserProfile({avatarUrl:dataUrl});
+    renderProfileAvatar(dataUrl);
+    closeAvatarCrop();
+    toast('✓ 头像更新成功');
   }
 
   function dataUrlToBlob(dataUrl){
@@ -6682,11 +7519,18 @@
       r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error);
     }),10000,'更新本地资料超时');
   }
+  async function putLocalReview(review){
+    const db=await openDB();
+    return withTimeout(new Promise((resolve,reject)=>{
+      const r=db.transaction(REVIEW_STORE,'readwrite').objectStore(REVIEW_STORE).put(review);
+      r.onsuccess=()=>resolve();r.onerror=()=>reject(r.error);
+    }),10000,'更新本地点评超时');
+  }
   async function clearLocalTravelData(){
     const db=await openDB();
     await withTimeout(new Promise((resolve,reject)=>{
-      const tx=db.transaction([STORE,META_STORE],'readwrite');
-      tx.objectStore(STORE).clear();tx.objectStore(META_STORE).clear();
+      const tx=db.transaction([STORE,META_STORE,REVIEW_STORE],'readwrite');
+      tx.objectStore(STORE).clear();tx.objectStore(META_STORE).clear();tx.objectStore(REVIEW_STORE).clear();
       tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);
     }),20000,'清理本地缓存超时');
     cityMetaCache.clear();thumbCacheByCity.clear();photoCountByCity.clear();
@@ -6698,7 +7542,7 @@
   }
 
   async function buildCloudSnapshot(){
-    const photos=await getAllPhotos(),metas=await getAllCityMeta();
+    const photos=await getAllPhotos(),metas=await getAllCityMeta(),reviews=await getAllMyReviews();
     const cloudPhotos=[],photoPathByDataUrl=new Map();
     let completedImages=0;
     const totalImages=photos.length;
@@ -6733,7 +7577,7 @@
       (clean.attractions||[]).forEach(att=>(att.photos||[]).forEach(ph=>delete ph.dataUrl));
       cloudMetas.push(clean);
     }
-    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,savedAt:new Date().toISOString()};
+    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,reviews:reviews.map(r=>JSON.parse(JSON.stringify(r))),savedAt:new Date().toISOString()};
   }
 
   async function syncToCloud(options){
@@ -6853,6 +7697,7 @@
       await clearLocalTravelData();
       for(const rec of preparedPhotos) await addPhoto(rec);
       for(const meta of preparedMetas) await putLocalMeta(meta);
+      for(const rev of (snapshot.reviews||[])) await putLocalReview(rev);
       cityMetaCache.clear();
       localStorage.setItem(CLOUD_OWNER_KEY,cloudUser.id);
       localStorage.setItem(CLOUD_DIRTY_KEY,'0');
@@ -6995,6 +7840,80 @@
     }
   });
   syncNowBtn.addEventListener('click',()=>syncToCloud({notify:true}).catch(()=>{}));
+
+  /* ===== 个人资料事件绑定 ===== */
+  // 头像点击 / 更换头像按钮 → 触发文件选择
+  function triggerAvatarUpload(){ avatarFileInput.click(); }
+  avatarWrap.addEventListener('click',triggerAvatarUpload);
+  changeAvatarBtn.addEventListener('click',triggerAvatarUpload);
+  avatarFileInput.addEventListener('change',e=>{
+    const file=e.target.files[0];
+    if(!file) return;
+    if(!/^image\/(jpeg|png|webp)$/.test(file.type)){toast('仅支持 JPG / PNG / WEBP 格式',true);return;}
+    if(file.size>5*1024*1024){toast('图片大小不能超过 5MB',true);return;}
+    openAvatarCrop(file);
+  });
+  // 裁剪弹窗
+  avatarCropClose.addEventListener('click',closeAvatarCrop);
+  avatarCropCancel.addEventListener('click',closeAvatarCrop);
+  avatarCropOverlay.addEventListener('click',e=>{if(e.target===avatarCropOverlay) closeAvatarCrop();});
+  avatarCropSave.addEventListener('click',saveCroppedAvatar);
+  // 裁剪拖拽
+  avatarCropStage.addEventListener('mousedown',e=>{
+    if(!cropImage) return;
+    cropDragStart={x:e.clientX-cropOffsetX,y:e.clientY-cropOffsetY};
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!cropDragStart||!cropImage) return;
+    cropOffsetX=e.clientX-cropDragStart.x;
+    cropOffsetY=e.clientY-cropDragStart.y;
+    drawCropCanvas();
+  });
+  window.addEventListener('mouseup',()=>{cropDragStart=null;});
+  // 触屏拖拽
+  avatarCropStage.addEventListener('touchstart',e=>{
+    if(!cropImage||!e.touches[0]) return;
+    cropDragStart={x:e.touches[0].clientX-cropOffsetX,y:e.touches[0].clientY-cropOffsetY};
+  },{passive:true});
+  avatarCropStage.addEventListener('touchmove',e=>{
+    if(!cropDragStart||!cropImage||!e.touches[0]) return;
+    cropOffsetX=e.touches[0].clientX-cropDragStart.x;
+    cropOffsetY=e.touches[0].clientY-cropDragStart.y;
+    drawCropCanvas();
+    e.preventDefault();
+  },{passive:false});
+  avatarCropStage.addEventListener('touchend',()=>{cropDragStart=null;});
+  // 滚轮缩放
+  avatarCropStage.addEventListener('wheel',e=>{
+    if(!cropImage) return;
+    e.preventDefault();
+    const delta=e.deltaY>0?0.9:1.1;
+    cropScale=Math.max(0.1,Math.min(10,cropScale*delta));
+    drawCropCanvas();
+  },{passive:false});
+
+  // 昵称编辑
+  editNicknameBtn.addEventListener('click',openNicknameEdit);
+  editNicknameBtn2.addEventListener('click',openNicknameEdit);
+  cancelNicknameBtn.addEventListener('click',closeNicknameEdit);
+  nicknameInput.addEventListener('input',()=>{
+    nicknameCount.textContent=nicknameInput.value.length+' / 20';
+    nicknameMessage.textContent='';nicknameMessage.className='nickname-message';
+  });
+  saveNicknameBtn.addEventListener('click',()=>{
+    const raw=nicknameInput.value;
+    const cleaned=sanitizeNickname(raw);
+    const err=validateNickname(cleaned);
+    if(err){setNicknameMessage(err,'error');return;}
+    try{
+      saveUserProfile({nickname:cleaned,email:cloudUser?(cloudUser.email||''):''});
+      profileNickname.textContent=cleaned;
+      closeNicknameEdit();
+      toast('✓ 昵称修改成功');
+    }catch(e){
+      setNicknameMessage('昵称修改失败，请稍后重试。','error');
+    }
+  });
   signOutBtn.addEventListener('click',async ()=>{
     signOutBtn.disabled=true;
     const preserveLocalData=localStorage.getItem(CLOUD_DIRTY_KEY)==='1'||!!cloudSyncPromise;
@@ -7058,7 +7977,7 @@
     else if(!isLocalMode()) openAuth();
   }
 
-  window.TravelCloud={sync:()=>syncToCloud({notify:true}),openAccount:openAuth};
+  window.TravelCloud={sync:()=>syncToCloud({notify:true}),openAccount:openAuth,getPublicIdentity:getPublicIdentity};
 
   /* ---------- 图片处理：Base64（大图自动压缩，防止配额膨胀） ---------- */
   function readAsDataURL(file){
@@ -7121,10 +8040,12 @@
           shadowColor:selected?t.selectedShadow:(visited?t.visitedShadow:t.unvisitedShadow),
           shadowBlur:selected?18:(visited?7:0)
         },
-        label:selected?{show:true,color:t.selectedLabel,fontWeight:800}:undefined
+        // 选中省份仅改变标签颜色，字体（fontFamily/fontSize/fontWeight/lineHeight/阴影）完全继承 geo 级配置，
+        // 避免 region 级 label 覆盖导致字体回退、字重突变，与城市标签字体保持一致
+        label:selected?{show:true,color:t.selectedLabel}:undefined
       };
     });
-    myChart.setOption({geo:[{regions}]});
+    myChart.setOption({geo:[{regions},{}]});
   }
 
   function updateDashboard(){
@@ -7450,7 +8371,7 @@
     const card=document.createElement('div');
     card.className='fp-city-card';
     const rating=c.rating
-      ?('推荐 '+'★'.repeat(c.rating)+'☆'.repeat(5-c.rating))
+      ?('推荐 '+renderStars(c.rating))
       :'推荐 暂未评分';
     card.innerHTML='<span class="fp-card-badge">'+(c.isHome?'🏠':s.arrived.length)+'</span>'
       +'<span class="fp-card-name">'+c.name+(c.isHome?' · 家':'')+'</span>'
@@ -9302,7 +10223,7 @@
     // 推荐星级（带星符号 + 微光）
     if(elRating){
       const r=meta.rating||0;
-      elRating.innerHTML='<span class="att-info-stars">'+'★'.repeat(r)+'<span style="opacity:.25">'+'★'.repeat(5-r)+'</span>'+'</span>';
+      elRating.innerHTML='<span class="att-info-stars">'+renderStars(r)+'</span>';
     }
     // 景点总数
     if(elCount){elCount.textContent=(attractions||[]).length+' 个';}
@@ -10054,6 +10975,488 @@
     }
   }
 
+  /* ===== 城市点评 ===== */
+  // 示例点评数据（按城市名索引）
+  const sampleReviews={
+    '济南市':[
+      {userName:'旅行者小王',rating:5,intro:'泉城济南真的太美了！趵突泉的三股水喷涌而出，大明湖畔的夕阳让人流连忘返。美食也超赞，把子肉和油旋是必吃的！',tags:['美食','历史文化','适合拍照','亲子游'],visitCount:2,visitDate:'2025年10月',attractions:['趵突泉','大明湖','千佛山','宽厚里'],photos:[]},
+      {userName:'背包客阿明',rating:4,intro:'济南是一座被低估的城市，泉水文化独树一帜。建议秋天来，气候宜人，泉水也最充沛。老城区的巷子很有味道。',tags:['历史文化','Citywalk','人文风情'],visitCount:1,visitDate:'2024年9月',attractions:['趵突泉','黑虎泉','曲水亭街','芙蓉街'],photos:[]},
+      {userName:'摄影达人Luna',rating:4.5,intro:'超级出片的城市！大明湖的荷花、千佛山的日出、老商埠的民国建筑，每一处都是绝佳取景地。',tags:['适合拍照','自然风光','古建筑'],visitCount:3,visitDate:'2025年7月',attractions:['大明湖','千佛山','老商埠','洪家楼教堂'],photos:[]},
+    ],
+    '北京市':[
+      {userName:'历史迷老张',rating:5,intro:'帝都的魅力无法用语言形容。故宫的恢宏、长城的壮阔、胡同的烟火气，每一次来都有新的发现。烤鸭一定要吃！',tags:['历史文化','美食','古建筑','博物馆'],visitCount:5,visitDate:'2025年8月',attractions:['故宫','长城','天安门','南锣鼓巷'],photos:[]},
+      {userName:'周末游达人',rating:4.5,intro:'北京太大，一次根本逛不完。798艺术区很潮，三里屯的夜生活很丰富，推荐骑共享单车逛胡同。',tags:['Citywalk','文艺','美食','艺术区'],visitCount:2,visitDate:'2025年5月',attractions:['798艺术区','三里屯','后海','颐和园'],photos:[]},
+    ],
+    '上海市':[
+      {userName:'时尚博主CC',rating:5,intro:'魔都永远让人心动！外滩的夜景、法租界的梧桐树、新天地的下午茶，每一帧都像电影画面。',tags:['美食','适合拍照','文艺','购物'],visitCount:4,visitDate:'2025年6月',attractions:['外滩','法租界','新天地','迪士尼'],photos:[]},
+      {userName:'建筑爱好者',rating:4,intro:'上海的建筑是一本活的历史书，从石库门到陆家嘴三件套，时空交错的感觉太奇妙了。',tags:['历史文化','Citywalk','建筑','古建筑'],visitCount:1,visitDate:'2024年11月',attractions:['外滩','豫园','武康路','陆家嘴'],photos:[]},
+    ],
+    '成都市':[
+      {userName:'美食猎人',rating:5,intro:'成都，一座来了就不想走的城市！火锅串串钵钵鸡，每天吃到扶墙。大熊猫也超可爱！',tags:['美食','适合拍照','亲子游','休闲'],visitCount:3,visitDate:'2025年4月',attractions:['大熊猫基地','宽窄巷子','锦里','武侯祠'],photos:[]},
+    ],
+    '杭州市':[
+      {userName:'文艺青年小鹿',rating:5,intro:'西湖的美是刻在骨子里的温柔。断桥残雪、雷峰夕照，每一个角度都像一幅水墨画。灵隐寺的钟声让人心安。',tags:['自然风光','历史文化','适合拍照','文艺'],visitCount:2,visitDate:'2025年3月',attractions:['西湖','灵隐寺','龙井村','河坊街'],photos:[]},
+    ],
+    '西安市':[
+      {userName:'文化探索者',rating:5,intro:'十三朝古都名不虚传！兵马俑的震撼、城墙的厚重、回民街的美食，历史与现代完美交融。',tags:['历史文化','美食','古建筑','博物馆'],visitCount:2,visitDate:'2025年1月',attractions:['兵马俑','城墙','回民街','大雁塔'],photos:[]},
+    ],
+    '重庆市':[
+      {userName:'山城探路人',rating:4.5,intro:'8D魔幻城市名不虚传！轻轨穿楼、洪崖洞夜景、长江索道，每一处都让人惊叹。火锅辣得过瘾！',tags:['美食','适合拍照','Citywalk','夜景'],visitCount:2,visitDate:'2025年5月',attractions:['洪崖洞','长江索道','磁器口','解放碑'],photos:[]},
+    ],
+  };
+  // 当前点评弹窗状态
+  let reviewsState={cityName:'',cityKey:'',tab:'all',myReview:null,allReviews:[],userIdentity:null};
+
+  // 获取其他游客点评（从 sampleReviews 和已发布的点评中合并）
+  function getOtherReviews(cityName,myReviewId){
+    const sample=sampleReviews[cityName]||[];
+    return sample; // 示例数据作为其他游客点评
+  }
+
+  // 渲染点评卡片 HTML
+  function renderReviewCardHTML(r,isMine,myReviewId,metaUpdatedAt,reviewUpdatedAt){
+    const tagsHtml=(r.tags||[]).map(t=>'<span class="r-tag">'+escapeHtml(t)+'</span>').join('');
+    const photosHtml=(r.photos||[]).length>0
+      ?'<div class="review-card-photos">'+r.photos.map(p=>'<img src="'+p+'" alt="照片" />').join('')+'</div>'
+      :'';
+    const authorName=r.nickname||r.userName||'匿名旅行者';
+    const avatarHtml=r.avatarUrl
+      ?'<img src="'+r.avatarUrl+'" alt="" />'
+      :'<span class="review-card-avatar-letter">'+escapeHtml(authorName[0])+'</span>';
+    const rTime=r.publishedAt||r.createdAt||'';
+    const timeStr=rTime?formatTimeAgo(rTime):'';
+    const needsSync=isMine&&metaUpdatedAt&&reviewUpdatedAt&&metaUpdatedAt>reviewUpdatedAt;
+    return '<div class="review-card'+(isMine?' review-card-mine':'')+'">'+
+      (needsSync?'<div class="review-sync-banner">你的旅行记录有新的修改 <button class="review-action-btn" data-sync="1">同步最新内容</button></div>':'')+
+      '<div class="review-card-user-row">'+
+        '<div class="review-card-avatar">'+avatarHtml+'</div>'+
+        '<div class="review-card-user-info">'+
+          '<div class="review-card-user-name">'+escapeHtml(authorName)+
+            (isMine?'<span class="review-badge">我的点评</span>':'')+
+          '</div>'+
+          '<div class="review-card-rating">'+
+            '<span class="r-star">'+renderStars(r.rating)+'</span>'+
+          '</div>'+
+        '</div>'+
+        (timeStr?'<span class="review-time">'+timeStr+'</span>':'')+
+      '</div>'+
+      (r.intro?'<div class="review-card-intro">'+escapeHtml(r.intro)+'</div>':'')+
+      (tagsHtml?'<div class="review-card-tags">'+tagsHtml+'</div>':'')+
+      '<div class="review-card-info">'+
+        (r.visitDate?'<span class="r-info-item"><span class="r-info-label">时间</span>'+escapeHtml(r.visitDate)+'</span>':'')+
+        ((r.attractions||[]).length?'<span class="r-info-item"><span class="r-info-label">景点</span>'+(r.attractions||[]).map(escapeHtml).join('、')+'</span>':'')+
+      '</div>'+
+      photosHtml+
+      (isMine?'<div class="review-card-actions">'+
+        '<button class="review-action-btn primary" data-edit="1">编辑我的点评</button>'+
+        '<button class="review-action-btn danger" data-delete="1">删除点评</button>'+
+      '</div>':'')+
+    '</div>';
+  }
+
+  function formatTimeAgo(ts){
+    if(!ts) return '';
+    const diff=Date.now()-(typeof ts==='number'?ts:new Date(ts).getTime());
+    if(diff<60000) return '刚刚发布';
+    if(diff<3600000) return Math.floor(diff/60000)+'分钟前';
+    if(diff<86400000) return Math.floor(diff/3600000)+'小时前';
+    return Math.floor(diff/86400000)+'天前';
+  }
+
+  // 构建我的点评卡片数据
+  function buildMyReviewData(meta,identity,visibility){
+    const v=visibility||{};
+    const visitDate=getLatestVisitMonth(getVisitMonths(meta));
+    return {
+      nickname:identity.nickname,
+      avatarUrl:identity.avatarUrl,
+      rating:v.rating!==false?meta.rating||0:0,
+      intro:v.description!==false?meta.description||'':'',
+      tags:v.tags!==false?(meta.tags||[]).map(t=>typeof t==='string'?t:t.text||'').filter(Boolean):[],
+      attractions:v.attractions!==false?(meta.attractions||[]).map(a=>a.name||'').filter(Boolean):[],
+      visitDate:v.visitMonth!==false?formatMonth(visitDate):'',
+      photos:[],
+      publishedAt:Date.now(),
+    };
+  }
+
+  // 打开发布点评预览弹窗
+  async function openReviewPreview(editMode){
+    if(!currentCity) return;
+    const cityKey=currentCity.cityKey;
+    const meta=await getCityMeta(cityKey);
+    const identity=getPublicIdentity();
+    const userId=cloudUser?cloudUser.id:'guest';
+    let existingReview=await getMyReview(userId,cityKey);
+    // 检查是否有城市记录数据
+    const hasData=meta.rating||meta.description||(meta.tags&&meta.tags.length)||(meta.attractions&&meta.attractions.length);
+    if(!hasData){
+      toast('请先在「编辑城市信息」中保存旅行资料后再发布点评',true,{title:'暂无旅行记录'});
+      return;
+    }
+    const isEdit=editMode||!!existingReview;
+    reviewPublishTitle.textContent=isEdit?'编辑我的点评':'发布我的点评';
+    publishSubmitBtn.textContent=isEdit?'保存修改':'发布我的点评';
+    // 获取当前头像和昵称
+    const avatarHtml=identity.avatarUrl
+      ?'<img src="'+identity.avatarUrl+'" alt="" />'
+      :'<span style="font-size:18px;font-weight:700;color:#38bdf8;">'+(identity.nickname||'旅')[0]+'</span>';
+    // 构建预览数据
+    const visitDate=getLatestVisitMonth(getVisitMonths(meta));
+    const rating=meta.rating||0;
+    const tags=(meta.tags||[]).map(t=>typeof t==='string'?t:t.text||'').filter(Boolean);
+    const attractions=(meta.attractions||[]).map(a=>a.name||'').filter(Boolean);
+    // 默认可见性
+    const defaultVis={rating:true,description:true,visitMonth:true,tags:true,attractions:true,photos:true};
+    const vis=existingReview&&existingReview.visibility?existingReview.visibility:defaultVis;
+    // 渲染预览内容
+    publishBody.innerHTML=
+      '<div class="publish-author-row">'+
+        '<div class="publish-avatar">'+avatarHtml+'</div>'+
+        '<div><div class="publish-author-name">'+escapeHtml(identity.nickname)+'</div><div class="publish-author-sub">公开发布</div></div>'+
+      '</div>'+
+      '<div class="publish-city-title">'+escapeHtml(currentCity.name)+'</div>'+
+      (rating?'<div class="publish-section"><div class="publish-section-label">推荐指数 <label class="pub-toggle"><input type="checkbox" class="vis-check" data-field="rating"'+(vis.rating?' checked':'')+'> 公开</label></div><div class="publish-rating">'+renderStars(rating)+'</div></div>':'')+
+      (meta.description?'<div class="publish-section"><div class="publish-section-label">城市简介 <label class="pub-toggle"><input type="checkbox" class="vis-check" data-field="description"'+(vis.description?' checked':'')+'> 公开</label></div><div class="publish-desc">'+escapeHtml(meta.description)+'</div></div>':'')+
+      (visitDate?'<div class="publish-section"><div class="publish-section-label">游玩时间 <label class="pub-toggle"><input type="checkbox" class="vis-check" data-field="visitMonth"'+(vis.visitMonth?' checked':'')+'> 公开</label></div><div style="font-size:13px;color:var(--ink);">'+formatMonth(visitDate)+'</div></div>':'')+
+      (tags.length?'<div class="publish-section"><div class="publish-section-label">标签 <label class="pub-toggle"><input type="checkbox" class="vis-check" data-field="tags"'+(vis.tags?' checked':'')+'> 公开</label></div><div class="publish-tags">'+tags.map(t=>'<span class="r-tag">#'+escapeHtml(t)+'</span>').join('')+'</div></div>':'')+
+      (attractions.length?'<div class="publish-section"><div class="publish-section-label">去过的景点 <label class="pub-toggle"><input type="checkbox" class="vis-check" data-field="attractions"'+(vis.attractions?' checked':'')+'> 公开</label></div><div class="publish-attractions">'+attractions.map(a=>'<span class="publish-attraction-chip">'+escapeHtml(a)+'</span>').join('')+'</div></div>':'')+
+      '<div class="publish-visibility">'+
+        '<div class="publish-visibility-title">选择要公开的信息</div>'+
+        '<div class="publish-visibility-grid">'+
+          '<label class="pub-vis-item"><input type="checkbox" class="vis-check" data-field="rating"'+(vis.rating?' checked':'')+'> 推荐指数</label>'+
+          '<label class="pub-vis-item"><input type="checkbox" class="vis-check" data-field="description"'+(vis.description?' checked':'')+'> 城市简介</label>'+
+          '<label class="pub-vis-item"><input type="checkbox" class="vis-check" data-field="visitMonth"'+(vis.visitMonth?' checked':'')+'> 游玩时间</label>'+
+          '<label class="pub-vis-item"><input type="checkbox" class="vis-check" data-field="tags"'+(vis.tags?' checked':'')+'> 标签</label>'+
+          '<label class="pub-vis-item"><input type="checkbox" class="vis-check" data-field="attractions"'+(vis.attractions?' checked':'')+'> 景点</label>'+
+        '</div>'+
+      '</div>';
+    // 存储编辑模式
+    publishBody.dataset.editMode=isEdit?'1':'0';
+    publishBody.dataset.existingReviewId=existingReview?existingReview.id:'';
+    // 显示预览弹窗
+    reviewPublishOverlay.classList.add('show');
+    document.body.classList.add('modal-open');
+  }
+
+  function escapeHtml(str){
+    if(!str) return '';
+    const div=document.createElement('div');
+    div.textContent=str;
+    return div.innerHTML;
+  }
+
+  // ===== 统一星级 SVG 组件 =====
+  // 5 颗星使用完全相同的 SVG 图标，仅通过颜色区分 active/inactive，
+  // 避免 ★ 字符在不同字体下渲染为空心轮廓（黑色矩形框）且大小不一致的问题
+  const STAR_SVG_PATH='M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z';
+  function starSvgHTML(active){
+    return '<svg class="star-svg'+(active?'':' inactive')+'" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="'+STAR_SVG_PATH+'"/></svg>';
+  }
+  // 渲染 5 颗星（支持小数取整与半星按整星显示，与旧逻辑一致）
+  function renderStars(rating){
+    const r=Math.max(0,Math.min(5,Math.round(Number(rating)||0)));
+    let html='';
+    for(let i=1;i<=5;i++) html+=starSvgHTML(i<=r);
+    return html;
+  }
+
+  // 提交发布点评
+  async function submitReview(){
+    if(!currentCity) return;
+    const cityKey=currentCity.cityKey;
+    const meta=await getCityMeta(cityKey);
+    const identity=getPublicIdentity();
+    const userId=cloudUser?cloudUser.id:'guest';
+    // 读取可见性
+    const visChecks=publishBody.querySelectorAll('.vis-check');
+    const visibility={rating:true,description:true,visitMonth:true,tags:true,attractions:true,photos:true};
+    visChecks.forEach(cb=>{ visibility[cb.dataset.field]=cb.checked; });
+    // 构建点评数据
+    const visitDate=getLatestVisitMonth(getVisitMonths(meta));
+    const tags=(meta.tags||[]).map(t=>typeof t==='string'?t:t.text||'').filter(Boolean);
+    const attractions=(meta.attractions||[]).map(a=>a.name||'').filter(Boolean);
+    const now=Date.now();
+    const isEdit=publishBody.dataset.editMode==='1';
+    const existingId=publishBody.dataset.existingReviewId;
+    // 编辑时保留原发布时间与互动数据
+    let existing=null;
+    if(existingId) existing=await getMyReview(userId,cityKey);
+    const review={
+      id:existingId||reviewIdOf(userId,cityKey),
+      userId,
+      cityKey,
+      cityName:currentCity.name,
+      nickname:identity.nickname,
+      avatarUrl:identity.avatarUrl,
+      rating:visibility.rating?meta.rating||0:0,
+      intro:visibility.description?meta.description||'':'',
+      visitDate:visibility.visitMonth?formatMonth(visitDate):'',
+      tags:visibility.tags?tags:[],
+      attractions:visibility.attractions?attractions:[],
+      photos:[],
+      visibility,
+      sourceUpdatedAt:meta.updatedAt||now,
+      publishedAt:existing&&existing.publishedAt?existing.publishedAt:now,
+      updatedAt:now,
+      likes:existing?existing.likes||0:0,
+      comments:existing?existing.comments||0:0,
+    };
+    await saveMyReview(review);
+    if(cloudUser&&cloudUser.id) syncPublicReviewToCloud(review).catch(()=>{});
+    // 关闭预览弹窗
+    closeReviewPublish();
+    // 刷新点评列表
+    await refreshReviews();
+    toast('点评已'+(isEdit?'更新':'发布')+'成功');
+  }
+
+  function closeReviewPublish(){
+    reviewPublishOverlay.classList.remove('show');
+    document.body.classList.remove('modal-open');
+  }
+
+  // 删除点评（仅删除公开点评，不删除城市记录）
+  async function deleteMyReviewHandler(){
+    if(!currentCity) return;
+    const userId=cloudUser?cloudUser.id:'guest';
+    if(userId==='guest') return;
+    if(!confirm('确定要删除你的公开点评吗？\n（删除点评只取消公开展示，不会删除你的城市旅行记录。）')) return;
+    await deleteMyReview(userId,currentCity.cityKey);
+    if(cloudUser&&cloudUser.id) deletePublicReviewFromCloud(currentCity.cityKey).catch(()=>{});
+    await refreshReviews();
+    toast('点评已删除');
+  }
+
+  // 同步我的点评与最新城市旅行记录
+  async function syncMyReview(){
+    if(!currentCity) return;
+    const userId=cloudUser?cloudUser.id:'guest';
+    if(userId==='guest') return;
+    const existing=await getMyReview(userId,currentCity.cityKey);
+    if(!existing){ toast('没有找到已发布的点评',true); return; }
+    const meta=await getCityMeta(currentCity.cityKey);
+    const identity=getPublicIdentity();
+    const visitDate=getLatestVisitMonth(getVisitMonths(meta));
+    const tags=(meta.tags||[]).map(t=>typeof t==='string'?t:t.text||'').filter(Boolean);
+    const attractions=(meta.attractions||[]).map(a=>a.name||'').filter(Boolean);
+    const v=existing.visibility||{};
+    existing.rating=v.rating!==false?meta.rating||0:0;
+    existing.intro=v.description!==false?meta.description||'':'';
+    existing.visitDate=v.visitMonth!==false?formatMonth(visitDate):'';
+    existing.tags=v.tags!==false?tags:[];
+    existing.attractions=v.attractions!==false?attractions:[];
+    existing.nickname=identity.nickname;
+    existing.avatarUrl=identity.avatarUrl;
+    existing.sourceUpdatedAt=meta.updatedAt||Date.now();
+    existing.updatedAt=Date.now();
+    await saveMyReview(existing);
+    if(cloudUser&&cloudUser.id) syncPublicReviewToCloud(existing).catch(()=>{});
+    await refreshReviews();
+    toast('点评已同步最新旅行记录');
+  }
+
+  // 刷新点评列表（根据当前标签页和选中城市）
+  async function refreshReviews(){
+    const state=reviewsState;
+    await openReviews(state.cityName,state.cityKey,true);
+  }
+
+  // 新版 openReviews 函数
+  function openReviews(cityName,cityKey,skipReset){
+    if(!skipReset){
+      reviewsState.cityName=cityName;
+      reviewsState.cityKey=cityKey||(currentCity?currentCity.cityKey:'');
+      reviewsState.tab='all';
+    }
+    const name=reviewsState.cityName;
+    const key=reviewsState.cityKey;
+    reviewsTitle.textContent=name+' · 游客点评';
+    const userId=cloudUser?cloudUser.id:'guest';
+    const identity=getPublicIdentity();
+    reviewsState.userIdentity=identity;
+    // 立即显示弹窗，数据异步加载
+    reviewsOverlay.classList.add('show');
+    document.body.classList.add('modal-open');
+
+    // 异步加载数据
+    (async ()=>{
+      try{
+      // 获取我的点评
+      let myReview=null;
+      if(key) myReview=await getMyReview(userId,key);
+      reviewsState.myReview=myReview;
+      // 获取其他游客点评（示例数据 + 云端公开点评）
+      const sample=getOtherReviews(name,myReview?myReview.id:'');
+      let cloudOthers=[];
+      if(key&&cloudClient) cloudOthers=await loadPublicReviews(key);
+      // 去重：排除与「我的点评」重复的记录
+      const mineId=myReview?myReview.id:'';
+      const otherReviews=[...sample,...cloudOthers].filter(r=>!mineId||r.id!==mineId);
+      reviewsState.allReviews=otherReviews;
+
+      // 判断是否有城市记录数据
+      let hasData=false;
+      let meta=null;
+      if(key){
+        meta=await getCityMeta(key);
+        hasData=meta.rating||meta.description||(meta.tags&&meta.tags.length)||(meta.attractions&&meta.attractions.length);
+      }
+
+      // 更新按钮状态
+      const hasPublished=!!myReview;
+      if(hasPublished){
+        reviewsUploadBtn.textContent='编辑我的点评';
+        reviewsUploadBtn.title='编辑我的点评';
+      }else{
+        reviewsUploadBtn.textContent='＋ 上传我的点评';
+        reviewsUploadBtn.title='上传我的点评';
+      }
+
+      // 构建展示列表
+      const allCards=[];
+      if(myReview){
+        const metaUpdated=meta?meta.updatedAt:0;
+        const reviewUpdated=myReview.updatedAt||0;
+        allCards.push({html:renderReviewCardHTML({
+          nickname:myReview.nickname||identity.nickname,
+          avatarUrl:myReview.avatarUrl||identity.avatarUrl,
+          rating:myReview.rating||0,
+          intro:myReview.intro||'',
+          tags:myReview.tags||[],
+          attractions:myReview.attractions||[],
+          visitDate:myReview.visitDate||'',
+          photos:myReview.photos||[],
+          publishedAt:myReview.publishedAt||Date.now(),
+          createdAt:myReview.updatedAt||myReview.publishedAt||Date.now(),
+        },true,myReview.id,metaUpdated,reviewUpdated),isMine:true});
+      }
+      otherReviews.forEach(r=>{
+        allCards.push({html:renderReviewCardHTML(r,false),isMine:false});
+      });
+
+      // 计算综合评分
+      let allRatings=otherReviews.map(r=>r.rating||0);
+      if(myReview&&myReview.rating) allRatings.push(myReview.rating);
+      const hasContent=allCards.length>0;
+
+      // 渲染
+      reviewsBody.innerHTML='';
+      reviewsEmpty.style.display='none';
+      reviewsBody.style.display='flex';
+      reviewsTabs.style.display='flex';
+
+      if(!hasContent){
+        // 空状态
+        reviewsBody.style.display='none';
+        reviewsEmpty.style.display='flex';
+        reviewsAvg.innerHTML='';
+        reviewsTabs.style.display='none';
+        // 空状态按钮同步状态
+        reviewsEmptyUploadBtn.textContent=hasPublished?'编辑我的点评':'＋ 上传我的点评';
+      }else{
+        const total=allRatings.reduce((s,v)=>s+v,0);
+        const avg=allRatings.length?(total/allRatings.length).toFixed(1):'0';
+        reviewsAvg.innerHTML='<span class="avg-num">'+avg+'</span> <span class="avg-stars">'+renderStars(avg)+'</span> <span style="font-size:11px">('+allRatings.length+'条点评)</span>';
+
+        // 根据标签页筛选
+        const tab=reviewsState.tab||'all';
+        let displayCards=allCards;
+        if(tab==='mine') displayCards=allCards.filter(c=>c.isMine);
+        else if(tab==='all'&&allCards.some(c=>c.isMine)){
+          // 全部点评：我的排最前
+          displayCards.sort((a,b)=>a.isMine?-1:b.isMine?1:0);
+        }
+        let html='';
+        if(displayCards.length===0&&tab==='mine'&&!hasPublished){
+          html='<div class="publish-empty-tip"><div class="publish-empty-icon">📝</div><p>你还没有发布过点评<br>分享你的旅行体验，让更多人了解这座城市</p></div>';
+        }else{
+          html=displayCards.map(c=>c.html).join('');
+        }
+        reviewsBody.innerHTML=html;
+        reviewsBody.scrollTop=0;
+      }
+
+      // 绑定事件
+      bindReviewEvents(myReview,hasPublished,hasData);
+      }catch(err){
+        console.error('加载点评数据失败',err);
+        reviewsBody.innerHTML='<div class="publish-empty-tip"><div class="publish-empty-icon">⚠️</div><p>点评加载失败，请稍后重试</p></div>';
+        reviewsBody.style.display='flex';
+        reviewsEmpty.style.display='none';
+      }
+    })();
+  }
+
+  function bindReviewEvents(myReview,hasPublished,hasData){
+    // 顶部分类按钮
+    reviewsTabs.querySelectorAll('.r-tab').forEach(tab=>{
+      tab.onclick=()=>{
+        reviewsTabs.querySelectorAll('.r-tab').forEach(t=>t.classList.remove('active'));
+        tab.classList.add('active');
+        reviewsState.tab=tab.dataset.tab;
+        refreshReviews();
+      };
+    });
+    // 我的点评操作按钮（事件委托）
+    reviewsBody.querySelectorAll('[data-sync]').forEach(el=>{
+      el.onclick=async(e)=>{
+        e.stopPropagation();
+        await syncMyReview();
+      };
+    });
+    reviewsBody.querySelectorAll('[data-edit]').forEach(el=>{
+      el.onclick=async(e)=>{
+        e.stopPropagation();
+        await openReviewPreview(true);
+      };
+    });
+    reviewsBody.querySelectorAll('[data-delete]').forEach(el=>{
+      el.onclick=async(e)=>{
+        e.stopPropagation();
+        await deleteMyReviewHandler();
+      };
+    });
+  }
+
+  function closeReviews(){
+    reviewsOverlay.classList.remove('show');
+    document.body.classList.remove('modal-open');
+  }
+
+  // 上传/编辑我的点评按钮点击
+  async function handleUploadReview(){
+    if(!currentCity) return;
+    const userId=cloudUser?cloudUser.id:'guest';
+    // 检查是否已发布
+    const existing=await getMyReview(userId,currentCity.cityKey);
+    if(existing){
+      // 已有点评 → 打开编辑预览
+      await openReviewPreview(true);
+    }else{
+      // 新建点评预览
+      await openReviewPreview(false);
+    }
+  }
+
+  reviewBtn.addEventListener('click',()=>{
+    if(!currentCity) return;
+    openReviews(currentCity.name,currentCity.cityKey);
+  });
+  reviewsClose.addEventListener('click',closeReviews);
+  reviewsUploadBtn.addEventListener('click',handleUploadReview);
+  reviewsEmptyUploadBtn.addEventListener('click',handleUploadReview);
+  reviewsOverlay.addEventListener('click',e=>{
+    if(e.target===reviewsOverlay) closeReviews();
+  });
+  // 发布预览弹窗事件
+  reviewPublishClose.addEventListener('click',closeReviewPublish);
+  publishCancelBtn.addEventListener('click',closeReviewPublish);
+  publishSubmitBtn.addEventListener('click',submitReview);
+  reviewPublishOverlay.addEventListener('click',e=>{
+    if(e.target===reviewPublishOverlay) closeReviewPublish();
+  });
+
   /* =====【取消点亮】清空当前城市所有上传编辑内容 =====
    * 删除范围：该城市全部照片 + 城市元数据（封面/星级/年月/标签/景点）
    * 删除后：从 citiesWithPhotos 移除、刷新卡片/地图/统计、关闭弹窗
@@ -10400,12 +11803,7 @@
       date.title=item.visitMonths.map((month,index)=>'第'+(index+1)+'次：'+formatMonth(month)).join('\n');
       const stars=document.createElement('span');
       stars.className='star-display';
-      for(let i=1;i<=5;i++){
-        const s=document.createElement('span');
-        s.className='star'+(i>item.rating?' empty':'');
-        s.textContent='★';
-        stars.appendChild(s);
-      }
+      stars.innerHTML=renderStars(item.rating);
       meta.append(date,stars);
       body.appendChild(meta);
       card.appendChild(body);
@@ -10512,9 +11910,9 @@
   // 聚焦地图到指定城市
   function focusCityOnMap(item){
     if(!myChart) return;
-    myChart.setOption({geo:[{center:item.value,zoom:Math.max(currentZoom,4)}]});
-    // 触发 georoam 以更新标签和散点大小
-    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china',zoom:1.0001,originX:400,originY:300});
+    myChart.setOption({geo:[{center:item.value,zoom:Math.max(currentZoom,4)},{center:item.value,zoom:Math.max(currentZoom,4)}]});
+    // 触发 georoam 以更新标签和散点大小（geo[1] 有 roam:true）
+    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_cities',zoom:1.0001,originX:400,originY:300});
   }
 
   /* ===== 地图搜索功能：模糊搜索城市/景点，点击结果高亮定位 ===== */
@@ -10634,8 +12032,8 @@
     mapSearchInput.blur();
 
     // 缩放定位到目标城市（zoom 至少 5，确保看得清）
-    myChart.setOption({geo:[{center:[lng,lat],zoom:Math.max(currentZoom,5)}]});
-    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china',zoom:1.0001,originX:400,originY:300});
+    myChart.setOption({geo:[{center:[lng,lat],zoom:Math.max(currentZoom,5)},{center:[lng,lat],zoom:Math.max(currentZoom,5)}]});
+    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_cities',zoom:1.0001,originX:400,originY:300});
 
     // 高亮闪烁：通过 ECharts emphasis 临时高亮目标城市散点
     searchHighlightCityKey=cityKey;
