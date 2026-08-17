@@ -6545,7 +6545,7 @@
         user_id:cloudUser.id,
         city_key:review.cityKey,
         city_name:review.cityName,
-        nickname:review.nickname||'匿名旅行者',
+        nickname:review.nickname||'旅行者',
         avatar_url:review.avatarUrl||'',
         rating:review.rating||0,
         description:review.intro||'',
@@ -6577,7 +6577,7 @@
       return (data||[]).filter(r=>r.user_id!==(cloudUser&&cloudUser.id)).map(r=>({
         id:r.user_id+'|'+r.city_key,
         userId:r.user_id,
-        nickname:r.nickname||'匿名旅行者',
+        nickname:r.nickname||'旅行者',
         avatarUrl:r.avatar_url||'',
         rating:Number(r.rating)||0,
         intro:r.description||'',
@@ -7301,7 +7301,7 @@
   function getPublicIdentity(){
     const p=getUserProfile();
     return {
-      nickname:p.nickname||'匿名旅行者',
+      nickname:p.nickname||'旅行者',
       avatarUrl:p.avatarUrl||'',
     };
   }
@@ -10677,7 +10677,10 @@
   function setStarRating(val){
     const stars=starRatingEl.querySelectorAll('.star');
     stars.forEach(s=>{
-      s.classList.toggle('active', parseInt(s.dataset.val)<=val);
+      const isActive=parseInt(s.dataset.val)<=val;
+      s.classList.toggle('active', isActive);
+      const svg=s.querySelector('.star-svg');
+      if(svg) svg.classList.toggle('inactive', !isActive);
     });
   }
   // 渲染景点列表
@@ -11019,7 +11022,7 @@
     const photosHtml=(r.photos||[]).length>0
       ?'<div class="review-card-photos">'+r.photos.map(p=>'<img src="'+p+'" alt="照片" />').join('')+'</div>'
       :'';
-    const authorName=r.nickname||r.userName||'匿名旅行者';
+    const authorName=r.nickname||r.userName||'旅行者';
     const avatarHtml=r.avatarUrl
       ?'<img src="'+r.avatarUrl+'" alt="" />'
       :'<span class="review-card-avatar-letter">'+escapeHtml(authorName[0])+'</span>';
