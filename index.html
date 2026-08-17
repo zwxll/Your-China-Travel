@@ -7297,6 +7297,12 @@
     localStorage.setItem(key,JSON.stringify(merged));
     markCloudDirty();
   }
+  function saveLocalProfileOnly(profile){
+    const key=getProfileKey();
+    const existing=getUserProfile();
+    const merged=Object.assign({},existing,profile,{updatedAt:Date.now()});
+    localStorage.setItem(key,JSON.stringify(merged));
+  }
   // 获取当前用户公开身份（头像+昵称，供点评使用）
   function getPublicIdentity(){
     const p=getUserProfile();
@@ -7577,7 +7583,8 @@
       (clean.attractions||[]).forEach(att=>(att.photos||[]).forEach(ph=>delete ph.dataUrl));
       cloudMetas.push(clean);
     }
-    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,reviews:reviews.map(r=>JSON.parse(JSON.stringify(r))),savedAt:new Date().toISOString()};
+    const profile=getUserProfile();
+    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,reviews:reviews.map(r=>JSON.parse(JSON.stringify(r))),userProfile:{nickname:profile.nickname,avatarUrl:profile.avatarUrl,email:profile.email},savedAt:new Date().toISOString()};
   }
 
   async function syncToCloud(options){
@@ -7698,6 +7705,11 @@
       for(const rec of preparedPhotos) await addPhoto(rec);
       for(const meta of preparedMetas) await putLocalMeta(meta);
       for(const rev of (snapshot.reviews||[])) await putLocalReview(rev);
+      if(snapshot.userProfile&&snapshot.userProfile.nickname!==undefined){
+        const existing=getUserProfile();
+        saveLocalProfileOnly(Object.assign({},existing,snapshot.userProfile));
+        loadProfileToUI();
+      }
       cityMetaCache.clear();
       localStorage.setItem(CLOUD_OWNER_KEY,cloudUser.id);
       localStorage.setItem(CLOUD_DIRTY_KEY,'0');
