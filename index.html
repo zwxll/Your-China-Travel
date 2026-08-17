@@ -7331,9 +7331,24 @@
   }
 
   /* ===== 头像渲染 ===== */
+  async function resolveAvatarUrl(avatarUrl){
+    if(!avatarUrl) return '';
+    if(isOssPath(avatarUrl)){
+      try{return await downloadCloudImage(avatarUrl);}
+      catch(e){console.warn('头像下载失败',e);return '';}
+    }
+    return avatarUrl;
+  }
   function renderProfileAvatar(avatarUrl){
     if(avatarUrl){
-      profileAvatar.innerHTML='<img src="'+avatarUrl+'" alt="头像" />';
+      if(isOssPath(avatarUrl)){
+        profileAvatar.innerHTML='<span style="font-size:28px;font-weight:700;color:#38bdf8;">'+(getUserProfile().nickname||'旅')[0]+'</span>';
+        resolveAvatarUrl(avatarUrl).then(dataUrl=>{
+          if(dataUrl) profileAvatar.innerHTML='<img src="'+dataUrl+'" alt="头像" />';
+        });
+      }else{
+        profileAvatar.innerHTML='<img src="'+avatarUrl+'" alt="头像" />';
+      }
     }else{
       const initial=(getUserProfile().nickname||'旅')[0];
       profileAvatar.innerHTML='<span style="font-size:28px;font-weight:700;color:#38bdf8;">'+initial+'</span>';
@@ -7438,9 +7453,8 @@
     avatarCropOverlay.classList.remove('show');
     cropImage=null;avatarFileInput.value='';
   }
-  function saveCroppedAvatar(){
+  async function saveCroppedAvatar(){
     if(!cropImage) return;
-    // 从裁剪 canvas 中央裁取圆形区域，输出 160x160 的 dataURL
     const out=document.createElement('canvas');
     out.width=160;out.height=160;
     const ctx=out.getContext('2d');
@@ -7459,9 +7473,15 @@
     );
     ctx.restore();
     const dataUrl=out.toDataURL('image/jpeg',0.85);
-    saveUserProfile({avatarUrl:dataUrl});
-    renderProfileAvatar(dataUrl);
     closeAvatarCrop();
+    let avatarUrl=dataUrl;
+    if(cloudUser&&cloudClient){
+      try{
+        avatarUrl=await uploadCloudImage(dataUrl,'avatars',newCloudId());
+      }catch(e){console.warn('头像上传OSS失败，退回本地存储',e);}
+    }
+    saveUserProfile({avatarUrl});
+    renderProfileAvatar(dataUrl);
     toast('✓ 头像更新成功');
   }
 
@@ -7602,7 +7622,14 @@
       cloudMetas.push(clean);
     }
     const profile=getUserProfile();
-    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,reviews:reviews.map(r=>JSON.parse(JSON.stringify(r))),userProfile:{nickname:profile.nickname,avatarUrl:profile.avatarUrl,email:profile.email},savedAt:new Date().toISOString()};
+    let avatarUrl=profile.avatarUrl;
+    if(avatarUrl&&!isOssPath(avatarUrl)&&avatarUrl.startsWith('data:')){
+      try{
+        avatarUrl=await uploadCloudImage(avatarUrl,'avatars',newCloudId());
+        saveLocalProfileOnly({avatarUrl});
+      }catch(e){console.warn('头像上传OSS失败',e);}
+    }
+    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,reviews:reviews.map(r=>JSON.parse(JSON.stringify(r))),userProfile:{nickname:profile.nickname,avatarUrl,email:profile.email},savedAt:new Date().toISOString()};
   }
 
   async function syncToCloud(options){
@@ -11131,8 +11158,9 @@
     reviewPublishTitle.textContent=isEdit?'编辑我的点评':'发布我的点评';
     publishSubmitBtn.textContent=isEdit?'保存修改':'发布我的点评';
     // 获取当前头像和昵称
-    const avatarHtml=identity.avatarUrl
-      ?'<img src="'+identity.avatarUrl+'" alt="" />'
+    const resolvedAvatarUrl=await resolveAvatarUrl(identity.avatarUrl);
+    const avatarHtml=resolvedAvatarUrl
+      ?'<img src="'+resolvedAvatarUrl+'" alt="" />'
       :'<span style="font-size:18px;font-weight:700;color:#38bdf8;">'+(identity.nickname||'旅')[0]+'</span>';
     // 构建预览数据
     const visitDate=getLatestVisitMonth(getVisitMonths(meta));
@@ -11351,9 +11379,10 @@
       if(myReview){
         const metaUpdated=meta?meta.updatedAt:0;
         const reviewUpdated=myReview.updatedAt||0;
+        const resolvedMyAvatarUrl=await resolveAvatarUrl(myReview.avatarUrl||identity.avatarUrl);
         allCards.push({html:renderReviewCardHTML({
           nickname:myReview.nickname||identity.nickname,
-          avatarUrl:myReview.avatarUrl||identity.avatarUrl,
+          avatarUrl:resolvedMyAvatarUrl,
           rating:myReview.rating||0,
           intro:myReview.intro||'',
           tags:myReview.tags||[],
@@ -11364,9 +11393,10 @@
           createdAt:myReview.updatedAt||myReview.publishedAt||Date.now(),
         },true,myReview.id,metaUpdated,reviewUpdated),isMine:true});
       }
-      otherReviews.forEach(r=>{
-        allCards.push({html:renderReviewCardHTML(r,false),isMine:false});
-      });
+      for(const r of otherReviews){
+        const resolvedAvatarUrl=await resolveAvatarUrl(r.avatarUrl||'');
+        allCards.push({html:renderReviewCardHTML({...r,avatarUrl:resolvedAvatarUrl},false),isMine:false});
+      }
 
       // 计算综合评分
       let allRatings=otherReviews.map(r=>r.rating||0);
