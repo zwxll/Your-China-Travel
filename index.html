@@ -7331,21 +7331,31 @@
   }
 
   /* ===== 头像渲染 ===== */
+  const avatarCache=new Map();
   async function resolveAvatarUrl(avatarUrl){
     if(!avatarUrl) return '';
     if(isOssPath(avatarUrl)){
-      try{return await downloadCloudImage(avatarUrl);}
-      catch(e){console.warn('头像下载失败',e);return '';}
+      if(avatarCache.has(avatarUrl)) return avatarCache.get(avatarUrl);
+      try{
+        const dataUrl=await downloadCloudImage(avatarUrl);
+        avatarCache.set(avatarUrl,dataUrl);
+        return dataUrl;
+      }catch(e){console.warn('头像下载失败',e);return '';}
     }
     return avatarUrl;
   }
   function renderProfileAvatar(avatarUrl){
     if(avatarUrl){
       if(isOssPath(avatarUrl)){
-        profileAvatar.innerHTML='<span style="font-size:28px;font-weight:700;color:#38bdf8;">'+(getUserProfile().nickname||'旅')[0]+'</span>';
-        resolveAvatarUrl(avatarUrl).then(dataUrl=>{
-          if(dataUrl) profileAvatar.innerHTML='<img src="'+dataUrl+'" alt="头像" />';
-        });
+        const cached=avatarCache.get(avatarUrl);
+        if(cached){
+          profileAvatar.innerHTML='<img src="'+cached+'" alt="头像" />';
+        }else{
+          profileAvatar.innerHTML='<span style="font-size:28px;font-weight:700;color:#38bdf8;">'+(getUserProfile().nickname||'旅')[0]+'</span>';
+          resolveAvatarUrl(avatarUrl).then(dataUrl=>{
+            if(dataUrl) profileAvatar.innerHTML='<img src="'+dataUrl+'" alt="头像" />';
+          });
+        }
       }else{
         profileAvatar.innerHTML='<img src="'+avatarUrl+'" alt="头像" />';
       }
