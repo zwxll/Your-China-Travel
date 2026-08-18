@@ -667,9 +667,26 @@
     text-shadow:0 0 14px rgba(99,102,241,.35);
   }
   .stat{
+    position:relative;overflow:hidden;
     background:#080808;border:1px solid var(--line);border-radius:12px;
     padding:6px 14px;text-align:center;box-shadow:var(--shadow-sm);
     min-width:74px;
+  }
+  .stat::before{
+    content:'';position:absolute;inset:0;z-index:0;
+    border-radius:inherit;padding:1.5px;
+    background:linear-gradient(135deg,rgba(56,189,248,.55),rgba(125,211,252,.35),rgba(14,165,233,.55));
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+            mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+            mask-composite:exclude;
+    box-shadow:0 0 10px rgba(56,189,248,.25),0 0 20px rgba(56,189,248,.12);
+    pointer-events:none;
+  }
+  .stat>span,.stat>label{position:relative;z-index:1;}
+  body.light-theme .stat::before{
+    background:linear-gradient(135deg,rgba(99,102,241,.5),rgba(129,140,248,.3),rgba(79,70,229,.5));
+    box-shadow:0 0 10px rgba(99,102,241,.18),0 0 20px rgba(79,70,229,.08);
   }
   .stat span{display:block;font-size:18px;font-weight:800;color:var(--accent-d);line-height:1.1;}
   .stat label{font-size:11px;color:var(--muted);}
@@ -1384,24 +1401,24 @@
     border-bottom:1px solid var(--line);
     flex:0 0 auto;
   }
-  /* 我的家乡强调横幅：编辑弹窗中标识该城市为家乡（居中突出显示，青蓝呼应页面主色） */
+  /* 我的家乡分区标题：自然融入页面的简洁标题 + 底部短线装饰 */
   .hometown-banner{
-    display:flex;align-items:center;justify-content:center;gap:10px;
-    margin:16px 22px 2px;padding:15px 16px;
-    border-radius:14px;font-size:16px;font-weight:800;letter-spacing:2px;text-align:center;
-    border:1px solid rgba(56,189,248,.55);
-    background:linear-gradient(135deg,rgba(56,189,248,.16) 0%,rgba(14,165,233,.05) 100%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    margin:24px 0 22px;padding:0;
+    font-size:18px;font-weight:600;letter-spacing:1px;line-height:1.4;text-align:center;
     color:#7dd3fc;
-    box-shadow:0 0 22px rgba(56,189,248,.28),inset 0 1px 0 rgba(255,255,255,.08);
-    text-shadow:0 0 10px rgba(125,211,252,.45);
     flex:0 0 auto;
   }
+  .hometown-banner::after{
+    content:'';display:block;width:40px;height:2px;margin-top:10px;
+    background:linear-gradient(90deg,transparent,rgba(56,189,248,.5),transparent);
+    border-radius:1px;
+  }
   body.light-theme .hometown-banner{
-    border-color:rgba(14,165,233,.42);
-    background:linear-gradient(135deg,rgba(56,189,248,.12) 0%,rgba(14,165,233,.04) 100%);
     color:#0284c7;
-    box-shadow:0 0 16px rgba(14,165,233,.18),inset 0 1px 0 rgba(255,255,255,.5);
-    text-shadow:none;
+  }
+  body.light-theme .hometown-banner::after{
+    background:linear-gradient(90deg,transparent,rgba(14,165,233,.45),transparent);
   }
   /* =====【滚动隔离核心】弹窗 body 独立滚动容器，flex:1 + min-height:0 确保不撑破父容器 ===== */
   /* 【弹窗尺寸放大】body 内边距 14→16px，水平 18→22px，滚动区更舒展 */
@@ -1482,25 +1499,85 @@
   .hint{font-size:12px;color:var(--muted);}
 
   /* ===== 城市点评弹窗 ===== */
+  /* Originkit Neon Glow 按钮 — 查看点评（与旅行足迹/主题切换/账号按钮统一风格） */
   .review-entry-btn{
-    flex:0 0 auto;display:inline-flex;align-items:center;gap:5px;
-    padding:6px 14px;border-radius:7px;border:1px solid rgba(56,189,248,.35);
-    background:rgba(14,165,233,.12);color:#38bdf8;font-size:12px;font-weight:600;
-    cursor:pointer;transition:.2s ease;white-space:nowrap;
+    position:relative;overflow:hidden;flex:0 0 auto;
+    min-height:38px;padding:0 18px;
+    border:1.5px solid rgba(56,189,248,.45);
+    border-radius:var(--radius-pill);
+    color:#e0f2fe;
+    display:flex;align-items:center;gap:7px;
+    font:600 13px/1 inherit;letter-spacing:.3px;
+    cursor:pointer;outline:none;z-index:0;
+    margin-left:auto;
+    background:linear-gradient(135deg,rgba(14,165,233,.12) 0%,rgba(56,189,248,.06) 100%);
+    box-shadow:
+      0 0 8px rgba(56,189,248,.25),
+      0 0 22px rgba(56,189,248,.10),
+      inset 0 1px 0 rgba(255,255,255,.06);
+    transition:color .35s ease,border-color .35s ease,box-shadow .35s ease,transform .35s ease;
+    text-shadow:0 0 12px rgba(56,189,248,.35);
+  }
+  .review-entry-btn::before{
+    content:'';position:absolute;inset:0;z-index:-1;
+    border-radius:inherit;
+    padding:1.5px;
+    background:conic-gradient(from var(--neon-deg),
+      rgba(56,189,248,0) 0deg,
+      rgba(125,211,252,.95) 50deg,
+      rgba(56,189,248,.35) 100deg,
+      rgba(56,189,248,0) 160deg,
+      rgba(14,165,233,.55) 260deg,
+      rgba(56,189,248,0) 330deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+            mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+            mask-composite:exclude;
+    animation:neon-spin 4s linear infinite;
   }
   .review-entry-btn:hover{
-    border-color:rgba(56,189,248,.65);background:rgba(14,165,233,.22);
-    box-shadow:0 0 12px rgba(56,189,248,.2);transform:translateY(-1px);
+    border-color:rgba(125,211,252,.85);
+    color:#fff;
+    box-shadow:
+      0 0 14px rgba(56,189,248,.45),
+      0 0 36px rgba(56,189,248,.22),
+      0 0 56px rgba(56,189,248,.08);
+    text-shadow:0 0 18px rgba(56,189,248,.55);
+    transform:translateY(-1px);
+  }
+  .review-entry-btn:hover::before{animation-duration:1.6s;}
+  .review-entry-btn:active{
+    transform:scale(.97);
+    transition:transform .1s ease;
   }
   body.light-theme .review-entry-btn{
-    border-color:rgba(79,70,229,.35);background:rgba(79,70,229,.08);color:#4f46e5;
+    border-color:rgba(99,102,241,.4);
+    color:#312e81;
+    background:linear-gradient(135deg,rgba(99,102,241,.10) 0%,rgba(79,70,229,.05) 100%);
+    box-shadow:
+      0 0 8px rgba(99,102,241,.20),
+      0 0 22px rgba(79,70,229,.08),
+      inset 0 1px 0 rgba(255,255,255,.30);
+    text-shadow:0 0 8px rgba(99,102,241,.20);
+  }
+  body.light-theme .review-entry-btn::before{
+    background:conic-gradient(from var(--neon-deg),
+      rgba(99,102,241,0) 0deg,
+      rgba(129,140,248,.95) 50deg,
+      rgba(99,102,241,.35) 100deg,
+      rgba(99,102,241,0) 160deg,
+      rgba(79,70,229,.55) 260deg,
+      rgba(99,102,241,0) 330deg);
   }
   body.light-theme .review-entry-btn:hover{
-    border-color:rgba(79,70,229,.6);background:rgba(79,70,229,.16);
-    box-shadow:0 0 12px rgba(79,70,229,.18);
+    border-color:rgba(129,140,248,.8);
+    color:#1e1b4b;
+    box-shadow:
+      0 0 14px rgba(99,102,241,.35),
+      0 0 36px rgba(79,70,229,.18),
+      0 0 56px rgba(79,70,229,.06);
+    text-shadow:0 0 14px rgba(99,102,241,.35);
   }
-  /* 查看点评：底部操作栏内右对齐，与其他按钮同行等高，不遮挡照片区域 */
-  .modal-foot .review-entry-btn{margin-left:auto;padding:8px 14px;}
   .reviews-overlay{
     position:fixed;inset:0;z-index:10020;display:none;
     align-items:center;justify-content:center;padding:16px;
@@ -4270,7 +4347,7 @@
         <span class="fp-btn-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21.5 15.5l-8.2-3.2V6.8c0-.9-.7-1.6-1.6-1.6s-1.6.7-1.6 1.6v5.5L2.6 15.5v2l7.5-2.3v4.2l-2.4 1.6v1.6l4-1.2 4 1.2v-1.6l-2.4-1.6v-4.2l8.2 2.3v-2z"/></svg>
         </span>
-        <span class="fp-btn-label">人生足迹</span>
+        <span class="fp-btn-label">旅行足迹</span>
       </button>
       <button class="theme-toggle-btn footprint-btn" id="hometownBtn" type="button" aria-label="设置我的家乡" title="我的家乡：设置你出生长大的城市">
         <span class="fp-btn-ico" aria-hidden="true">
@@ -4306,7 +4383,7 @@
         </svg>
       </div>
     </div>
-    <!-- 人生足迹控制面板：暂停/重播/速度 + 状态 + 设置家 + 关闭 -->
+    <!-- 旅行足迹控制面板：暂停/重播/速度 + 状态 + 设置家 + 关闭 -->
     <div class="footprint-panel" id="footprintPanel" hidden role="status">
       <button class="fp-ctl" id="fpPlayBtn" type="button" title="暂停 / 继续">⏸</button>
       <button class="fp-ctl" id="fpRestartBtn" type="button" title="重播">↻</button>
@@ -4488,7 +4565,7 @@
         </div>
         <button id="modalClose" class="icon-btn" aria-label="关闭">&times;</button>
       </div>
-      <div id="hometownBanner" class="hometown-banner" style="display:none;">🏠 我的家乡</div>
+      <div id="hometownBanner" class="hometown-banner" style="display:none;">我的家乡</div>
       <div id="modalLandmark" class="modal-landmark" style="display:none;"></div>
       <!-- 封面图 -->
       <div class="cover-section">
@@ -4565,8 +4642,8 @@
         <!-- 【取消点亮】清空当前城市所有上传编辑内容（照片/景点/标签/封面/星级/年月） -->
         <button class="btn" id="unlightBtn">取消点亮</button>
         <span class="hint">支持多张同时上传 · 拖拽照片可交换位置 · 本地永久保存</span>
-        <!-- 查看点评：底部操作栏最右侧，不遮挡照片区域 -->
-        <button id="reviewBtn" class="review-entry-btn" title="查看点评">💬 查看点评</button>
+        <!-- 查看点评：Originkit Neon Glow 按钮 -->
+        <button id="reviewBtn" class="review-entry-btn" title="查看点评">查看点评</button>
       </div>
     </div>
   </div>
@@ -5950,12 +6027,13 @@
     myChart.setOption({
       geo:[
         {center:[cx,cy],zoom:target},
+        {center:[cx,cy],zoom:target},
         {center:[cx,cy],zoom:target}
       ]
     });
     currentZoom=target;
     // 触发 georoam 以同步标签显隐、散点大小与省份字体
-    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_cities',zoom:1.0001,originX:400,originY:300});
+    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_labels',zoom:1.0001,originX:400,originY:300});
   }
 
   let cityBoundaries=null; // 城市边界 GeoJSON features（用于 map 系列叠加图层，绑定省份 geo）
@@ -6260,7 +6338,8 @@
         },
         {
           // 省份名标签图层（zlevel:1，高于所有 series，避免被城市/家乡散点遮挡）：透明底仅渲染省份汉字
-          map:'china',name:'china_labels',roam:false,
+          // roam:true 让顶层 canvas 也能处理滚轮缩放和拖拽，否则会拦截下层 geo[1] 的 roam 事件
+          map:'china',name:'china_labels',roam:true,
           zoom:1.18,center:[108,35.5],scaleLimit:{min:0.8,max:14},
           silent:true,animation:false,
           zlevel:1,z:1,
@@ -6465,12 +6544,12 @@
     }
     function doSyncLabelLayout(){
       const opt=myChart.getOption();
-        // geo[1] 在 z:3 处理 roam，从它读取 zoom/center 同步到 geo[0]
-        const zoom=opt.geo[1].zoom||1.18;
+        // geo[2] 在 zlevel:1 顶层 canvas 处理 roam，从它读取 zoom/center 同步到 geo[0] 和 geo[1]
+        const zoom=opt.geo[2].zoom||opt.geo[1].zoom||1.18;
         currentZoom=zoom;
         // 省份卡片交给布局函数自判：缩放/容器无实质变化时只重绘连线，卡片绝不动
         if(selectedProvinceName||currentView==='province') requestProvinceFocusLayout();
-      const center=opt.geo[1].center||[108,35.5];
+      const center=opt.geo[2].center||opt.geo[1].center||[108,35.5];
       // 城市名显示条件：放大到阈值 / 省份视图 / 已选中省份，三者其一即需要标签布局
         const showLabel=zoom>=LABEL_ZOOM_THRESHOLD||currentView==='province'||!!selectedProvinceName;
         const s=markerScale();
@@ -6484,7 +6563,7 @@
           myChart.setOption({geo:[{},{map:borderMap,itemStyle:{areaColor:'transparent',borderColor:showCityBorder?tcPre.cityBorder:'transparent',borderWidth:showCityBorder?.5:0,borderType:'dashed',shadowBlur:0}}]});
         }
         const tc=chartThemeColors();
-        // 【性能优化】roam 同步只更新 geo[0]（省份图层，标签已迁至 geo[2]）与 geo[2]（省份名标签图层），geo[1] 传 {} 不重绘城市多边形
+        // 【性能优化】roam 同步 geo[0] 和 geo[2]；geo[1] 仅同步 zoom/center 不重绘城市多边形（传 zoom/center 不触发 map 重绘）
         myChart.setOption({
           animation:false,
           animationDuration:0,
@@ -6496,9 +6575,9 @@
               label:{show:false},
               emphasis:{label:{show:false}}
             },
-            {},  // geo[1] 不更新，避免每次 roam 重绘全部城市多边形
+            {zoom:zoom,center:center},  // geo[1] 同步 zoom/center 让散点跟随移动
             {
-              // 省份汉字始终显示，fontSize 随缩放自适应；同步 zoom/center 跟上 geo[1]
+              // 省份汉字始终显示，fontSize 随缩放自适应；同步 zoom/center 跟上 geo[2]
               zoom:zoom,center:center,
               label:{show:true,fontSize:pf,fontWeight:700,lineHeight:Math.round(pf*1.4),color:tc.label,textShadowColor:tc.labelShadow,textShadowBlur:3},
               labelLayout:{hideOverlap:true}
@@ -8692,7 +8771,7 @@
     const v=km>=1000?Math.round(km):Math.round(km*10)/10;
     return v.toLocaleString('zh-CN');
   }
-  // 城市视图统计卡：总计行程（家→时间顺序城市，球面距离累加；分段距离由人生足迹底部面板展示）
+  // 城市视图统计卡：总计行程（家→时间顺序城市，球面距离累加；分段距离由旅行足迹底部面板展示）
   let fpTripToken=0;
   async function updateTotalTripKm(){
     const token=++fpTripToken;
@@ -12475,9 +12554,10 @@
   // 聚焦地图到指定城市
   function focusCityOnMap(item){
     if(!myChart) return;
-    myChart.setOption({geo:[{center:item.value,zoom:Math.max(currentZoom,4)},{center:item.value,zoom:Math.max(currentZoom,4)}]});
-    // 触发 georoam 以更新标签和散点大小（geo[1] 有 roam:true）
-    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_cities',zoom:1.0001,originX:400,originY:300});
+    const z=Math.max(currentZoom,4);
+    myChart.setOption({geo:[{center:item.value,zoom:z},{center:item.value,zoom:z},{center:item.value,zoom:z}]});
+    // 触发 georoam 以更新标签和散点大小（geo[2] 在顶层 zlevel 处理 roam）
+    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_labels',zoom:1.0001,originX:400,originY:300});
   }
 
   /* ===== 地图搜索功能：模糊搜索城市/景点，点击结果高亮定位 ===== */
@@ -12597,8 +12677,9 @@
     mapSearchInput.blur();
 
     // 缩放定位到目标城市（zoom 至少 5，确保看得清）
-    myChart.setOption({geo:[{center:[lng,lat],zoom:Math.max(currentZoom,5)},{center:[lng,lat],zoom:Math.max(currentZoom,5)}]});
-    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_cities',zoom:1.0001,originX:400,originY:300});
+    const z5=Math.max(currentZoom,5);
+    myChart.setOption({geo:[{center:[lng,lat],zoom:z5},{center:[lng,lat],zoom:z5},{center:[lng,lat],zoom:z5}]});
+    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_labels',zoom:1.0001,originX:400,originY:300});
 
     // 高亮闪烁：通过 ECharts emphasis 临时高亮目标城市散点
     searchHighlightCityKey=cityKey;
