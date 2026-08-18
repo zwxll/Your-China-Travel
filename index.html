@@ -227,21 +227,116 @@
   body.light-theme .star-rating .star{color:#ddd;}
   body.light-theme .star-display .star.empty{color:#dbe3ec;}
   body.light-theme .tag-add-row .btn{background:#ffffff;}
-  /* 主题切换按钮（与账号按钮同款胶囊风格）*/
-  .theme-toggle-btn{
-    min-height:38px;padding:0 14px;border:1px solid rgba(125,211,252,.28);
-    border-radius:var(--radius-pill);background:rgba(14,165,233,.08);color:var(--ink);
-    display:flex;align-items:center;gap:7px;font:600 12px/1 inherit;letter-spacing:.2px;
-    cursor:pointer;transition:border-color .2s ease,background .2s ease,transform .2s ease;
+  /* ===== Neon Glow 按钮（Originkit 风格，含旋转炫光）===== */
+  @property --neon-deg{
+    syntax:'<angle>';
+    inherits:false;
+    initial-value:0deg;
   }
-  .theme-toggle-btn:hover{border-color:rgba(125,211,252,.65);background:rgba(14,165,233,.14);}
-  .theme-toggle-btn:active{transform:scale(.98);}
-  .theme-toggle-btn svg{display:block;}
+  .theme-toggle-btn{
+    position:relative;overflow:hidden;min-height:38px;padding:0 16px;
+    border:1.5px solid rgba(56,189,248,.45);
+    border-radius:var(--radius-pill);
+    color:#e0f2fe;
+    display:flex;align-items:center;gap:7px;
+    font:600 13px/1 inherit;letter-spacing:.3px;
+    cursor:pointer;outline:none;z-index:0;
+    background:linear-gradient(135deg,rgba(14,165,233,.12) 0%,rgba(56,189,248,.06) 100%);
+    box-shadow:
+      0 0 8px rgba(56,189,248,.25),
+      0 0 22px rgba(56,189,248,.10),
+      inset 0 1px 0 rgba(255,255,255,.06);
+    transition:color .35s ease,border-color .35s ease,box-shadow .35s ease,transform .35s ease;
+    text-shadow:0 0 12px rgba(56,189,248,.35);
+  }
+  /* 旋转炫光：完整霓虹边框之上叠加一段更亮的流光绕圈旋转 */
+  .theme-toggle-btn::before{
+    content:'';position:absolute;inset:0;z-index:-1;
+    border-radius:inherit;
+    padding:1.5px;
+    background:conic-gradient(from var(--neon-deg),
+      rgba(56,189,248,0) 0deg,
+      rgba(125,211,252,.95) 50deg,
+      rgba(56,189,248,.35) 100deg,
+      rgba(56,189,248,0) 160deg,
+      rgba(14,165,233,.55) 260deg,
+      rgba(56,189,248,0) 330deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+            mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+            mask-composite:exclude;
+    animation:neon-spin 4s linear infinite;
+  }
+  .theme-toggle-btn:hover{
+    border-color:rgba(125,211,252,.85);
+    color:#fff;
+    box-shadow:
+      0 0 14px rgba(56,189,248,.45),
+      0 0 36px rgba(56,189,248,.22),
+      0 0 56px rgba(56,189,248,.08);
+    text-shadow:0 0 18px rgba(56,189,248,.55);
+    transform:translateY(-1px);
+  }
+  .theme-toggle-btn:hover::before{animation-duration:1.6s;}
+  .theme-toggle-btn:active{
+    transform:scale(.97);
+    transition:transform .1s ease;
+  }
+  .theme-toggle-btn svg{display:block;filter:drop-shadow(0 0 6px rgba(56,189,248,.4));}
+  .theme-toggle-btn:hover svg{filter:drop-shadow(0 0 10px rgba(56,189,248,.6));}
+  @keyframes neon-spin{
+    to{--neon-deg:360deg;}
+  }
+
+  /* 浅色主题：紫色霓虹 */
+  body.light-theme .theme-toggle-btn{
+    border-color:rgba(99,102,241,.4);
+    color:#312e81;
+    background:linear-gradient(135deg,rgba(99,102,241,.10) 0%,rgba(79,70,229,.05) 100%);
+    box-shadow:
+      0 0 8px rgba(99,102,241,.20),
+      0 0 22px rgba(79,70,229,.08),
+      inset 0 1px 0 rgba(255,255,255,.30);
+    text-shadow:0 0 8px rgba(99,102,241,.20);
+  }
+  body.light-theme .theme-toggle-btn::before{
+    background:conic-gradient(from var(--neon-deg),
+      rgba(99,102,241,0) 0deg,
+      rgba(129,140,248,.95) 50deg,
+      rgba(99,102,241,.35) 100deg,
+      rgba(99,102,241,0) 160deg,
+      rgba(79,70,229,.55) 260deg,
+      rgba(99,102,241,0) 330deg);
+  }
+  body.light-theme .theme-toggle-btn:hover{
+    border-color:rgba(99,102,241,.75);
+    color:#1e1b4b;
+    box-shadow:
+      0 0 14px rgba(99,102,241,.35),
+      0 0 36px rgba(79,70,229,.18),
+      0 0 56px rgba(79,70,229,.06);
+    text-shadow:0 0 14px rgba(99,102,241,.35);
+  }
+  body.light-theme .theme-toggle-btn svg{filter:drop-shadow(0 0 6px rgba(99,102,241,.35));}
+  body.light-theme .theme-toggle-btn:hover svg{filter:drop-shadow(0 0 10px rgba(99,102,241,.55));}
+
   /* ===================== 人生地图足迹（家 → 按时间顺序飞行回放） ===================== */
-  .footprint-btn .fp-btn-ico{display:grid;place-items:center;color:#7dd3fc;}
-  body.light-theme .footprint-btn .fp-btn-ico{color:#4f46e5;}
-  .footprint-btn.active{border-color:rgba(56,189,248,.85);background:rgba(14,165,233,.26);}
-  body.light-theme .footprint-btn.active{border-color:rgba(79,70,229,.6);background:rgba(99,102,241,.16);}
+  .footprint-btn .fp-btn-ico{display:grid;place-items:center;color:inherit;}
+  .footprint-btn.active,
+  body.light-theme .footprint-btn.active{
+    box-shadow:
+      0 0 16px rgba(56,189,248,.55),
+      0 0 40px rgba(56,189,248,.28),
+      0 0 64px rgba(56,189,248,.10);
+    text-shadow:0 0 16px rgba(56,189,248,.6);
+  }
+  body.light-theme .footprint-btn.active{
+    box-shadow:
+      0 0 16px rgba(99,102,241,.40),
+      0 0 40px rgba(79,70,229,.22),
+      0 0 64px rgba(79,70,229,.08);
+    text-shadow:0 0 14px rgba(99,102,241,.40);
+  }
   @media(max-width:760px){.footprint-btn .fp-btn-label{display:none;}}
   /* 足迹图层：z:3 位于省份卡片层(z:4)之下，航线从卡片下方穿过 */
   .footprint-layer{
@@ -470,16 +565,81 @@
   .stats{display:flex;gap:10px;flex:0 0 auto;}
   .header-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto;}
   .account-btn{
-    min-height:38px;max-width:220px;padding:0 15px;border:1px solid rgba(125,211,252,.28);
-    border-radius:var(--radius-pill);background:rgba(14,165,233,.08);color:var(--ink);
+    position:relative;overflow:hidden;min-height:38px;max-width:220px;padding:0 15px;
+    border:1.5px solid rgba(56,189,248,.45);
+    border-radius:var(--radius-pill);
+    background:linear-gradient(135deg,rgba(14,165,233,.12) 0%,rgba(56,189,248,.06) 100%);
+    color:#e0f2fe;
     display:flex;align-items:center;gap:9px;font:600 12px/1 inherit;letter-spacing:.2px;
-    cursor:pointer;transition:border-color .2s ease,background .2s ease,transform .2s ease;
+    cursor:pointer;outline:none;z-index:0;
+    box-shadow:
+      0 0 8px rgba(56,189,248,.25),
+      0 0 22px rgba(56,189,248,.10),
+      inset 0 1px 0 rgba(255,255,255,.06);
+    transition:color .35s ease,border-color .35s ease,box-shadow .35s ease,transform .35s ease;
+    text-shadow:0 0 12px rgba(56,189,248,.35);
   }
-  .account-btn:hover{border-color:rgba(125,211,252,.65);background:rgba(14,165,233,.14);}
-  .account-btn:active{transform:scale(.98);}
+  .account-btn::before{
+    content:'';position:absolute;inset:0;z-index:-1;
+    border-radius:inherit;
+    padding:1.5px;
+    background:conic-gradient(from var(--neon-deg),
+      rgba(56,189,248,0) 0deg,
+      rgba(125,211,252,.95) 50deg,
+      rgba(56,189,248,.35) 100deg,
+      rgba(56,189,248,0) 160deg,
+      rgba(14,165,233,.55) 260deg,
+      rgba(56,189,248,0) 330deg);
+    -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+    -webkit-mask-composite:xor;
+            mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);
+            mask-composite:exclude;
+    animation:neon-spin 4s linear infinite;
+  }
+  .account-btn:hover{
+    border-color:rgba(125,211,252,.85);
+    color:#fff;
+    box-shadow:
+      0 0 14px rgba(56,189,248,.45),
+      0 0 36px rgba(56,189,248,.22),
+      0 0 56px rgba(56,189,248,.08);
+    text-shadow:0 0 18px rgba(56,189,248,.55);
+    transform:translateY(-1px);
+  }
+  .account-btn:hover::before{animation-duration:1.6s;}
+  .account-btn:active{transform:scale(.97);}
   .account-btn .account-dot{width:7px;height:7px;border-radius:50%;background:#64748b;box-shadow:0 0 0 4px rgba(100,116,139,.12);}
   .account-btn.signed-in .account-dot{background:var(--accent);box-shadow:0 0 0 4px rgba(56,189,248,.14),0 0 12px rgba(56,189,248,.5);}
   .account-btn .account-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  /* 浅色主题：紫色霓虹 */
+  body.light-theme .account-btn{
+    border-color:rgba(99,102,241,.4);
+    color:#312e81;
+    background:linear-gradient(135deg,rgba(99,102,241,.10) 0%,rgba(79,70,229,.05) 100%);
+    box-shadow:
+      0 0 8px rgba(99,102,241,.20),
+      0 0 22px rgba(79,70,229,.08),
+      inset 0 1px 0 rgba(255,255,255,.30);
+    text-shadow:0 0 8px rgba(99,102,241,.20);
+  }
+  body.light-theme .account-btn::before{
+    background:conic-gradient(from var(--neon-deg),
+      rgba(99,102,241,0) 0deg,
+      rgba(129,140,248,.95) 50deg,
+      rgba(99,102,241,.35) 100deg,
+      rgba(99,102,241,0) 160deg,
+      rgba(79,70,229,.55) 260deg,
+      rgba(99,102,241,0) 330deg);
+  }
+  body.light-theme .account-btn:hover{
+    border-color:rgba(99,102,241,.75);
+    color:#1e1b4b;
+    box-shadow:
+      0 0 14px rgba(99,102,241,.35),
+      0 0 36px rgba(79,70,229,.18),
+      0 0 56px rgba(79,70,229,.06);
+    text-shadow:0 0 14px rgba(99,102,241,.35);
+  }
   .stat{
     background:#080808;border:1px solid var(--line);border-radius:12px;
     padding:6px 14px;text-align:center;box-shadow:var(--shadow-sm);
@@ -1193,6 +1353,25 @@
     background:linear-gradient(90deg,#080808,rgba(8,8,8,0));
     border-bottom:1px solid var(--line);
     flex:0 0 auto;
+  }
+  /* 我的家乡强调横幅：编辑弹窗中标识该城市为家乡 */
+  .hometown-banner{
+    display:flex;align-items:center;gap:8px;
+    margin:12px 22px 0;padding:10px 14px;
+    border-radius:12px;font-size:13px;font-weight:700;letter-spacing:.3px;
+    border:1px solid rgba(56,189,248,.45);
+    background:linear-gradient(135deg,rgba(14,165,233,.14) 0%,rgba(56,189,248,.05) 100%);
+    color:#7dd3fc;
+    box-shadow:0 0 18px rgba(56,189,248,.18),inset 0 1px 0 rgba(255,255,255,.05);
+    text-shadow:0 0 10px rgba(56,189,248,.4);
+    flex:0 0 auto;
+  }
+  body.light-theme .hometown-banner{
+    border-color:rgba(99,102,241,.45);
+    background:linear-gradient(135deg,rgba(99,102,241,.12) 0%,rgba(79,70,229,.05) 100%);
+    color:#4f46e5;
+    box-shadow:0 0 16px rgba(99,102,241,.18),inset 0 1px 0 rgba(255,255,255,.4);
+    text-shadow:none;
   }
   /* =====【滚动隔离核心】弹窗 body 独立滚动容器，flex:1 + min-height:0 确保不撑破父容器 ===== */
   /* 【弹窗尺寸放大】body 内边距 14→16px，水平 18→22px，滚动区更舒展 */
@@ -4063,6 +4242,12 @@
         </span>
         <span class="fp-btn-label">人生足迹</span>
       </button>
+      <button class="theme-toggle-btn footprint-btn" id="hometownBtn" type="button" aria-label="设置我的家乡" title="我的家乡：设置你出生长大的城市">
+        <span class="fp-btn-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 3.1 3.4 10.6v9.8a1 1 0 0 0 1 1h5.2v-5.6h4.8v5.6h5.2a1 1 0 0 0 1-1v-9.8L12 3.1z"/></svg>
+        </span>
+        <span class="fp-btn-label">我的家乡</span>
+      </button>
       <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="切换深色/浅色主题">
         <span class="theme-toggle-icon" id="themeToggleIcon" aria-hidden="true"></span>
         <span id="themeToggleLabel">浅色</span>
@@ -4272,6 +4457,7 @@
         </div>
         <button id="modalClose" class="icon-btn" aria-label="关闭">&times;</button>
       </div>
+      <div id="hometownBanner" class="hometown-banner" style="display:none;">🏠 这是我的家乡</div>
       <div id="modalLandmark" class="modal-landmark" style="display:none;"></div>
       <!-- 封面图 -->
       <div class="cover-section">
@@ -5658,6 +5844,78 @@
     return [x/coords.length, y/coords.length];
   }
 
+  // 获取全国省份 GeoJSON 特征（双击省份定位放大时用）
+  function getChinaFeatures(){
+    if(window.CHINA_GEO&&window.CHINA_GEO.features) return window.CHINA_GEO.features;
+    try{
+      const m=echarts.getMap('china');
+      const gj=m&&(m.geoJson||m.geoJSON);
+      if(gj&&gj.features) return gj.features;
+    }catch(e){}
+    return null;
+  }
+
+  // 计算 geometry 的经纬度包围盒（递归收集所有 [lng,lat] 点）
+  function geomBBox(geom){
+    if(!geom||!geom.coordinates) return null;
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity,found=false;
+    (function walk(node){
+      if(Array.isArray(node)&&node.length>=2&&typeof node[0]==='number'&&typeof node[1]==='number'){
+        const x=node[0],y=node[1];
+        if(x<minX)minX=x;if(x>maxX)maxX=x;if(y<minY)minY=y;if(y>maxY)maxY=y;found=true;
+        return;
+      }
+      if(Array.isArray(node)){ for(let i=0;i<node.length;i++) walk(node[i]); }
+    })(geom.coordinates);
+    return found?{minX,minY,maxX,maxY}:null;
+  }
+
+  let _chinaBBox=null;
+  function chinaBBox(){
+    if(_chinaBBox) return _chinaBBox;
+    const feats=getChinaFeatures()||[];
+    let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+    for(const f of feats){
+      const b=geomBBox(f.geometry);
+      if(b){ if(b.minX<minX)minX=b.minX; if(b.minY<minY)minY=b.minY; if(b.maxX>maxX)maxX=b.maxX; if(b.maxY>maxY)maxY=b.maxY; }
+    }
+    if(!isFinite(minX)) return null;
+    _chinaBBox={minX,minY,maxX,maxY};
+    return _chinaBBox;
+  }
+
+  // 双击省份：定位到省份并放大省份区域
+  function focusProvinceOnMap(provinceName){
+    if(!myChart) return;
+    const feats=getChinaFeatures();
+    if(!feats) return;
+    const feat=feats.find(f=>f&&f.properties&&f.properties.name===provinceName);
+    const bbox=feat&&geomBBox(feat.geometry);
+    if(!bbox) return;
+    const cx=(bbox.minX+bbox.maxX)/2, cy=(bbox.minY+bbox.maxY)/2;
+    const pw=bbox.maxX-bbox.minX, ph=bbox.maxY-bbox.minY;
+    const cb=chinaBBox();
+    let target=2.5;
+    if(cb){
+      const cw=cb.maxX-cb.minX, ch=cb.maxY-cb.minY;
+      const pd=Math.sqrt(pw*pw+ph*ph)||0.0001;
+      const cd=Math.sqrt(cw*cw+ch*ch);
+      // 让省份对角线约占视图 50%，并 clamp 到 2~8 之间（大省约 2，小省约 8）
+      target=Math.max(2,Math.min(8,1.18*(cd/pd)*0.5));
+    }
+    // 绝不缩小：若当前已放大到更大，保持现状
+    if(target<currentZoom) target=currentZoom;
+    myChart.setOption({
+      geo:[
+        {center:[cx,cy],zoom:target},
+        {center:[cx,cy],zoom:target}
+      ]
+    });
+    currentZoom=target;
+    // 触发 georoam 以同步标签显隐、散点大小与省份字体
+    myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_cities',zoom:1.0001,originX:400,originY:300});
+  }
+
   let cityBoundaries=null; // 城市边界 GeoJSON features（用于 map 系列叠加图层，绑定省份 geo）
   async function loadGeo(){
     // 1) 全国省级边界 → 作为底图
@@ -5778,9 +6036,9 @@
         itemStyle:{areaColor:t.area,borderColor:t.border},
         emphasis:{
           itemStyle:{areaColor:t.emArea,borderColor:t.emBorder},
-          label:{color:t.emLabel,textShadowColor:t.emLabelShadow}
+          label:{color:t.emLabel,textShadowColor:t.emLabelShadow,textShadowBlur:8}
         },
-        label:{color:t.label}
+        label:{color:t.label,textShadowColor:t.labelShadow,textShadowBlur:3}
       },{
         // 地级市边界图层：roam:true 处理缩放，silent:true 让点击穿透；按 _cityBordersActive 动态切换地图
         map:_cityBordersActive&&cityBoundaries?'china_cities':'china',
@@ -5792,8 +6050,8 @@
         label:{show:false}
       }],
       series:[
-        {itemStyle:{color:t.markerNormal,borderColor:t.markerBorder},emphasis:{itemStyle:{color:t.markerNormalHover,borderColor:t.markerBorder}}},  // 系列0 城市
-        {itemStyle:{color:t.markerVisited,shadowColor:t.markerVisitedShadow},label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow}},   // 系列1 已记录（点+标签跟随主题）
+        {itemStyle:{color:t.markerNormal,borderColor:t.markerBorder},emphasis:{scale:1.5,itemStyle:{color:t.markerNormalHover,borderColor:'#ffffff',borderWidth:1,shadowBlur:8,shadowColor:'rgba(56,189,248,.95)'}}},  // 系列0 城市
+        {itemStyle:{color:t.markerVisited,shadowBlur:8,shadowColor:t.markerVisitedShadow},label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow},emphasis:{itemStyle:{color:t.markerVisited,borderColor:'#ffffff',borderWidth:1,shadowBlur:8,shadowColor:t.markerVisitedShadow}}},   // 系列1 已记录（点+标签跟随主题）
         {label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow}}                               // 系列2 已记录城市名
       ]
     });
@@ -5815,6 +6073,20 @@
   refreshThemeToggleBtn();
   const themeToggleBtnEl=document.getElementById('themeToggleBtn');
   if(themeToggleBtnEl) themeToggleBtnEl.addEventListener('click',toggleTheme);
+
+  // 霓虹旋转兜底：不支持 @property 动画插值的浏览器（如部分 WebView）用 JS 驱动 --neon-deg
+  (function(){
+    // 支持 @property 时 CSS 动画已生效，无需兜底
+    if(typeof CSS!=='undefined'&&CSS.registerProperty&&CSS.supports('@property --neon-test{syntax:"<angle>";inherits:false;initial-value:0deg;}')) return;
+    const btns=document.querySelectorAll('.theme-toggle-btn,.account-btn');
+    if(!btns.length) return;
+    let deg=0;
+    (function tick(){
+      deg=(deg+1)%360;
+      btns.forEach(b=>b.style.setProperty('--neon-deg',deg+'deg'));
+      requestAnimationFrame(tick);
+    })();
+  })();
 
   /* ---------- ECharts 初始化 ---------- */
   function initChart(){
@@ -5945,16 +6217,16 @@
           itemStyle:{color:tc.markerNormal,opacity:.9,borderColor:tc.markerBorder,borderWidth:1.2},
           label:{show:false},
           emphasis:{
-            scale:1.8,
-            itemStyle:{color:tc.markerNormalHover,borderColor:tc.markerBorder,borderWidth:1.5},
+            scale:1.5,
+            itemStyle:{color:tc.markerNormalHover,borderColor:'#ffffff',borderWidth:1,shadowBlur:8,shadowColor:'rgba(56,189,248,.95)'},
             label:{show:false}
           }
         },
         {
           name:'已记录',type:'effectScatter',coordinateSystem:'geo',geoIndex:1,data:[],
           symbolSize:p=>(isCapital(p)?20:15)*markerScale(),z:6,showEffectOn:'render',
-          rippleEffect:{brushType:'stroke',scale:4.2,period:4.5},
-          itemStyle:{color:tc.markerVisited,shadowBlur:14,shadowColor:tc.markerVisitedShadow},
+          rippleEffect:{brushType:'stroke',scale:2.0,period:3.5},
+          itemStyle:{color:tc.markerVisited,shadowBlur:8,shadowColor:tc.markerVisitedShadow},
           // 已记录城市标签：默认缩小状态下不显示，放大到阈值后显示并自动错开
           label:{
             show:false,
@@ -5972,7 +6244,8 @@
           },
           labelLayout:{hideOverlap:false,moveOverlap:'shiftY'},
           emphasis:{
-            scale:1.35,
+            scale:1.3,
+            itemStyle:{color:tc.markerVisited,borderColor:'#ffffff',borderWidth:1,shadowBlur:8,shadowColor:tc.markerVisitedShadow},
             label:{show:false}  /* 城市名由系列2（已记录城市名）专职渲染，此处禁用避免重复 */
           }
         },
@@ -6214,6 +6487,7 @@
     // 【单击/双击冲突解决】已点亮城市延迟 250ms 打开弹窗，为双击跳转留出窗口；
     // 未点亮城市立即响应单击（无双击需求）
     let pendingClickTimer=null;
+    let pendingProvinceClickTimer=null;
     myChart.on('click',params=>{
       if(wasDragMove()) return;   // 拖动地图后的松开不算点击
       if(params.seriesType==='scatter'||params.seriesType==='effectScatter'){
@@ -6231,7 +6505,12 @@
           openCityModal(params.data);
         }
       }else if(params.componentType==='geo'&&params.name){
-        selectProvinceFocus(params.name);
+        // 省份单击：延迟 250ms 执行高亮，为双击定位放大留出窗口
+        clearTimeout(pendingProvinceClickTimer);
+        pendingProvinceClickTimer=setTimeout(()=>{
+          pendingProvinceClickTimer=null;
+          selectProvinceFocus(params.name);
+        },250);
       }
     });
 
@@ -6255,6 +6534,12 @@
           if(pendingClickTimer){ clearTimeout(pendingClickTimer); pendingClickTimer=null; }
           openAttractionDetail(params.data);
         }
+      }else if(params.componentType==='geo'&&params.name){
+        // 双击省份：取消挂起的单击高亮，直接高亮并定位放大该省份
+        if(pendingProvinceClickTimer){ clearTimeout(pendingProvinceClickTimer); pendingProvinceClickTimer=null; }
+        // 仅当目标省份非当前高亮省份时才切换（selectProvinceFocus 对同一省份会执行 toggle 清空，需规避）
+        if(selectedProvinceName!==params.name) selectProvinceFocus(params.name);
+        focusProvinceOnMap(params.name);
       }
     });
 
@@ -7774,6 +8059,58 @@
     }finally{cloudSuppressDirty=false;}
   }
 
+  // 将云端资料合并进本地（不清除本地数据，本地优先，重复项跳过）
+  async function mergeCloudSnapshotIntoLocal(snapshot){
+    setSyncStatus('合并中','syncing');
+    cloudSuppressDirty=true;
+    try{
+      clearTimeout(cloudSyncTimer);cloudSyncTimer=null;
+      const downloadedImages=await getLocalCloudImageCache();
+      async function cachedCloudImage(path){
+        if(!path) return '';
+        if(!downloadedImages.has(path)) downloadedImages.set(path,downloadCloudImage(path));
+        return downloadedImages.get(path);
+      }
+      const localPhotos=await getAllPhotos();
+      const existingPhotoCloudIds=new Set(localPhotos.map(p=>p.cloudId).filter(Boolean));
+      const existingPhotoPaths=new Set(localPhotos.map(p=>p.storagePath).filter(Boolean));
+      for(const remote of (snapshot.photos||[])){
+        if(remote.cloudId&&existingPhotoCloudIds.has(remote.cloudId)) continue;
+        if(remote.storagePath&&existingPhotoPaths.has(remote.storagePath)) continue;
+        const dataUrl=await cachedCloudImage(remote.storagePath);
+        const rec={...remote,dataUrl};delete rec.id;
+        await addPhoto(rec);
+        if(rec.cloudId) existingPhotoCloudIds.add(rec.cloudId);
+        if(rec.storagePath) existingPhotoPaths.add(rec.storagePath);
+      }
+      const localMetas=await getAllCityMeta();
+      const existingMetaKeys=new Set(localMetas.map(m=>m.cityKey));
+      for(const remoteMeta of (snapshot.cityMeta||[])){
+        if(existingMetaKeys.has(remoteMeta.cityKey)) continue;
+        const meta=JSON.parse(JSON.stringify(remoteMeta));
+        meta.coverImage=await cachedCloudImage(meta.coverStoragePath);
+        for(const att of (meta.attractions||[])){
+          for(const ph of (att.photos||[])) ph.dataUrl=await cachedCloudImage(ph.storagePath);
+        }
+        await putLocalMeta(meta);
+        existingMetaKeys.add(meta.cityKey);
+      }
+      const localReviews=await getAllMyReviews();
+      const existingReviewIds=new Set(localReviews.map(r=>r.id));
+      for(const rev of (snapshot.reviews||[])){
+        if(existingReviewIds.has(rev.id)) continue;
+        await putLocalReview(rev);
+        existingReviewIds.add(rev.id);
+      }
+      if(snapshot.userProfile&&snapshot.userProfile.nickname!==undefined){
+        const existing=getUserProfile();
+        saveLocalProfileOnly(Object.assign({},existing,snapshot.userProfile));
+        loadProfileToUI();
+      }
+      cityMetaCache.clear();
+    }finally{cloudSuppressDirty=false;}
+  }
+
   async function prepareUserData(user){
     if(isLocalMode()) return;
     if(cloudPreparePromise&&cloudPrepareUserId===user.id) return cloudPreparePromise;
@@ -7783,9 +8120,6 @@
       cloudUser=user;migrateProfileToAccount(user.id);updateAccountUI();setSyncStatus('连接中','syncing');
       const owner=localStorage.getItem(CLOUD_OWNER_KEY),dirty=localStorage.getItem(CLOUD_DIRTY_KEY)==='1';
       try{
-        if(owner&&owner!==user.id){
-          cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;localStorage.removeItem(CLOUD_UPDATED_KEY);
-        }
         const remoteRecord=await readCloudRecord(),remote=remoteRecord.snapshot;
         const [localPhotos,localMetas]=await Promise.all([getAllPhotos(),getAllCityMeta()]);
         const localHas=hasLocalTravelData(localPhotos,localMetas);
@@ -7803,9 +8137,16 @@
           localStorage.setItem(CLOUD_DIRTY_KEY,'1');
           await syncToCloud();
           toast('已保留本机较完整的资料并重新同步');
-        }else if(remote&&localHas&&owner!==user.id){
-          const useLocal=confirm('检测到这台设备有尚未绑定账号的旅行资料，同时该账号已有云端资料。\n\n按“确定”：用这台设备的资料替换云端资料。\n按“取消”：使用账号的云端资料替换这台设备的资料。');
-          if(useLocal) await syncToCloud(); else await restoreCloudSnapshot(remote,remoteRecord.updatedAt);
+        }else if(owner!==user.id&&localHas){
+          // 切换到其他账号：本地有资料 → 合并进账号并同步，绝不覆盖/丢弃本地数据
+          if(remote){
+            await mergeCloudSnapshotIntoLocal(remote);
+            await syncToCloud();
+            toast('已将本机资料合并进当前账号并同步');
+          }else{
+            await syncToCloud();
+            toast('本机旅行资料已同步到当前账号');
+          }
         }else if(remote){
           await restoreCloudSnapshot(remote,remoteRecord.updatedAt);
         }else if(localHas){
@@ -8003,14 +8344,13 @@
       }
       if(preserveLocalData){
         localStorage.setItem(CLOUD_DIRTY_KEY,'1');
-      }else{
-        cloudSuppressDirty=true;await clearLocalTravelData();cloudSuppressDirty=false;
-        localStorage.removeItem(CLOUD_OWNER_KEY);localStorage.removeItem(CLOUD_DIRTY_KEY);localStorage.removeItem(CLOUD_UPDATED_KEY);
       }
+      // 退出账号时保留本机旅行资料（不清除 IndexedDB 与 owner 标记），
+      // 便于下次登录其他账号时把本地内容同步过去，不会丢失
       setStorageMode('');cloudUser=null;await refreshState();updateAccountUI();closeAuth();
       toast(remoteSignOutFailed
         ?'已从本机退出；云端暂时无法结束其他设备会话'
-        :(preserveLocalData?'已退出账号，未同步内容已保留在本机':'已安全退出账号'));
+        :(preserveLocalData?'已退出账号，未同步内容已保留在本机':'已退出账号，本机资料已保留'));
     }catch(error){
       if(preserveLocalData) setSyncStatus('待同步','syncing');
       toast('退出失败：'+friendlyAuthError(error),true);
@@ -8669,10 +9009,16 @@
       b.addEventListener('click',()=>{
         setFootprintHome(c.cityKey);
         closeFpHomePicker();
-        toast('家的城市已设置为「'+c.name+'」');
         updateTotalTripKm();                 // 换家后城市视图统计卡的总计行程同步重算
-        if(fpState) fpStopAll();
-        fpStart();
+        if(fpPickerMode==='hometown'){
+          // 我的家乡：选择后进入城市编辑页（功能与点亮城市一致），不启动足迹回放
+          toast('我的家乡已设置为「'+c.name+'」');
+          openCityModal(c);
+        }else{
+          toast('家的城市已设置为「'+c.name+'」');
+          if(fpState) fpStopAll();
+          fpStart();
+        }
       });
       frag.append(b);
     }
@@ -8697,6 +9043,9 @@
     fpSpeedBtnEl.textContent=s.speed+'x';
   });
   fpHomeBtnEl.addEventListener('click',()=>openFpHomePicker(fpState?'restart':'start'));
+  // 我的家乡：独立入口，打开家乡选择弹窗（选择后进入编辑页，不启动足迹回放）
+  const hometownBtnEl=$('hometownBtn');
+  if(hometownBtnEl) hometownBtnEl.addEventListener('click',()=>openFpHomePicker('hometown'));
   fpHomeCloseEl.addEventListener('click',closeFpHomePicker);
   fpHomeOverlayEl.addEventListener('click',e=>{ if(e.target===fpHomeOverlayEl) closeFpHomePicker(); });
   fpHomeSearchEl.addEventListener('input',()=>renderFpHomeList(fpHomeSearchEl.value));
@@ -10697,6 +11046,10 @@
   function openCityModal(city){
     currentCity=city;
     cityTitle.textContent=city.name;
+    // 我的家乡标识：若当前编辑城市为家乡，显示强调横幅
+    const _home=getFootprintHome();
+    const hometownBannerEl=document.getElementById('hometownBanner');
+    if(hometownBannerEl) hometownBannerEl.style.display=(_home&&_home.cityKey===city.cityKey)?'flex':'none';
     // 显示标志性建筑（若有）
     const lm=landmarkOf(city.name);
     const lmEl=$('modalLandmark');
@@ -12112,7 +12465,7 @@
     searchHighlightCityKey=cityKey;
     if(searchHighlightTimer) clearTimeout(searchHighlightTimer);
     let blinkCount=0;
-    const maxBlink=6; // 闪烁 3 次（亮→暗 6 次状态切换）
+    const maxBlink=12; // 闪烁 6 次（亮→暗 12 次状态切换）
     function blink(){
       if(blinkCount>=maxBlink){
         // 闪烁结束，恢复高亮状态
