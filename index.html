@@ -289,37 +289,37 @@
     to{--neon-deg:360deg;}
   }
 
-  /* 浅色主题：紫色霓虹 */
+  /* 浅色主题：天蓝霓虹（匹配页面浅蓝主调） */
   body.light-theme .theme-toggle-btn{
-    border-color:rgba(99,102,241,.4);
-    color:#312e81;
-    background:linear-gradient(135deg,rgba(99,102,241,.10) 0%,rgba(79,70,229,.05) 100%);
+    border-color:rgba(14,165,233,.45);
+    color:#075985;
+    background:linear-gradient(135deg,rgba(14,165,233,.10) 0%,rgba(56,189,248,.05) 100%);
     box-shadow:
-      0 0 8px rgba(99,102,241,.20),
-      0 0 22px rgba(79,70,229,.08),
-      inset 0 1px 0 rgba(255,255,255,.30);
-    text-shadow:0 0 8px rgba(99,102,241,.20);
+      0 0 8px rgba(14,165,233,.20),
+      0 0 22px rgba(56,189,248,.10),
+      inset 0 1px 0 rgba(255,255,255,.35);
+    text-shadow:0 0 8px rgba(14,165,233,.22);
   }
   body.light-theme .theme-toggle-btn::before{
     background:conic-gradient(from var(--neon-deg),
-      rgba(99,102,241,0) 0deg,
-      rgba(129,140,248,.95) 50deg,
-      rgba(99,102,241,.35) 100deg,
-      rgba(99,102,241,0) 160deg,
-      rgba(79,70,229,.55) 260deg,
-      rgba(99,102,241,0) 330deg);
+      rgba(14,165,233,0) 0deg,
+      rgba(56,189,248,.95) 50deg,
+      rgba(14,165,233,.35) 100deg,
+      rgba(14,165,233,0) 160deg,
+      rgba(2,132,199,.55) 260deg,
+      rgba(14,165,233,0) 330deg);
   }
   body.light-theme .theme-toggle-btn:hover{
-    border-color:rgba(99,102,241,.75);
-    color:#1e1b4b;
+    border-color:rgba(2,132,199,.75);
+    color:#0c4a6e;
     box-shadow:
-      0 0 14px rgba(99,102,241,.35),
-      0 0 36px rgba(79,70,229,.18),
-      0 0 56px rgba(79,70,229,.06);
-    text-shadow:0 0 14px rgba(99,102,241,.35);
+      0 0 14px rgba(14,165,233,.35),
+      0 0 36px rgba(56,189,248,.18),
+      0 0 56px rgba(56,189,248,.06);
+    text-shadow:0 0 14px rgba(14,165,233,.35);
   }
-  body.light-theme .theme-toggle-btn svg{filter:drop-shadow(0 0 6px rgba(99,102,241,.35));}
-  body.light-theme .theme-toggle-btn:hover svg{filter:drop-shadow(0 0 10px rgba(99,102,241,.55));}
+  body.light-theme .theme-toggle-btn svg{filter:drop-shadow(0 0 6px rgba(14,165,233,.35));}
+  body.light-theme .theme-toggle-btn:hover svg{filter:drop-shadow(0 0 10px rgba(14,165,233,.55));}
 
   /* ===================== 人生地图足迹（家 → 按时间顺序飞行回放） ===================== */
   .footprint-btn .fp-btn-ico{display:grid;place-items:center;color:inherit;}
@@ -333,10 +333,10 @@
   }
   body.light-theme .footprint-btn.active{
     box-shadow:
-      0 0 16px rgba(99,102,241,.40),
-      0 0 40px rgba(79,70,229,.22),
-      0 0 64px rgba(79,70,229,.08);
-    text-shadow:0 0 14px rgba(99,102,241,.40);
+      0 0 16px rgba(14,165,233,.40),
+      0 0 40px rgba(56,189,248,.22),
+      0 0 64px rgba(56,189,248,.08);
+    text-shadow:0 0 14px rgba(14,165,233,.40);
   }
   @media(max-width:760px){.footprint-btn .fp-btn-label{display:none;}}
   /* 足迹图层：z:3 位于省份卡片层(z:4)之下，航线从卡片下方穿过 */
@@ -637,34 +637,34 @@
   .account-btn .account-dot{width:7px;height:7px;border-radius:50%;background:#64748b;box-shadow:0 0 0 4px rgba(100,116,139,.12);}
   .account-btn.signed-in .account-dot{background:var(--accent);box-shadow:0 0 0 4px rgba(56,189,248,.14),0 0 12px rgba(56,189,248,.5);}
   .account-btn .account-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-  /* 浅色主题：紫色霓虹 */
+  /* 浅色主题：天蓝霓虹（与主题切换/足迹/家乡按钮统一） */
   body.light-theme .account-btn{
-    border-color:rgba(99,102,241,.4);
-    color:#312e81;
-    background:linear-gradient(135deg,rgba(99,102,241,.10) 0%,rgba(79,70,229,.05) 100%);
+    border-color:rgba(14,165,233,.45);
+    color:#075985;
+    background:linear-gradient(135deg,rgba(14,165,233,.10) 0%,rgba(56,189,248,.05) 100%);
     box-shadow:
-      0 0 8px rgba(99,102,241,.20),
-      0 0 22px rgba(79,70,229,.08),
-      inset 0 1px 0 rgba(255,255,255,.30);
-    text-shadow:0 0 8px rgba(99,102,241,.20);
+      0 0 8px rgba(14,165,233,.20),
+      0 0 22px rgba(56,189,248,.10),
+      inset 0 1px 0 rgba(255,255,255,.35);
+    text-shadow:0 0 8px rgba(14,165,233,.22);
   }
   body.light-theme .account-btn::before{
     background:conic-gradient(from var(--neon-deg),
-      rgba(99,102,241,0) 0deg,
-      rgba(129,140,248,.95) 50deg,
-      rgba(99,102,241,.35) 100deg,
-      rgba(99,102,241,0) 160deg,
-      rgba(79,70,229,.55) 260deg,
-      rgba(99,102,241,0) 330deg);
+      rgba(14,165,233,0) 0deg,
+      rgba(56,189,248,.95) 50deg,
+      rgba(14,165,233,.35) 100deg,
+      rgba(14,165,233,0) 160deg,
+      rgba(2,132,199,.55) 260deg,
+      rgba(14,165,233,0) 330deg);
   }
   body.light-theme .account-btn:hover{
-    border-color:rgba(99,102,241,.75);
-    color:#1e1b4b;
+    border-color:rgba(2,132,199,.75);
+    color:#0c4a6e;
     box-shadow:
-      0 0 14px rgba(99,102,241,.35),
-      0 0 36px rgba(79,70,229,.18),
-      0 0 56px rgba(79,70,229,.06);
-    text-shadow:0 0 14px rgba(99,102,241,.35);
+      0 0 14px rgba(14,165,233,.35),
+      0 0 36px rgba(56,189,248,.18),
+      0 0 56px rgba(56,189,248,.06);
+    text-shadow:0 0 14px rgba(14,165,233,.35);
   }
   .stat{
     position:relative;overflow:hidden;
@@ -685,8 +685,8 @@
   }
   .stat>span,.stat>label{position:relative;z-index:1;}
   body.light-theme .stat::before{
-    background:linear-gradient(135deg,rgba(99,102,241,.5),rgba(129,140,248,.3),rgba(79,70,229,.5));
-    box-shadow:0 0 10px rgba(99,102,241,.18),0 0 20px rgba(79,70,229,.08);
+    background:linear-gradient(135deg,rgba(14,165,233,.5),rgba(56,189,248,.35),rgba(2,132,199,.5));
+    box-shadow:0 0 10px rgba(14,165,233,.18),0 0 20px rgba(56,189,248,.08);
   }
   .stat span{display:block;font-size:18px;font-weight:800;color:var(--accent-d);line-height:1.1;}
   .stat label{font-size:11px;color:var(--muted);}
@@ -2439,10 +2439,9 @@
     width:100%;position:relative;cursor:pointer;
   }
   .mini-timeline svg{width:100%;height:100%;display:block;overflow:visible;position:relative;z-index:1;}
-  /* ===== 预览态：移除 CSS dot-grid 静态点阵，仅保留 canvas dot-field 交互式点阵 ===== */
-  /* 原 ::before 静态点阵与 canvas 交互点阵重叠显示两个图层，现移除静态层 */
+  /* ===== 预览态：点阵背景由 Originkit Globe 点阵地球取代（悬停淡入，见 .tl-globe-wrap）===== */
   /* 预览态：SVG 内容层置于 canvas 之上（默认隐藏，点击后显示）*/
-  .mini-timeline.tl-preview svg{position:relative;z-index:1;}
+  .mini-timeline.tl-preview svg{position:relative;z-index:1;pointer-events:none;}
   /* 预览态：隐藏全部轨迹内容——所有圆点、文字、连线，仅显示 dot-grid 网格背景 */
   .mini-timeline.tl-preview .tl-dot{opacity:0 !important;}
   .mini-timeline.tl-preview .tl-label,
@@ -2450,6 +2449,16 @@
   .mini-timeline.tl-preview .tl-date-bg{opacity:0 !important;}
   .mini-timeline.tl-preview .tl-seg{opacity:0 !important;}
   .mini-timeline.tl-preview .tl-walker{opacity:0 !important;}
+  /* ===== Originkit Globe 点阵地球（基于 cobe ~5KB WebGL，预览态悬停淡入）===== */
+  /* 替换原 reactbits dot-field：鼠标悬停轨迹区域时地球淡入并自转，移开淡出 */
+  .tl-globe-wrap{
+    position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    pointer-events:none;z-index:0;opacity:0;
+    transition:opacity .5s ease;
+  }
+  .tl-globe-wrap.globe-on{opacity:1;pointer-events:auto;z-index:2;}
+  .tl-globe-canvas{width:100%;height:100%;display:block;cursor:grab;touch-action:none;border-radius:50%;user-select:none;-webkit-user-select:none;}
+  .tl-globe-canvas.globe-grabbing{cursor:grabbing;}
   /* ===== soft-aurora 柔和极光动态背景（参考 reactbits soft-aurora）===== */
   /* 始终存在于轨迹画布底层，z-index 在 dot-grid(::before) 之上、SVG 内容(z-index:1) 之下 */
   /* 【修改】去除极光图层静态光斑光源：移除径向渐变背景，仅保留图层结构与动画代码 */
@@ -4967,6 +4976,15 @@
 <!-- Supabase：账号认证、数据库与私有照片云存储（原生浏览器客户端，无需 npm 构建） -->
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>/* cobe 点阵地球库（内嵌版）：esm.sh/jsdelivr 在国内网络经常被墙导致地球永不显示，
+     故将 cobe v0.6.4 + phenomenon v1.6.0 源码直接内嵌，零网络依赖，file:// 也可用 */
+    /* cobe v0.6.4 + phenomenon v1.6.0 (MIT) - inlined source, replaces blocked esm.sh/jsdelivr CDNs */
+var t=["x","y","z"],e=function(t){Object.assign(this,{uniforms:{},geometry:{vertices:[{x:0,y:0,z:0}]},mode:0,modifiers:{},attributes:[],multiplier:1,buffers:[]}),Object.assign(this,t),this.prepareProgram(),this.prepareUniforms(),this.prepareAttributes()};e.prototype.compileShader=function(t,e){var i=this.gl.createShader(t);return this.gl.shaderSource(i,e),this.gl.compileShader(i),i},e.prototype.prepareProgram=function(){var t=this.gl,e=this.vertex,i=this.fragment,r=t.createProgram();t.attachShader(r,this.compileShader(35633,e)),t.attachShader(r,this.compileShader(35632,i)),t.linkProgram(r),t.useProgram(r),this.program=r},e.prototype.prepareUniforms=function(){for(var t=Object.keys(this.uniforms),e=0;e<t.length;e+=1){var i=this.gl.getUniformLocation(this.program,t[e]);this.uniforms[t[e]].location=i}},e.prototype.prepareAttributes=function(){void 0!==this.geometry.vertices&&this.attributes.push({name:"aPosition",size:3}),void 0!==this.geometry.normal&&this.attributes.push({name:"aNormal",size:3}),this.attributeKeys=[];for(var t=0;t<this.attributes.length;t+=1)this.attributeKeys.push(this.attributes[t].name),this.prepareAttribute(this.attributes[t])},e.prototype.prepareAttribute=function(e){for(var i=this.geometry,r=this.multiplier,s=i.vertices,n=i.normal,a=new Float32Array(r*s.length*e.size),o=0;o<r;o+=1)for(var h=e.data&&e.data(o,r),u=o*s.length*e.size,f=0;f<s.length;f+=1)for(var c=0;c<e.size;c+=1){var l=this.modifiers[e.name];a[u]=void 0!==l?l(h,f,c,this):"aPosition"===e.name?s[f][t[c]]:"aNormal"===e.name?n[f][t[c]]:h[c],u+=1}this.attributes[this.attributeKeys.indexOf(e.name)].data=a,this.prepareBuffer(this.attributes[this.attributeKeys.indexOf(e.name)])},e.prototype.prepareBuffer=function(t){var e=t.data,i=t.name,r=t.size,s=this.gl.createBuffer();this.gl.bindBuffer(34962,s),this.gl.bufferData(34962,e,35044);var n=this.gl.getAttribLocation(this.program,i);this.gl.enableVertexAttribArray(n),this.gl.vertexAttribPointer(n,r,5126,!1,0,0),this.buffers[this.attributeKeys.indexOf(t.name)]={buffer:s,location:n,size:r}},e.prototype.render=function(t){var e=this,i=this.uniforms,r=this.multiplier,s=this.gl;s.useProgram(this.program);for(var n=0;n<this.buffers.length;n+=1){var a=this.buffers[n],o=a.location,h=a.buffer,u=a.size;s.enableVertexAttribArray(o),s.bindBuffer(34962,h),s.vertexAttribPointer(o,u,5126,!1,0,0)}Object.keys(t).forEach(function(e){i[e].value=t[e].value}),Object.keys(i).forEach(function(t){var r=i[t];e.uniformMap[r.type](r.location,r.value)}),s.drawArrays(this.mode,0,r*this.geometry.vertices.length),this.onRender&&this.onRender(this)},e.prototype.destroy=function(){for(var t=0;t<this.buffers.length;t+=1)this.gl.deleteBuffer(this.buffers[t].buffer);this.gl.deleteProgram(this.program),this.gl=null};var i=function(t){var e=this,i=t||{},r=i.canvas;void 0===r&&(r=document.querySelector("canvas"));var s=i.context;void 0===s&&(s={});var n=i.contextType;void 0===n&&(n="experimental-webgl");var a=i.settings;void 0===a&&(a={});var o=r.getContext(n,Object.assign({alpha:!1,antialias:!1},s));Object.assign(this,{gl:o,canvas:r,uniforms:{},instances:new Map,shouldRender:!0}),Object.assign(this,{devicePixelRatio:1,clearColor:[1,1,1,1],position:{x:0,y:0,z:2},clip:[.001,100]}),Object.assign(this,a),this.uniformMap={float:function(t,e){return o.uniform1f(t,e)},vec2:function(t,e){return o.uniform2fv(t,e)},vec3:function(t,e){return o.uniform3fv(t,e)},vec4:function(t,e){return o.uniform4fv(t,e)},mat2:function(t,e){return o.uniformMatrix2fv(t,!1,e)},mat3:function(t,e){return o.uniformMatrix3fv(t,!1,e)},mat4:function(t,e){return o.uniformMatrix4fv(t,!1,e)}},o.enable(o.DEPTH_TEST),o.depthFunc(o.LEQUAL),!1===o.getContextAttributes().alpha&&(o.clearColor.apply(o,this.clearColor),o.clearDepth(1)),this.onSetup&&this.onSetup(o),window.addEventListener("resize",function(){return e.resize()}),this.resize(),this.render()};i.prototype.resize=function(){var t=this.gl,e=this.canvas,i=this.devicePixelRatio,r=this.position;e.width=e.clientWidth*i,e.height=e.clientHeight*i;var s=t.drawingBufferWidth,n=t.drawingBufferHeight,a=s/n;t.viewport(0,0,s,n);var o=Math.tan(Math.PI/180*22.5),h=[1,0,0,0,0,1,0,0,0,0,1,0,r.x,r.y,(a<1?1:a)*-r.z,1];this.uniforms.uProjectionMatrix={type:"mat4",value:[.5/o,0,0,0,0,a/o*.5,0,0,0,0,-(this.clip[1]+this.clip[0])/(this.clip[1]-this.clip[0]),-1,0,0,-2*this.clip[1]*(this.clip[0]/(this.clip[1]-this.clip[0])),0]},this.uniforms.uViewMatrix={type:"mat4",value:[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]},this.uniforms.uModelMatrix={type:"mat4",value:h}},i.prototype.toggle=function(t){t!==this.shouldRender&&(this.shouldRender=void 0!==t?t:!this.shouldRender,this.shouldRender&&this.render())},i.prototype.render=function(){var t=this;this.gl.clear(16640),this.instances.forEach(function(e){e.render(t.uniforms)}),this.onRender&&this.onRender(this),this.shouldRender&&requestAnimationFrame(function(){return t.render()})},i.prototype.add=function(t,i){void 0===i&&(i={uniforms:{}}),void 0===i.uniforms&&(i.uniforms={}),Object.assign(i.uniforms,JSON.parse(JSON.stringify(this.uniforms))),Object.assign(i,{gl:this.gl,uniformMap:this.uniformMap});var r=new e(i);return this.instances.set(t,r),r},i.prototype.remove=function(t){var e=this.instances.get(t);void 0!==e&&(e.destroy(),this.instances.delete(t))},i.prototype.destroy=function(){var t=this;this.instances.forEach(function(e,i){e.destroy(),t.instances.delete(i)}),this.toggle(!1)};window.__CobePhenomenon=i;
+
+const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrightness",N="baseColor",s="markerColor",G="glowColor",r="markers",P="diffuse",X="devicePixelRatio",f="dark",u="offset",l="scale",x="opacity",m="mapBaseBrightness",I={[M]:"A",[c]:"B",[R]:"m",[O]:"E",[N]:"R",[s]:"S",[G]:"z",[P]:"F",[f]:"G",[u]:"y",[l]:"C",[x]:"H",[m]:"I"},{PI:i,sin:d,cos:C}=Math,U=a=>[].concat(...a.map(o=>{let[_,L]=o.location;_=_*i/180,L=L*i/180-i;let S=C(_),e=[-S*C(L),d(_),S*d(L),o.size],t=o.color?[...o.color,1]:[0,0,0,0];return[...e,...t]}),[0,0,0,0,0,0,0,0]),p=(a,o)=>{let _=(e,t,n)=>({type:e,value:typeof o[t]=="undefined"?n:o[t]}),L=a.getContext("webgl2")?"webgl2":a.getContext("webgl")?"webgl":"experimental-webgl",S=new v({canvas:a,contextType:L,context:{alpha:!0,stencil:!1,antialias:!0,depth:!1,preserveDrawingBuffer:!1,...o.context},settings:{[X]:o[X]||1,onSetup:e=>{let t=e.RGB,n=e.UNSIGNED_BYTE,E=e.TEXTURE_2D,T=e.createTexture();e.bindTexture(E,T),e.texImage2D(E,0,t,1,1,0,t,n,new Uint8Array([0,0,0,0]));let A=new Image;A.onload=()=>{e.bindTexture(E,T),e.texImage2D(E,0,t,t,n,A),e.generateMipmap(E);let h=e.getParameter(e.CURRENT_PROGRAM),D=e.getUniformLocation(h,"J");e.texParameteri(E,e.TEXTURE_MIN_FILTER,e.NEAREST),e.texParameteri(E,e.TEXTURE_MAG_FILTER,e.NEAREST),e.uniform1i(D,0)},A.src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAACAAQAAAADMzoqnAAAAAXNSR0IArs4c6QAABA5JREFUeNrV179uHEUAx/Hf3JpbF+E2VASBsmVKTBcpKJs3SMEDcDwBiVJAAewYEBUivIHT0uUBIt0YCovKD0CRjUC4QfHYh8hYXu+P25vZ2Zm9c66gMd/GJ/tz82d3bk8GN4SrByYF2366FNTACIAkivVAAazQdnf3MvAlbNUQfOPAdQDvSAimMWhwy4I2g4SU+Kp04ISLpPBAKLxPyic3O/CCi+Y7rUJbiodcpDOFY7CgxCEXmdYD2EYK2s5lApOx5pEDDYCUwM1XdJUwBV11QQMg59kePSCaPAASQMEL2hwo6TJFgxpg+TgC2ymXPbuvc40awr3D1QCFfbH9kcoqAOkZozpQo0aqAGQRKCog/+tjkgbNFEtg2FffBvBGlSxHoAaAa1u6X4PBAwDiR8FFsrQgeUhfJTSALaB9jy5NCybJPn1SVFiWk7ywN+KzhH1aKAuydhGkbEF4lWohLXDXavlyFgHY7LBnLRdlAP6BS5Cc8RfVDXbkwN/oIvmY+6obbNeBP0JwTuMGu9gTzy1Q4RS/cWpfzszeYwd+CAFrtBW/Hur0gLbJGlD+/OjVwe/drfBxkbbg63dndEDfiEBlAd7ac0BPe1D6Jd8dfbLH+RI0OzseFB5s01/M+gMdAeluLOCAuaUA9Lezo/vSgXoCX9rtEiXnp7Q1W/CNyWcd8DXoS6jH/YZ5vAJEWY2dXFQe2TUgaFaNejCzJ98g6HnlVrsE58sDcYqg+9XY75fPqdoh/kRQWiXKg8MWlJQxUFMPjqnyujhFBE7UxIMjyszk0QwQlFsezImsyvUYYYVED2pk6m0Tg8T04Fwjk2kdAwSACqlM6gRRt3vQYAFGX0Ah7Ebx1H+MDRI5ui0QldH4j7FGcm90XdxD2Jg1AOEAVAKhEFXSn4cKUELurIAKwJ3MArypPscQaLhJFICJ0ohjDySAdH8AhDtCiTuMycH8CXzhH9jUACAO5uMhoAwA5i+T6WAKmmAqnLy80wxHqIPFYpqCwxGaYLt4Dyievg5kEoVEUAhs6pqKgFtDQYOuaXypaWKQfIuwwoGSZgfLsu/XAtI8cGN+h7Cc1A5oLOMhwlIPXuhu48AIvsSBkvtV9wsJRKCyYLfq5lTrQMFd1a262oqBck9K1V0YjQg0iEYYgpS1A9GlXQV5cykwm4A7BzVsxQqo7E+zCegO7Ma7yKgsuOcfKbMBwLC8wvVNYDsANYalEpOAa6zpWjTeMKGwEwC1CiQewJc5EKfgy7GmRAZA4vUVGwE2dPM/g0xuAInE/yG5aZ8ISxWGfYigUVbdyBElTHh2uCwGdfCkOLGgQVBh3Ewp+/QK4CDlR5Ws/Zf7yhCf8pH7vinWAvoVCQ6zz0NX5V/6GkAVV+2/5qsJ/gU8bsxpM8IeAQAAAABJRU5ErkJggg=="}}});return S.add("",{vertex:"attribute vec3 aPosition;uniform mat4 uProjectionMatrix;uniform mat4 uModelMatrix;uniform mat4 uViewMatrix;void main(){gl_Position=uProjectionMatrix*uModelMatrix*uViewMatrix*vec4(aPosition,1.);}",fragment:"precision highp float;uniform vec2 t,y;uniform vec3 R,S,z;uniform vec4 v[64*2];uniform float A,B,m,C,D,E,F,G,H,I;uniform sampler2D J;float K=1./m;mat3 L(float a,float b){float c=cos(a),d=cos(b),e=sin(a),f=sin(b);return mat3(d,f*e,-f*c,0.,c,e,f,d*-e,d*c);}vec3 w(vec3 c,out float x){c=c.xzy;float p=max(2.,floor(log2(2.236068*m*3.141593*(1.-c.z*c.z))*.72021));vec2 g=floor(pow(1.618034,p)/2.236068*vec2(1.,1.618034)+.5),d=fract((g+1.)*.618034)*6.283185-3.883222,e=-2.*g,f=vec2(atan(c.y,c.x),c.z-1.),q=floor(vec2(e.y*f.x-d.y*(f.y*m+1.),-e.x*f.x+d.x*(f.y*m+1.))/(d.x*e.y-e.x*d.y));float n=3.141593;vec3 r;for(float h=0.;h<4.;h+=1.){vec2 s=vec2(mod(h,2.),floor(h*.5));float j=dot(g,q+s);if(j>m)continue;float a=j,b=0.;if(a>=524288.)a-=524288.,b+=.803894;if(a>=262144.)a-=262144.,b+=.901947;if(a>=131072.)a-=131072.,b+=.950973;if(a>=65536.)a-=65536.,b+=.475487;if(a>=32768.)a-=32768.,b+=.737743;if(a>=16384.)a-=16384.,b+=.868872;if(a>=8192.)a-=8192.,b+=.934436;if(a>=4096.)a-=4096.,b+=.467218;if(a>=2048.)a-=2048.,b+=.733609;if(a>=1024.)a-=1024.,b+=.866804;if(a>=512.)a-=512.,b+=.433402;if(a>=256.)a-=256.,b+=.216701;if(a>=128.)a-=128.,b+=.108351;if(a>=64.)a-=64.,b+=.554175;if(a>=32.)a-=32.,b+=.777088;if(a>=16.)a-=16.,b+=.888544;if(a>=8.)a-=8.,b+=.944272;if(a>=4.)a-=4.,b+=.472136;if(a>=2.)a-=2.,b+=.236068;if(a>=1.)a-=1.,b+=.618034;float k=fract(b)*6.283185,i=1.-2.*j*K,l=sqrt(1.-i*i);vec3 o=vec3(cos(k)*l,sin(k)*l,i);float u=length(c-o);if(u<n)n=u,r=o;}x=n;return r.xzy;}void main(){vec2 b=(gl_FragCoord.xy/t*2.-1.)/C-y*vec2(1.,-1.)/t;b.x*=t.x/t.y;float c=dot(b,b);vec4 x=vec4(0.);float n=0.;if(c<=.64){for(int g=0;g<2;g++){vec4 e=vec4(0.);float a;vec3 u=vec3(0.,0.,1.),h=normalize(vec3(b,sqrt(.64-c)));h.z*=g>0?-1.:1.,u.z*=g>0?-1.:1.;vec3 i=h*L(B,A),j=w(i,a);float o=asin(j.y),k=acos(-j.x/cos(o));k=j.z<0.?-k:k;float M=max(texture2D(J,vec2(k*.5/3.141593,-(o/3.141593+.5))).x,I),N=smoothstep(8e-3,0.,a),l=dot(h,u),p=pow(l,F)*E,q=M*N*p,T=mix((1.-q)*pow(l,.4),q,G)+.1;e+=vec4(R*T,1.);int U=int(D);float V=0.;for(int d=0;d<64;d++){if(d>=U)break;vec4 r=v[d*2],O=v[d*2+1];vec3 s=r.xyz,P=s-i;float f=r.w;if(dot(P,P)>f*f*4.)continue;vec3 W=w(s,a);a=length(W-i);if(a<f)V+=smoothstep(f*.5,0.,a),e.xyz=O.w>.5?mix(e.xyz,O.xyz,smoothstep(f*.5,0.,a)*p):mix(e.xyz,S,smoothstep(f*.5,0.,a)*p);}e.xyz+=pow(1.-l,4.)*z,x+=e*(1.+(g>0?-H:H))/2.;}n=pow(dot(normalize(vec3(-b,sqrt(1.-c))),vec3(0.,0.,1.)),4.)*smoothstep(0.,1.,.2/(c-.64));}else{float Q=sqrt(.2/(c-.64));n=smoothstep(.5,1.,Q/(Q+1.));}gl_FragColor=x+vec4(n*z,n);}",uniforms:{t:{type:"vec2",value:[o.width,o.height]},A:_("float",M),B:_("float",c),m:_("float",R),E:_("float",O),I:_("float",m),R:_("vec3",N),S:_("vec3",s),F:_("float",P),z:_("vec3",G),G:_("float",f),v:{type:"vec4",value:U(o[r])},D:{type:"float",value:o[r].length},y:_("vec2",u,[0,0]),C:_("float",l,1),H:_("float",x,1)},mode:4,geometry:{vertices:[{x:-100,y:100,z:0},{x:-100,y:-100,z:0},{x:100,y:100,z:0},{x:100,y:-100,z:0},{x:-100,y:-100,z:0},{x:100,y:100,z:0}]},onRender:({uniforms:e})=>{let t={};if(o.onRender){t=o.onRender(t)||t;for(let n in I)t[n]!==void 0&&(e[I[n]].value=t[n]);t[r]!==void 0&&(e["v"].value=U(t[r]),e["D"].value=t[r].length),t.width&&t.height&&(e["t"].value=[t.width,t.height])}}}),S};window.__CobeCreateGlobe=p;
+
+  </script>
 
 <!-- GSAP 入场动画（独立执行，不等 globe.gl 加载，避免延迟）
      用 fromTo 明确起止状态，immediateRender:true 在首帧前即设为隐藏，无闪烁 -->
@@ -9600,141 +9618,117 @@
     return {positions:finalPos,layout,totalHeight:maxBottom};
   }
 
-  // ===== dot-field 交互式粒子点阵（参考 reactbits dot-field：bulge 隆起 + glow 光晕）=====
-  // 仅在预览态（未点击展示轨迹）时显示并响应鼠标，激活态自动隐藏
-  // 参数对齐用户配置：dotSpacing=15, cursorRadius=600, cursorForce=0.48, glowRadius=220, bulgeStrength=77
-  function initDotField(container, scrollArea){
+  // ===== Originkit Globe 点阵地球预览交互（基于 cobe ~5KB WebGL，内嵌世界地图）=====
+  // 替换原 reactbits dot-field：预览态鼠标悬停轨迹区域时地球淡入并自转，移开淡出；
+  // 激活态（点击展示旅行轨迹后）完全隐藏并暂停渲染，逻辑与原 dot-field 完全一致
+  // Originkit 参数映射：direction=left / speed=2 / initialLatitude=23° / initialLongitude=-23°
+  // fill=dots / oceanColor 近黑；scale 放大至接近撑满预览区；showOutline 外圈已按需求移除
+  // 交互：悬停淡入自转，按住拖拽可自由旋转（水平→经度、垂直→纬度俯仰）
+  function initPreviewGlobe(container, scrollArea){
+    const wrap=document.createElement('div');
+    wrap.className='tl-globe-wrap';
     const canvas=document.createElement('canvas');
-    canvas.className='tl-dotfield';
-    // 【修复】canvas 挂到 scrollArea（有实际高度），而非 container（miniTimeline height:0）
-    // 否则 canvas 的 height:100% 相对 0 高度父元素，导致 CSS 高度为 0 不可见
-    scrollArea.appendChild(canvas);
-    const ctx=canvas.getContext('2d');
-    let W=0,H=0,dots=[],mouse={x:-9999,y:-9999,active:false};
-    // ===== 参数（对齐原静态 dot-grid 点阵：间距22px、点半径1.1px、亮度0.18×0.55）=====
-    const DOT_SPACING=22;       // 点阵间距（对齐原静态 background-size:22px）
-    const DOT_RADIUS=0.6;       // 单点半径（1.1px → 0.6px）
-    const DOT_BASE_ALPHA=0.099; // 基础亮度（原 0.18 × 整体 opacity 0.55 = 0.099）
-    const CURSOR_RADIUS=600;    // 鼠标影响半径
-    const CURSOR_FORCE=0.48;    // 鼠标作用力强度
-    const BULGE_STRENGTH=77;    // bulge 隆起强度（231 → 1/3 倍 77）
-    const GLOW_RADIUS=220;      // 光晕半径（660 → 1/3 倍 220）
-    const GLOW_COLOR='56,189,248'; // 光晕色（青蓝 rgb）
-    const DOT_COLOR='56,189,248';  // 点颜色（青蓝 rgb）
+    canvas.className='tl-globe-canvas';
+    wrap.appendChild(canvas);
+    // wrap 挂到 scrollArea（有实际高度），而非 container（miniTimeline height:0）；
+    // scrollArea 需为定位上下文，保证地球在预览区域内居中
+    if(getComputedStyle(scrollArea).position==='static') scrollArea.style.position='relative';
+    scrollArea.appendChild(wrap);
+    let globe=null,hover=false,destroyed=false;
+    let phi=-0.40,theta=0.40,size=0;
+    let dragging=false,lastX=0,lastY=0;
 
-    function resize(){
+    function measure(){
       const r=scrollArea.getBoundingClientRect();
-      W=canvas.width=r.width;
-      H=canvas.height=r.height;
-      canvas.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;';
-      buildDots();
+      // 地球直径 = 可视区短边×0.85（适当缩小，四周留呼吸空间）
+      size=Math.max(2,Math.round(Math.min(r.width,r.height)*0.85));
+      wrap.style.width=wrap.style.height=size+'px';
     }
-    function buildDots(){
-      dots=[];
-      for(let y=DOT_SPACING/2;y<H;y+=DOT_SPACING){
-        for(let x=DOT_SPACING/2;x<W;x+=DOT_SPACING){
-          // bulge 模式：每个点记录原始位置，鼠标靠近时向远离方向位移
-          dots.push({ox:x,oy:y,x:x,y:y});
-        }
+    // 主题自适应配色：深色主题=近黑海洋+青蓝点阵；浅色主题=清透亮蓝球体+高亮点阵
+    // （cobe 着色器中球身颜色=baseColor×光照，glowColor 控边缘辉光，mapBrightness 控点阵亮度；
+    //   dark 值越大阴影越重，浅色主题需压低并提亮 baseColor，避免灰暗扁平）
+    function themeColors(){
+      if(document.body.classList.contains('light-theme'))
+        return {dark:0.25,baseColor:[0.34,0.61,0.91],glowColor:[0.87,0.93,0.98],mapBrightness:6.5};
+      return {dark:1,baseColor:[0.36,0.62,0.86],glowColor:[0.04,0.10,0.18],mapBrightness:5};
+    }
+    function applyVisibility(){
+      const preview=container.classList.contains('tl-preview');
+      // 【修复】地球 wrap 绝对定位于滚动容器内，激活态残留的 scrollTop/scrollLeft
+      // 会把球体中心平移出可视区导致右侧/底部被面板边裁切；预览态必须归零滚动
+      if(preview&&(scrollArea.scrollTop||scrollArea.scrollLeft)){
+        scrollArea.scrollTop=0;scrollArea.scrollLeft=0;
       }
+      wrap.classList.toggle('globe-on',preview&&(hover||dragging));
+      if(globe&&globe.toggle) globe.toggle(preview);  // 非预览态暂停渲染；预览态保持帧循环（悬停淡入需连续帧）
     }
-    function tick(){
-      ctx.clearRect(0,0,W,H);
-      if(container.classList.contains('tl-preview')){
-        canvas.style.opacity='1';
-        // ===== bulge 隆起算法（reactbits dot-field 核心）=====
-        // 每个点根据与鼠标的距离，向远离鼠标方向位移，位移量随距离衰减
-        for(const d of dots){
-          if(mouse.active){
-            const dx=d.ox-mouse.x, dy=d.oy-mouse.y;
-            const dist=Math.sqrt(dx*dx+dy*dy);
-            if(dist<CURSOR_RADIUS && dist>0.5){
-              // bulge 位移：强度 = bulgeStrength * (1 - dist/cursorRadius) * cursorForce
-              // 方向：远离鼠标（dx/dist, dy/dist）
-              const intensity=(1-dist/CURSOR_RADIUS);
-              const bulge=BULGE_STRENGTH*intensity*intensity*CURSOR_FORCE;
-              d.x=d.ox+(dx/dist)*bulge;
-              d.y=d.oy+(dy/dist)*bulge;
-            }else{
-              // 鼠标影响范围外：回弹至原位
-              d.x=d.ox;
-              d.y=d.oy;
-            }
-          }else{
-            // 鼠标不在区域内：回弹至原位
-            d.x=d.ox;
-            d.y=d.oy;
-          }
+    (function(){
+      // cobe 已内嵌本页（window.__CobeCreateGlobe），无需网络加载，即时可用
+      const createGlobe=window.__CobeCreateGlobe;
+      if(!createGlobe){wrap.remove();destroyed=true;return;}
+      if(destroyed) return;
+      const tc=themeColors();
+      globe=createGlobe(canvas,{
+        devicePixelRatio:Math.min(window.devicePixelRatio||1,2),
+        width:size||140,height:size||140,
+        phi:phi,theta:theta,
+        dark:tc.dark,diffuse:1.6,
+        mapSamples:9000,mapBrightness:tc.mapBrightness,
+        baseColor:tc.baseColor,
+        glowColor:tc.glowColor,
+        // 【修复】cobe 的 markerColor uniform 未传值时为 undefined，
+        // 首帧 uniform3fv(undefined) 抛 TypeError 导致 RAF 渲染链死亡，画布永远空白
+        markerColor:[0.99,0.75,0.45],
+        markers:[],
+        onRender:(state)=>{
+          state.width=size;state.height=size;
+          // 主题切换即时生效：每帧按当前 body 主题覆盖配色与点阵亮度
+          const cur=themeColors();
+          state.dark=cur.dark;state.baseColor=cur.baseColor;state.glowColor=cur.glowColor;
+          state.mapBrightness=cur.mapBrightness;
+          if(hover&&!dragging) phi+=0.0035;  // 悬停自转（speed≈2，向左）；拖拽时暂停
+          state.phi=phi;
+          state.theta=theta;                  // 垂直拖拽俯仰角
         }
-        // ===== 绘制 glow 光晕（鼠标位置的径向光晕，跟随鼠标）=====
-        if(mouse.active){
-          const grad=ctx.createRadialGradient(mouse.x,mouse.y,0,mouse.x,mouse.y,GLOW_RADIUS);
-          grad.addColorStop(0,'rgba('+GLOW_COLOR+',0.18)');
-          grad.addColorStop(0.4,'rgba('+GLOW_COLOR+',0.08)');
-          grad.addColorStop(1,'rgba('+GLOW_COLOR+',0)');
-          ctx.fillStyle=grad;
-          ctx.beginPath();
-          ctx.arc(mouse.x,mouse.y,GLOW_RADIUS,0,Math.PI*2);
-          ctx.fill();
-        }
-        // ===== 绘制点阵（鼠标附近点亮度增强 + 半径增大）=====
-        // 【新增】上下渐隐遮罩（对齐原静态层 mask: transparent 0%→#000 8%→#000 92%→transparent 100%）
-        // 顶部 0~8%、底部 92%~100% 区域线性渐隐，中间 8%~92% 全亮
-        function maskAlpha(y){
-          if(H<=0) return 1;
-          const top=H*0.08, bot=H*0.92;
-          if(y<top) return Math.max(0, y/top);
-          if(y>bot) return Math.max(0, (H-y)/(H-bot));
-          return 1;
-        }
-        for(const d of dots){
-          let alpha=DOT_BASE_ALPHA, radius=DOT_RADIUS;
-          if(mouse.active){
-            const dx=d.ox-mouse.x, dy=d.oy-mouse.y;
-            const dist=Math.sqrt(dx*dx+dy*dy);
-            if(dist<CURSOR_RADIUS){
-              // 鼠标附近：亮度增强、半径增大，营造隆起高光
-              const intensity=1-dist/CURSOR_RADIUS;
-              alpha=DOT_BASE_ALPHA+intensity*0.6;
-              radius=DOT_RADIUS+intensity*1.8;
-            }
-          }
-          // 【新增】应用上下渐隐遮罩
-          alpha*=maskAlpha(d.y);
-          ctx.fillStyle='rgba('+DOT_COLOR+','+alpha.toFixed(3)+')';
-          ctx.beginPath();
-          ctx.arc(d.x,d.y,radius,0,Math.PI*2);
-          ctx.fill();
-        }
-      }else{
-        // 激活态：隐藏 canvas，无交互
-        canvas.style.opacity='0';
-      }
-      requestAnimationFrame(tick);
-    }
-    // 鼠标交互（仅在预览态响应，记录鼠标相对 scrollArea 的坐标）
-    scrollArea.addEventListener('mousemove',e=>{
-      const r=scrollArea.getBoundingClientRect();
-      mouse.x=e.clientX-r.left;
-      mouse.y=e.clientY-r.top;
-      mouse.active=true;
+      });
+      applyVisibility();
+    })();
+
+    scrollArea.addEventListener('mouseenter',()=>{hover=true;measure();applyVisibility();});
+    scrollArea.addEventListener('mouseleave',()=>{hover=false;applyVisibility();});
+    // ===== 鼠标/触摸拖拽旋转地球（cobe 标准交互，globe-on 时 canvas 才接收事件）=====
+    canvas.addEventListener('pointerdown',e=>{
+      e.preventDefault();                          // 阻止原生拖拽/选中行为
+      dragging=true;lastX=e.clientX;lastY=e.clientY;
+      canvas.classList.add('globe-grabbing');
+      try{canvas.setPointerCapture(e.pointerId);}catch(_){}
     });
-    scrollArea.addEventListener('mouseleave',()=>{
-      mouse.active=false;
-      mouse.x=-9999; mouse.y=-9999;
+    canvas.addEventListener('pointermove',e=>{
+      if(!dragging)return;
+      const dx=e.clientX-lastX,dy=e.clientY-lastY;
+      lastX=e.clientX;lastY=e.clientY;
+      phi+=dx/80;                                       // 水平拖拽 → 经度旋转（80px≈1弧度，灵敏度约3倍提速）
+      theta=Math.max(-1.1,Math.min(1.1,theta+dy/80));   // 垂直拖拽 → 纬度俯仰跟随鼠标方向，限幅防翻转
     });
-    window.addEventListener('resize',resize);
-    resize();
-    requestAnimationFrame(tick);
+    ['pointerup','pointercancel'].forEach(ev=>canvas.addEventListener(ev,e=>{
+      dragging=false;
+      canvas.classList.remove('globe-grabbing');
+      try{canvas.releasePointerCapture(e.pointerId);}catch(_){}
+    }));
+    new MutationObserver(applyVisibility).observe(container,{attributes:true,attributeFilter:['class']});
+    window.addEventListener('resize',measure);
+    // 容器尺寸变化即重测（面板折叠/展开、窗口变化、布局稳定后均能保证球体完整不裁切）
+    if(window.ResizeObserver){new ResizeObserver(measure).observe(scrollArea);}
+    measure();
   }
 
   // 渲染迷你时间轴（左侧面板内）——蛇形往返曲线 + 自适应留白 + 防碰撞避让
   function renderMiniTimeline(){
-    // ===== dot-field 交互式粒子点阵（仅预览态生效，参考 reactbits dot-field）=====
-    // 提前到数据判断之前初始化：即使无城市数据，预览态也要显示点阵交互
-    if(!miniTimelineEl._dotFieldInit){
-      miniTimelineEl._dotFieldInit=true;
-      initDotField(miniTimelineEl, $('tlScrollArea'));
+    // ===== Originkit Globe 点阵地球预览交互（仅预览态悬停时显示）=====
+    // 提前到数据判断之前初始化：即使无城市数据，预览态也要显示地球交互
+    if(!miniTimelineEl._previewGlobeInit){
+      miniTimelineEl._previewGlobeInit=true;
+      initPreviewGlobe(miniTimelineEl, $('tlScrollArea'));
     }
     if(!timelineCities.length){
       miniTimelineEl.style.display='none';
