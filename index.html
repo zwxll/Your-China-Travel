@@ -9634,15 +9634,31 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     // scrollArea 需为定位上下文，保证地球在预览区域内居中
     if(getComputedStyle(scrollArea).position==='static') scrollArea.style.position='relative';
     scrollArea.appendChild(wrap);
+    // 外层裁剪卡片（#timelinePanel 为 overflow:hidden 的 flex 卡片），可见区域以其为裁剪基准
+    const clipCard=scrollArea.closest('.dash-card');
     let globe=null,hover=false,destroyed=false;
     let phi=-0.40,theta=0.40,size=0;
     let dragging=false,lastX=0,lastY=0;
 
     function measure(){
       const r=scrollArea.getBoundingClientRect();
-      // 地球直径 = 可视区短边×0.85（适当缩小，四周留呼吸空间）
-      size=Math.max(2,Math.round(Math.min(r.width,r.height)*0.85));
+      // 可见区域 = scrollArea 与外层裁剪卡片（overflow:hidden）及视口的交集。
+      // 直接用 scrollArea 自身尺寸在面板布局溢出/收缩时会按"不可见区域"居中，导致球体右下被裁。
+      let L=r.left,T=r.top,R=r.right,B=r.bottom;
+      if(clipCard){
+        const c=clipCard.getBoundingClientRect();
+        L=Math.max(L,c.left);T=Math.max(T,c.top);R=Math.min(R,c.right);B=Math.min(B,c.bottom);
+      }
+      L=Math.max(L,0);T=Math.max(T,0);
+      R=Math.min(R,window.innerWidth||R);B=Math.min(B,window.innerHeight||B);
+      const vw=Math.max(2,R-L),vh=Math.max(2,B-T);
+      // 地球直径 = 可见区短边×0.85（适当缩小，四周留呼吸空间）
+      size=Math.max(2,Math.round(Math.min(vw,vh)*0.85));
       wrap.style.width=wrap.style.height=size+'px';
+      // 按可见区中心定位（相对 scrollArea 内容原点；预览态滚动已归零）
+      wrap.style.left=(L+vw/2-r.left)+'px';
+      wrap.style.top=(T+vh/2-r.top)+'px';
+      wrap.style.transform='translate(-50%,-50%)';
     }
     // 主题自适应配色：深色主题=近黑海洋+青蓝点阵；浅色主题=清透亮蓝球体+高亮点阵
     // （cobe 着色器中球身颜色=baseColor×光照，glowColor 控边缘辉光，mapBrightness 控点阵亮度；
@@ -9659,6 +9675,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       if(preview&&(scrollArea.scrollTop||scrollArea.scrollLeft)){
         scrollArea.scrollTop=0;scrollArea.scrollLeft=0;
       }
+      if(preview) measure();  // 状态切换常伴随布局变化，进入预览态按当前可见交集重定位
       wrap.classList.toggle('globe-on',preview&&(hover||dragging));
       if(globe&&globe.toggle) globe.toggle(preview);  // 非预览态暂停渲染；预览态保持帧循环（悬停淡入需连续帧）
     }
@@ -9717,8 +9734,13 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     }));
     new MutationObserver(applyVisibility).observe(container,{attributes:true,attributeFilter:['class']});
     window.addEventListener('resize',measure);
+    window.addEventListener('scroll',()=>{if(container.classList.contains('tl-preview'))measure();},true);
     // 容器尺寸变化即重测（面板折叠/展开、窗口变化、布局稳定后均能保证球体完整不裁切）
-    if(window.ResizeObserver){new ResizeObserver(measure).observe(scrollArea);}
+    if(window.ResizeObserver){
+      const ro=new ResizeObserver(measure);
+      ro.observe(scrollArea);
+      if(clipCard) ro.observe(clipCard);   // 卡片尺寸变化同样影响可见交集
+    }
     measure();
   }
 
