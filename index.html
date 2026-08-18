@@ -193,6 +193,7 @@
   /* 图例圆点与进度条填充：浅色下柔和蓝灰（未记录）/ 橙（已记录），替代深色主题的亮青蓝 */
   body.light-theme .dot.blue{box-shadow:0 0 0 2px rgba(255,255,255,.85);}
   body.light-theme .dot.gold{box-shadow:0 0 8px rgba(232,148,60,.75);}
+  body.light-theme .dot.home{background:#f59e0b;box-shadow:0 0 8px rgba(217,119,6,.55);}
   body.light-theme .prog-fill.blue{background:linear-gradient(90deg,#3d7fb8,#2b6cb0);}
   /* 星星评分与旅行轨迹曲线：浅色下橙色强调替代亮青蓝 */
   body.light-theme .star-rating .star.active{color:#f5a623;}
@@ -486,6 +487,31 @@
   .fp-home-item.is-home .fp-home-city-name{color:#34d399;}
   .fp-home-item .cnt{display:block;margin-top:2px;font-size:10px;font-weight:500;color:var(--muted);}
   .fp-home-empty{grid-column:1/-1;text-align:center;padding:26px 0;font-size:13px;color:var(--muted);}
+  /* 我的家乡卡片（已设置家乡后点击「我的家乡」按钮显示，仅展示家乡这一个城市） */
+  .my-home-card{
+    margin:4px 18px 18px;padding:22px 16px;text-align:center;
+    display:flex;flex-direction:column;align-items:center;gap:8px;
+  }
+  .my-home-icon{
+    width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-size:30px;
+    border:1px solid rgba(245,158,11,.6);
+    background:linear-gradient(135deg,rgba(245,158,11,.25),rgba(251,191,36,.08));
+    box-shadow:0 0 22px rgba(245,158,11,.35);
+  }
+  .my-home-name{font-size:22px;font-weight:800;color:#fbbf24;text-shadow:0 0 12px rgba(251,191,36,.5);}
+  .my-home-sub{font-size:13px;color:var(--muted);}
+  .my-home-actions{display:flex;gap:10px;margin-top:12px;}
+  .my-home-btn{
+    padding:9px 18px;border-radius:999px;font:600 13px/1.2 inherit;cursor:pointer;
+    color:var(--ink);border:1px solid var(--line);background:rgba(255,255,255,.04);
+    transition:border-color .15s ease,background .15s ease;
+  }
+  .my-home-btn:hover{border-color:rgba(125,211,252,.6);background:rgba(56,189,248,.12);}
+  .my-home-btn.primary{color:#fff;border-color:transparent;background:linear-gradient(135deg,#f59e0b,#d97706);}
+  .my-home-btn.primary:hover{filter:brightness(1.08);}
+  body.light-theme .my-home-btn{background:#f7f9fc;color:#1f2a37;}
+  body.light-theme .my-home-btn.primary{color:#fff;background:linear-gradient(135deg,#f59e0b,#d97706);}
+  body.light-theme .my-home-name{color:#b45309;text-shadow:none;}
   *{box-sizing:border-box;}
   html,body{margin:0;height:100%;}
   /* 【SKILL.md 6.B REDUCED MOTION】全局覆盖：禁用所有无限循环动画（流星、边缘光辉、粒子、自转等），
@@ -873,6 +899,10 @@
   .dot.gold{
     background:var(--accent);
     box-shadow:0 0 8px rgba(232,148,60,.75);
+  }
+  .dot.home{
+    background:#fbbf24;
+    box-shadow:0 0 8px rgba(245,158,11,.75);
   }
 
   /* ===== 地图搜索框（嵌入右侧面板顶部，跟随文档流）===== */
@@ -1354,23 +1384,23 @@
     border-bottom:1px solid var(--line);
     flex:0 0 auto;
   }
-  /* 我的家乡强调横幅：编辑弹窗中标识该城市为家乡 */
+  /* 我的家乡强调横幅：编辑弹窗中标识该城市为家乡（居中突出显示，青蓝呼应页面主色） */
   .hometown-banner{
-    display:flex;align-items:center;gap:8px;
-    margin:12px 22px 0;padding:10px 14px;
-    border-radius:12px;font-size:13px;font-weight:700;letter-spacing:.3px;
-    border:1px solid rgba(56,189,248,.45);
-    background:linear-gradient(135deg,rgba(14,165,233,.14) 0%,rgba(56,189,248,.05) 100%);
+    display:flex;align-items:center;justify-content:center;gap:10px;
+    margin:16px 22px 2px;padding:15px 16px;
+    border-radius:14px;font-size:16px;font-weight:800;letter-spacing:2px;text-align:center;
+    border:1px solid rgba(56,189,248,.55);
+    background:linear-gradient(135deg,rgba(56,189,248,.16) 0%,rgba(14,165,233,.05) 100%);
     color:#7dd3fc;
-    box-shadow:0 0 18px rgba(56,189,248,.18),inset 0 1px 0 rgba(255,255,255,.05);
-    text-shadow:0 0 10px rgba(56,189,248,.4);
+    box-shadow:0 0 22px rgba(56,189,248,.28),inset 0 1px 0 rgba(255,255,255,.08);
+    text-shadow:0 0 10px rgba(125,211,252,.45);
     flex:0 0 auto;
   }
   body.light-theme .hometown-banner{
-    border-color:rgba(99,102,241,.45);
-    background:linear-gradient(135deg,rgba(99,102,241,.12) 0%,rgba(79,70,229,.05) 100%);
-    color:#4f46e5;
-    box-shadow:0 0 16px rgba(99,102,241,.18),inset 0 1px 0 rgba(255,255,255,.4);
+    border-color:rgba(14,165,233,.42);
+    background:linear-gradient(135deg,rgba(56,189,248,.12) 0%,rgba(14,165,233,.04) 100%);
+    color:#0284c7;
+    box-shadow:0 0 16px rgba(14,165,233,.18),inset 0 1px 0 rgba(255,255,255,.5);
     text-shadow:none;
   }
   /* =====【滚动隔离核心】弹窗 body 独立滚动容器，flex:1 + min-height:0 确保不撑破父容器 ===== */
@@ -4293,6 +4323,7 @@
       <div class="title">图例</div>
       <div class="row"><i class="dot blue"></i>未记录城市<span class="op-hint">单击编辑</span></div>
       <div class="row"><i class="dot gold"></i>已记录城市<span class="op-hint">单击编辑 · 双击查看</span></div>
+      <div class="row"><i class="dot home"></i>我的家乡<span class="op-hint">金色标记</span></div>
     </div>
     <!-- 左侧数据面板：城市视图统计 + 蛇形时间轴 -->
     <div class="left-panel" id="leftPanel">
@@ -4457,11 +4488,11 @@
         </div>
         <button id="modalClose" class="icon-btn" aria-label="关闭">&times;</button>
       </div>
-      <div id="hometownBanner" class="hometown-banner" style="display:none;">🏠 这是我的家乡</div>
+      <div id="hometownBanner" class="hometown-banner" style="display:none;">🏠 我的家乡</div>
       <div id="modalLandmark" class="modal-landmark" style="display:none;"></div>
       <!-- 封面图 -->
       <div class="cover-section">
-        <label>城市封面</label>
+        <label id="coverLabel">城市封面</label>
         <button class="cover-upload-btn" id="coverUploadBtn">上传封面</button>
         <input type="file" id="coverFileInput" accept="image/*" hidden />
         <!-- 封面预览容器：固定 16:7 宽高比，杜绝拉伸变形 -->
@@ -4482,13 +4513,13 @@
       </div>
       <!-- 城市简介输入区（星级正下方，编辑弹窗内填写/修改城市简介） -->
       <div class="city-desc-row">
-        <label>城市简介</label>
+        <label id="cityDescLabel">城市简介</label>
         <textarea id="cityDescInput" class="city-desc-input" placeholder="为这座城市写一段简介…" maxlength="200"></textarea>
         <button class="btn primary" id="cityDescSaveBtn">保存</button>
       </div>
       <!-- 游玩年月选择器 -->
       <div class="month-picker">
-        <label>游玩年月</label>
+        <label id="monthPickerLabel">游玩年月</label>
         <div class="month-entries" id="monthEntries"></div>
         <button class="btn month-add-btn" id="monthAddBtn" type="button">+ 加一次</button>
         <button class="btn primary" id="monthSaveBtn">保存</button>
@@ -4619,6 +4650,17 @@
       </div>
       <input type="text" id="fpHomeSearch" placeholder="搜索城市名，如：成都" autocomplete="off" />
       <div class="fp-home-list" id="fpHomeList"></div>
+    </div>
+  </div>
+
+  <!-- 我的家乡卡片（已设置家乡后点击「我的家乡」按钮显示，仅展示家乡这一个城市） -->
+  <div id="myHomeOverlay" class="fp-home-overlay" hidden role="dialog" aria-modal="true" aria-label="我的家乡">
+    <div class="fp-home-modal my-home-modal">
+      <div class="fp-home-head">
+        <h2>🏠 我的家乡</h2>
+        <button class="fp-home-close" id="myHomeCloseBtn" type="button" aria-label="关闭">✕</button>
+      </div>
+      <div class="my-home-card" id="myHomeCard"></div>
     </div>
   </div>
 
@@ -5991,6 +6033,7 @@
       markerBorder:'#ffffff',cityLabel:'#e11d48',cityLabelShadow:'rgba(255,255,255,.95)',
       markerVisited:'#38bdf8',markerVisitedShadow:'rgba(56,189,248,.6)',
       markerNormal:'#3d7fb8',markerNormalHover:'#2b6cb0',
+      markerHome:'#f59e0b',markerHomeShadow:'rgba(217,119,6,.5)',homeLabel:'#b45309',homeLabelShadow:'rgba(255,255,255,.9)',
       normalLabel:'#4338ca',normalLabelShadow:'rgba(255,255,255,.9)',
       unvisitedArea:'#e9eef5',unvisitedBorder:'#94a3b8',unvisitedShadow:'rgba(31,42,55,.08)',
       visitedArea:'rgba(2,132,199,.18)',visitedBorder:'#38bdf8',
@@ -6006,6 +6049,7 @@
       markerBorder:'#020202',cityLabel:'#38bdf8',cityLabelShadow:'rgba(0,0,0,.9)',
       markerVisited:'#38bdf8',markerVisitedShadow:'rgba(56,189,248,.6)',
       markerNormal:'#38bdf8',markerNormalHover:'#0ea5e9',
+      markerHome:'#fbbf24',markerHomeShadow:'rgba(245,158,11,.75)',homeLabel:'#fcd34d',homeLabelShadow:'rgba(0,0,0,.9)',
       normalLabel:'#a8bfd4',normalLabelShadow:'rgba(0,0,0,.9)',
       unvisitedArea:'#050505',unvisitedBorder:'#475569',unvisitedShadow:'rgba(120,100,70,.12)',
       visitedArea:'rgba(56,189,248,.21)',visitedBorder:'#38bdf8',
@@ -6036,9 +6080,9 @@
         itemStyle:{areaColor:t.area,borderColor:t.border},
         emphasis:{
           itemStyle:{areaColor:t.emArea,borderColor:t.emBorder},
-          label:{color:t.emLabel,textShadowColor:t.emLabelShadow,textShadowBlur:8}
+          label:{show:false}
         },
-        label:{color:t.label,textShadowColor:t.labelShadow,textShadowBlur:3}
+        label:{show:false}
       },{
         // 地级市边界图层：roam:true 处理缩放，silent:true 让点击穿透；按 _cityBordersActive 动态切换地图
         map:_cityBordersActive&&cityBoundaries?'china_cities':'china',
@@ -6048,11 +6092,15 @@
         itemStyle:{areaColor:'transparent',borderColor:currentZoom>=CITY_BORDER_ZOOM_THRESHOLD&&cityBoundaries?t.cityBorder:'transparent',borderWidth:currentZoom>=CITY_BORDER_ZOOM_THRESHOLD&&cityBoundaries?.5:0,borderType:'dashed',shadowBlur:0},
         emphasis:{disabled:true},
         label:{show:false}
+      },{
+        // 省份名标签图层（zlevel:1）：仅更新标签颜色跟随主题
+        label:{color:t.label,textShadowColor:t.labelShadow,textShadowBlur:3}
       }],
       series:[
         {itemStyle:{color:t.markerNormal,borderColor:t.markerBorder},emphasis:{scale:1.5,itemStyle:{color:t.markerNormalHover,borderColor:'#ffffff',borderWidth:1,shadowBlur:8,shadowColor:'rgba(56,189,248,.95)'}}},  // 系列0 城市
         {itemStyle:{color:t.markerVisited,shadowBlur:8,shadowColor:t.markerVisitedShadow},label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow},emphasis:{itemStyle:{color:t.markerVisited,borderColor:'#ffffff',borderWidth:1,shadowBlur:8,shadowColor:t.markerVisitedShadow}}},   // 系列1 已记录（点+标签跟随主题）
-        {label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow}}                               // 系列2 已记录城市名
+        {label:{color:t.cityLabel,textShadowColor:t.cityLabelShadow}},                               // 系列2 已记录城市名
+        {itemStyle:{color:t.markerHome,shadowBlur:6,shadowColor:t.markerHomeShadow},label:{show:false},emphasis:{itemStyle:{color:t.markerHome,borderColor:'#ffffff',borderWidth:2,shadowBlur:8,shadowColor:t.markerHomeShadow}}}   // 系列3 家乡
       ]
     });
     applyProvinceRegionStyles();
@@ -6113,6 +6161,7 @@
         textStyle:{color:tc.tooltipText,fontSize:12},  /* 【提亮】地图 tooltip 文字：#1f2a37 → 冷亮白 #f8fafc，适配黑色科技基底 */
         padding:[10,14],
         formatter:p=>{
+          if(p.seriesName==='家乡'){ return '<div style="font-weight:700;font-size:14px;text-shadow:0 0 8px rgba(248,250,252,.25)">🏠 我的家乡 · '+p.data.name+'</div>'; }
           if(p.seriesType==='scatter'||p.seriesType==='effectScatter'){
             const n=photoCountByCity.get(p.data.cityKey)||0;
             if(n){
@@ -6171,11 +6220,11 @@
           },
           emphasis:{
             itemStyle:{areaColor:tc.emArea,borderColor:tc.emBorder,borderWidth:1,shadowBlur:0},
-            label:{show:true,color:tc.emLabel,fontSize:13,lineHeight:18,formatter:p=>provinceShort(p.name),textShadowColor:tc.emLabelShadow,textShadowBlur:8}  /* 【提亮】省份悬浮标签：#94a3b8 → 冷亮白 #f8fafc + 发光 */
+            label:{show:false}
           },
           select:{disabled:true},
           label:{
-            show:true,
+            show:false,
             formatter:p=>provinceShort(p.name),
             color:tc.label,
             fontSize:13,
@@ -6208,6 +6257,17 @@
           },
           emphasis:{disabled:true},
           label:{show:false}
+        },
+        {
+          // 省份名标签图层（zlevel:1，高于所有 series，避免被城市/家乡散点遮挡）：透明底仅渲染省份汉字
+          map:'china',name:'china_labels',roam:false,
+          zoom:1.18,center:[108,35.5],scaleLimit:{min:0.8,max:14},
+          silent:true,animation:false,
+          zlevel:1,z:1,
+          itemStyle:{areaColor:'transparent',borderColor:'transparent',borderWidth:0,shadowBlur:0},
+          emphasis:{disabled:true},
+          label:{show:true,formatter:p=>provinceShort(p.name),color:tc.label,fontSize:13,fontWeight:700,lineHeight:18,textShadowColor:tc.labelShadow,textShadowBlur:3},
+          labelLayout:{hideOverlap:true}
         }
       ],
       series:[
@@ -6267,6 +6327,18 @@
             overflow:'truncate',
             ellipsis:'…',
             width:70
+          }
+        },
+        {
+          // 我的家乡标记：独立系列（金色），始终显示在最上层
+          name:'家乡',type:'scatter',coordinateSystem:'geo',geoIndex:1,data:[],
+          symbol:'circle',symbolSize:p=>18*markerScale(),z:8,
+          itemStyle:{color:tc.markerHome,borderColor:'#ffffff',borderWidth:2,shadowBlur:6,shadowColor:tc.markerHomeShadow},
+          label:{show:false},
+          emphasis:{
+            scale:1.35,
+            itemStyle:{color:tc.markerHome,borderColor:'#ffffff',borderWidth:2,shadowBlur:8,shadowColor:tc.markerHomeShadow},
+            label:{show:false}
           }
         }
       ]
@@ -6335,6 +6407,15 @@
            },card:true});
          });
        }
+       // 家乡金色大标记作为障碍物，避免城市名被它遮挡
+       const home2=getFootprintHome();
+       if(home2){
+         const hpx=myChart.convertToPixel('geo',home2.value);
+         if(hpx){
+           const hr=9*s+3;
+           placed.push({rect:{x1:hpx[0]-hr,y1:hpx[1]-hr,x2:hpx[0]+hr,y2:hpx[1]+hr},home:true});
+         }
+       }
        for(const p of pts){
          let best=null,bestScore=-1;
          for(const c of candidates){
@@ -6363,7 +6444,7 @@
          label.formatter=q=>q.data.name;
          label.color=t.cityLabel;label.fontSize=11.5;label.fontWeight=700;
          label.textShadowColor=t.cityLabelShadow;label.textShadowBlur=3;
-         label.distance=3;label.overflow='truncate';label.ellipsis='…';label.width=70;
+         label.distance=markR+6;label.overflow='truncate';label.ellipsis='…';label.width=70;
          return Object.assign({},d,{label});
        });
        myChart.setOption({series:[{},{},{data:newData}]});
@@ -6403,20 +6484,25 @@
           myChart.setOption({geo:[{},{map:borderMap,itemStyle:{areaColor:'transparent',borderColor:showCityBorder?tcPre.cityBorder:'transparent',borderWidth:showCityBorder?.5:0,borderType:'dashed',shadowBlur:0}}]});
         }
         const tc=chartThemeColors();
-        // 【性能优化】roam 同步只更新 geo[0]（省份图层），geo[1] 传 {} 不重绘城市多边形
+        // 【性能优化】roam 同步只更新 geo[0]（省份图层，标签已迁至 geo[2]）与 geo[2]（省份名标签图层），geo[1] 传 {} 不重绘城市多边形
         myChart.setOption({
           animation:false,
           animationDuration:0,
           animationDurationUpdate:0,
           geo:[
             {
+              // 省份填充只负责底色与省界，标签已隐藏（省份汉字改由 geo[2] 在更高 zlevel 渲染，避免被散点遮挡）
+              zoom:zoom,center:center,
+              label:{show:false},
+              emphasis:{label:{show:false}}
+            },
+            {},  // geo[1] 不更新，避免每次 roam 重绘全部城市多边形
+            {
               // 省份汉字始终显示，fontSize 随缩放自适应；同步 zoom/center 跟上 geo[1]
               zoom:zoom,center:center,
-              label:{show:true,fontSize:pf,fontWeight:700,lineHeight:Math.round(pf*1.4)},
-              labelLayout:{hideOverlap:true},
-              emphasis:{label:{show:true,fontSize:Math.min(pf+3,26),lineHeight:Math.round((pf+3)*1.4),color:tc.emLabel,formatter:p=>provinceShort(p.name),textShadowColor:tc.emLabelShadow,textShadowBlur:8}}  /* 省份悬浮标签颜色跟随主题（浅色=亮靛蓝/深色=冷亮白） */
-            },
-            {}  // geo[1] 不更新，避免每次 roam 重绘全部城市多边形
+              label:{show:true,fontSize:pf,fontWeight:700,lineHeight:Math.round(pf*1.4),color:tc.label,textShadowColor:tc.labelShadow,textShadowBlur:3},
+              labelLayout:{hideOverlap:true}
+            }
           ],
           series:[
             {symbolSize:p=>(isCapital(p)?13:7)*s},
@@ -6568,6 +6654,8 @@
     if(!myChart||!cityPoints.length) return;
     const focus=selectedProvinceName;
     const normal=[],visited=[],nameTags=[];
+    const home=getFootprintHome();
+    const homeData=home?[{name:home.name,value:home.value,cityKey:home.cityKey,adcode:home.adcode}]:[];
     for(const cp of cityPoints){
       const pt={name:cp.name,value:cp.value,cityKey:cp.cityKey,adcode:cp.adcode};
       const inFocus=focus&&provinceOf(cp.adcode)===focus;
@@ -6581,7 +6669,7 @@
           formatter:p=>p.data.name,
           color:tcVisited.cityLabel,fontSize:11.5,fontWeight:700,
           textShadowColor:tcVisited.cityLabelShadow,textShadowBlur:3,
-          distance:3,overflow:'truncate',ellipsis:'…',width:70
+          distance:14,overflow:'truncate',ellipsis:'…',width:70
         }});
       }else{
         // 未点亮城市名：选中省份内或放大到 3.5 阈值后显示（放大显示所有城市名）
@@ -6595,7 +6683,7 @@
         normal.push(pt);
       }
     }
-    myChart.setOption({series:[{data:normal,labelLayout:{hideOverlap:true}},{data:visited},{data:nameTags}]});
+    myChart.setOption({series:[{data:normal,labelLayout:{hideOverlap:true}},{data:visited},{data:nameTags},{data:homeData}]});
     // 数据更新后若标签处于显示状态，重新计算标签方向避免重叠（选中省份/省份视图强制执行，处理聚集城市）
     if(recomputeLabelPositions){
       const zoom=myChart.getOption().geo[0].zoom||1.18;
@@ -9010,6 +9098,7 @@
         setFootprintHome(c.cityKey);
         closeFpHomePicker();
         updateTotalTripKm();                 // 换家后城市视图统计卡的总计行程同步重算
+        if(typeof updateScatterData==='function') updateScatterData();   // 刷新地图上的「家」金色标记
         if(fpPickerMode==='hometown'){
           // 我的家乡：选择后进入城市编辑页（功能与点亮城市一致），不启动足迹回放
           toast('我的家乡已设置为「'+c.name+'」');
@@ -9043,9 +9132,50 @@
     fpSpeedBtnEl.textContent=s.speed+'x';
   });
   fpHomeBtnEl.addEventListener('click',()=>openFpHomePicker(fpState?'restart':'start'));
-  // 我的家乡：独立入口，打开家乡选择弹窗（选择后进入编辑页，不启动足迹回放）
+  // 我的家乡：独立入口。已设置家乡则打开「我的家乡」卡片（仅展示家乡这一个城市），未设置则打开选择弹窗
   const hometownBtnEl=$('hometownBtn');
-  if(hometownBtnEl) hometownBtnEl.addEventListener('click',()=>openFpHomePicker('hometown'));
+  if(hometownBtnEl) hometownBtnEl.addEventListener('click',()=>{
+    const home=getFootprintHome();
+    if(home) openMyHomeCard(home);
+    else openFpHomePicker('hometown');
+  });
+
+  // ---- 我的家乡卡片：仅展示家乡这一个城市，提供「编辑家乡」与「重新选择」入口 ----
+  function openMyHomeCard(home){
+    const cardEl=$('myHomeCard');
+    const overlayEl=$('myHomeOverlay');
+    if(!cardEl) return;
+    cardEl.innerHTML=
+      '<div class="my-home-icon">🏠</div>'+
+      '<div class="my-home-name">'+home.name+'</div>'+
+      '<div class="my-home-sub">已设置为你的家乡</div>'+
+      '<div class="my-home-actions">'+
+        '<button class="my-home-btn" type="button" id="myHomeRechooseBtn">重新选择</button>'+
+        '<button class="my-home-btn primary" type="button" id="myHomeEditBtn">编辑家乡</button>'+
+      '</div>';
+    const editBtn=$('myHomeEditBtn');
+    if(editBtn) editBtn.addEventListener('click',()=>{
+      closeMyHomeCard();
+      openCityModal(home);
+    });
+    const rechooseBtn=$('myHomeRechooseBtn');
+    if(rechooseBtn) rechooseBtn.addEventListener('click',()=>{
+      closeMyHomeCard();
+      openFpHomePicker('hometown');
+    });
+    if(overlayEl) overlayEl.hidden=false;
+  }
+  function closeMyHomeCard(){
+    const overlayEl=$('myHomeOverlay');
+    if(overlayEl) overlayEl.hidden=true;
+  }
+  const myHomeCloseBtnEl=$('myHomeCloseBtn');
+  if(myHomeCloseBtnEl) myHomeCloseBtnEl.addEventListener('click',closeMyHomeCard);
+  const myHomeOverlayEl=$('myHomeOverlay');
+  if(myHomeOverlayEl) myHomeOverlayEl.addEventListener('click',e=>{ if(e.target===myHomeOverlayEl) closeMyHomeCard(); });
+  window.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&myHomeOverlayEl&&!myHomeOverlayEl.hidden) closeMyHomeCard();
+  });
   fpHomeCloseEl.addEventListener('click',closeFpHomePicker);
   fpHomeOverlayEl.addEventListener('click',e=>{ if(e.target===fpHomeOverlayEl) closeFpHomePicker(); });
   fpHomeSearchEl.addEventListener('input',()=>renderFpHomeList(fpHomeSearchEl.value));
@@ -11046,10 +11176,19 @@
   function openCityModal(city){
     currentCity=city;
     cityTitle.textContent=city.name;
-    // 我的家乡标识：若当前编辑城市为家乡，显示强调横幅
+    // 我的家乡标识：若当前编辑城市为家乡，显示强调横幅，并把「游玩年月」改为「出生年月」、封面/简介改为家乡主题
     const _home=getFootprintHome();
+    const isHometown=!!(_home&&_home.cityKey===city.cityKey);
     const hometownBannerEl=document.getElementById('hometownBanner');
-    if(hometownBannerEl) hometownBannerEl.style.display=(_home&&_home.cityKey===city.cityKey)?'flex':'none';
+    if(hometownBannerEl) hometownBannerEl.style.display=isHometown?'flex':'none';
+    const monthPickerLabelEl=document.getElementById('monthPickerLabel');
+    if(monthPickerLabelEl) monthPickerLabelEl.textContent=isHometown?'出生年月':'游玩年月';
+    const coverLabelEl=document.getElementById('coverLabel');
+    if(coverLabelEl) coverLabelEl.textContent=isHometown?'家乡封面':'城市封面';
+    const cityDescLabelEl=document.getElementById('cityDescLabel');
+    if(cityDescLabelEl) cityDescLabelEl.textContent=isHometown?'家乡简介':'城市简介';
+    if(coverUploadBtn) coverUploadBtn.textContent=isHometown?'上传家乡封面':'上传封面';
+    if(cityDescInput) cityDescInput.placeholder=isHometown?'介绍一下你的家乡，比如故乡的风景、记忆、美食…':'为这座城市写一段简介…';
     // 显示标志性建筑（若有）
     const lm=landmarkOf(city.name);
     const lmEl=$('modalLandmark');
