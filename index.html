@@ -9640,25 +9640,43 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     let phi=-0.40,theta=0.40,size=0;
     let dragging=false,lastX=0,lastY=0;
 
+    let chk=null;   // 几何快照：供每帧漂移校验比对
     function measure(){
       const r=scrollArea.getBoundingClientRect();
       // 可见区域 = scrollArea 与外层裁剪卡片（overflow:hidden）及视口的交集。
       // 直接用 scrollArea 自身尺寸在面板布局溢出/收缩时会按"不可见区域"居中，导致球体右下被裁。
       let L=r.left,T=r.top,R=r.right,B=r.bottom;
+      let c=null;
       if(clipCard){
-        const c=clipCard.getBoundingClientRect();
+        c=clipCard.getBoundingClientRect();
         L=Math.max(L,c.left);T=Math.max(T,c.top);R=Math.min(R,c.right);B=Math.min(B,c.bottom);
       }
       L=Math.max(L,0);T=Math.max(T,0);
       R=Math.min(R,window.innerWidth||R);B=Math.min(B,window.innerHeight||B);
       const vw=Math.max(2,R-L),vh=Math.max(2,B-T);
+      // 再用 clientWidth/Height（内容盒，不含边框）兜底收紧
+      const cw=Math.min(vw,scrollArea.clientWidth||vw,c?c.clientWidth||vw:vw);
+      const ch2=Math.min(vh,scrollArea.clientHeight||vh,c?c.clientHeight||vh:vh);
       // 地球直径 = 可见区短边×0.85（适当缩小，四周留呼吸空间）
-      size=Math.max(2,Math.round(Math.min(vw,vh)*0.85));
+      size=Math.max(2,Math.round(Math.min(cw,ch2)*0.85));
       wrap.style.width=wrap.style.height=size+'px';
       // 按可见区中心定位（相对 scrollArea 内容原点；预览态滚动已归零）
       wrap.style.left=(L+vw/2-r.left)+'px';
       wrap.style.top=(T+vh/2-r.top)+'px';
       wrap.style.transform='translate(-50%,-50%)';
+      chk={sl:r.left,st:r.top,sw:r.width,sh:r.height,iw:window.innerWidth||0,ih:window.innerHeight||0,
+           cl:c?c.left:0,ct:c?c.top:0,cw:c?c.width:0,cch:c?c.height:0};
+    }
+    // 【修复】每帧几何漂移校验：字体晚加载、面板入场动画（transform 变化不触发 ResizeObserver）、
+    // 移动端地址栏收缩（改变 visualViewport 而非 window resize）等布局变化会让 measure() 的
+    // 结果过期——球体按旧几何放大/偏移导致间歇性裁切。预览态每帧比对快照，漂移立即重测。
+    function checkDrift(){
+      if(!chk)return;
+      const r=scrollArea.getBoundingClientRect();
+      const c=clipCard?clipCard.getBoundingClientRect():null;
+      if(r.left!==chk.sl||r.top!==chk.st||r.width!==chk.sw||r.height!==chk.sh||
+         (window.innerWidth||0)!==chk.iw||(window.innerHeight||0)!==chk.ih||
+         (c&&(c.left!==chk.cl||c.top!==chk.ct||c.width!==chk.cw||c.height!==chk.cch))) measure();
     }
     // 主题自适应配色：深色主题=近黑海洋+青蓝点阵；浅色主题=清透亮蓝球体+高亮点阵
     // （cobe 着色器中球身颜色=baseColor×光照，glowColor 控边缘辉光，mapBrightness 控点阵亮度；
@@ -9698,6 +9716,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         markerColor:[0.99,0.75,0.45],
         markers:[],
         onRender:(state)=>{
+          checkDrift();                            // 每帧校验几何漂移，杜绝过期尺寸/偏移
           state.width=size;state.height=size;
           // 主题切换即时生效：每帧按当前 body 主题覆盖配色与点阵亮度
           const cur=themeColors();
@@ -9734,6 +9753,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     }));
     new MutationObserver(applyVisibility).observe(container,{attributes:true,attributeFilter:['class']});
     window.addEventListener('resize',measure);
+    // 移动端地址栏收缩/软键盘弹出改变的是 visualViewport，window resize 不一定触发
+    if(window.visualViewport) window.visualViewport.addEventListener('resize',measure);
+    // 字体晚加载完成后再校准一次（字体交换会改变头部高度但不触发 ResizeObserver）
+    if(document.fonts&&document.fonts.ready) document.fonts.ready.then(measure);
     window.addEventListener('scroll',()=>{if(container.classList.contains('tl-preview'))measure();},true);
     // 容器尺寸变化即重测（面板折叠/展开、窗口变化、布局稳定后均能保证球体完整不裁切）
     if(window.ResizeObserver){
