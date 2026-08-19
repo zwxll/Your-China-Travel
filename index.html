@@ -8802,7 +8802,6 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   });
   signOutBtn.addEventListener('click',async ()=>{
     signOutBtn.disabled=true;
-    const preserveLocalData=localStorage.getItem(CLOUD_DIRTY_KEY)==='1'||!!cloudSyncPromise;
     try{
       cloudSigningOut=true;
       cloudSyncEpoch+=1;
@@ -8810,7 +8809,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       let remoteSignOutFailed=false;
       try{
         const result=await withTimeout(
-          preserveLocalData?cloudClient.auth.signOut({scope:'local'}):cloudClient.auth.signOut(),
+          cloudClient.auth.signOut(),
           4000,
           '退出请求超时'
         );
@@ -8820,17 +8819,24 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         const projectRef=new URL(cloudConfig.url).hostname.split('.')[0];
         localStorage.removeItem(`sb-${projectRef}-auth-token`);
       }
-      if(preserveLocalData){
-        localStorage.setItem(CLOUD_DIRTY_KEY,'1');
-      }
-      // 退出账号时保留本机旅行资料（不清除 IndexedDB 与 owner 标记），
-      // 便于下次登录其他账号时把本地内容同步过去，不会丢失
-      setStorageMode('');cloudUser=null;await refreshState();updateAccountUI();closeAuth();
+      // 退出账号时清除全部本地旅行资料（照片/封面图/景点照片/城市记录/点评）。
+      // 云端已有内容不受影响，重新登录后会自动拉回。
+      cloudSuppressDirty=true;
+      try{
+        await clearLocalTravelData();
+        cloudUser=null;
+        localStorage.removeItem(CLOUD_OWNER_KEY);
+        localStorage.removeItem(CLOUD_DIRTY_KEY);
+        localStorage.removeItem(CLOUD_UPDATED_KEY);
+        setStorageMode('');
+        await refreshState();
+        updateAccountUI();
+      }finally{cloudSuppressDirty=false;}
+      closeAuth();
       toast(remoteSignOutFailed
         ?'已从本机退出；云端暂时无法结束其他设备会话'
-        :(preserveLocalData?'已退出账号，未同步内容已保留在本机':'已退出账号，本机资料已保留'));
+        :'已退出账号，本地资料已清除');
     }catch(error){
-      if(preserveLocalData) setSyncStatus('待同步','syncing');
       toast('退出失败：'+friendlyAuthError(error),true);
     }
     finally{cloudSigningOut=false;signOutBtn.disabled=false;}
