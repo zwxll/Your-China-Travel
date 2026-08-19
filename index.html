@@ -2037,6 +2037,92 @@
   .avatar-crop-actions{display:flex;gap:10px;padding:0 22px 20px;}
   .avatar-crop-actions .account-action{flex:1;height:40px;}
 
+  /* ===== 建议反馈弹窗（贴合深色青蓝主题，与账号弹窗视觉同源）===== */
+  .feedback-overlay{
+    position:fixed;inset:0;z-index:var(--z-top);display:none;place-items:center;padding:20px;
+    background:rgba(0,0,0,.76);backdrop-filter:blur(18px) saturate(120%);
+    -webkit-backdrop-filter:blur(18px) saturate(120%);
+  }
+  .feedback-overlay.show{display:grid;animation:fade .2s ease;}
+  .feedback-panel{
+    width:min(560px,100%);border:1px solid rgba(125,211,252,.22);border-radius:var(--radius);
+    background:linear-gradient(145deg,rgba(12,19,28,.98),rgba(5,8,12,.98));
+    box-shadow:0 28px 90px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.07);
+    max-height:calc(100dvh - 40px);display:flex;flex-direction:column;overflow:hidden;
+  }
+  .feedback-head{padding:24px 26px 16px;position:relative;border-bottom:1px solid rgba(255,255,255,.07);}
+  .feedback-kicker{margin:0 0 6px;color:var(--accent-l);font:700 11px/1.2 'Inter',sans-serif;letter-spacing:1.6px;text-transform:uppercase;}
+  .feedback-title{margin:0;color:var(--ink);font:750 22px/1.2 'Inter',sans-serif;letter-spacing:-.4px;}
+  .feedback-sub{margin:8px 0 0;color:#a8b6c7;font-size:13px;line-height:1.6;}
+  .feedback-close{position:absolute;right:16px;top:16px;width:34px;height:34px;border:0;border-radius:var(--radius-xs);background:rgba(255,255,255,.06);color:#cbd5e1;font-size:22px;cursor:pointer;}
+  .feedback-close:hover{background:rgba(255,255,255,.1);color:#fff;}
+  .feedback-body{padding:18px 26px 6px;overflow-y:auto;display:grid;gap:19px;}
+  .fb-section{display:grid;gap:9px;}
+  .fb-label{color:#d7e1ec;font-size:12px;font-weight:650;}
+  .fb-label-opt{color:#7f8da0;font-weight:500;font-size:11px;}
+  .fb-hint{color:#7f8da0;font-size:11px;line-height:1.5;margin:0;}
+  .fb-note{margin:0;color:#7f8da0;font-size:11px;line-height:1.5;font-style:italic;}
+  .fb-tags{display:flex;flex-wrap:wrap;gap:8px;}
+  .fb-tag{
+    height:32px;padding:0 14px;border:1px solid rgba(148,163,184,.24);border-radius:var(--radius-pill);
+    background:rgba(255,255,255,.03);color:#cbd5e1;font:600 13px/1 'Inter',sans-serif;cursor:pointer;
+    transition:border-color .15s,color .15s,background .15s,box-shadow .15s;
+  }
+  .fb-tag:hover{border-color:rgba(125,211,252,.45);color:#e0f7ff;}
+  .fb-tag.active{border-color:rgba(56,189,248,.6);background:rgba(56,189,248,.14);color:#e0f7ff;box-shadow:0 0 10px rgba(56,189,248,.2);}
+  .fb-select{
+    width:100%;height:42px;border:1px solid rgba(148,163,184,.24);border-radius:var(--radius-sm);
+    background:#080d13;color:#f8fafc;padding:0 12px;font:500 14px/1 'Inter',sans-serif;outline:none;
+    appearance:none;-webkit-appearance:none;cursor:pointer;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 12px center;padding-right:34px;
+  }
+  .fb-select:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.12);}
+  .fb-textarea{
+    width:100%;min-height:120px;resize:vertical;border:1px solid rgba(148,163,184,.24);border-radius:var(--radius-sm);
+    background:#080d13;color:#f8fafc;padding:12px 13px;font:500 14px/1.6 'Inter',sans-serif;outline:none;line-height:1.6;
+  }
+  .fb-textarea::placeholder{color:#718096;}
+  .fb-textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.12);}
+  .fb-count{text-align:right;font-size:11px;color:#7f8da0;}
+  .fb-count.warn{color:#fca5a5;}
+  .fb-stars{display:flex;gap:3px;}
+  .fb-star{width:30px;height:30px;background:transparent;border:0;cursor:pointer;color:#64748b;padding:2px;transition:color .12s,transform .12s;}
+  .fb-star svg{display:block;width:100%;height:100%;fill:currentColor;}
+  .fb-star.active{color:#38bdf8;}
+  .fb-star:hover{transform:translateY(-2px);color:#7dd3fc;}
+  .fb-stars-hint{font-size:11px;color:#7f8da0;}
+  
+  .fb-contact{display:grid;gap:9px;}
+  .fb-optional{
+    width:100%;height:40px;border:1px solid rgba(148,163,184,.24);border-radius:var(--radius-sm);
+    background:#080d13;color:#f8fafc;padding:0 12px;font:500 14px/1 'Inter',sans-serif;outline:none;
+  }
+  .fb-optional::placeholder{color:#718096;}
+  .fb-optional:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(56,189,248,.12);}
+  .fb-check{display:flex;align-items:center;gap:8px;color:#94a3b8;font-size:12px;cursor:pointer;}
+  .fb-check input{accent-color:var(--accent);width:15px;height:15px;margin:0;}
+  .fb-check[hidden]{display:none;}
+  .fb-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 26px 20px;border-top:1px solid rgba(255,255,255,.07);flex:0 0 auto;}
+  .fb-cancel{height:40px;padding:0 18px;border:1px solid rgba(148,163,184,.25);border-radius:var(--radius-pill);background:rgba(255,255,255,.04);color:#dbeafe;font-weight:700;cursor:pointer;}
+  .fb-cancel:hover{background:rgba(255,255,255,.08);}
+  .fb-submit{height:40px;padding:0 22px;border:0;border-radius:var(--radius-pill);background:linear-gradient(135deg,var(--accent-l),var(--accent));color:#03131d;font-weight:800;cursor:pointer;}
+  .fb-submit:hover{filter:brightness(1.06);}
+  .fb-submit:active{transform:scale(.98);}
+  .fb-submit:disabled{cursor:wait;opacity:.62;}
+  .fb-result{margin:0 26px 20px;padding:12px 14px;border-radius:var(--radius-sm);font-size:13px;line-height:1.6;display:none;}
+  .fb-result.show{display:block;}
+  .fb-result.success{border:1px solid rgba(74,222,128,.25);background:rgba(34,197,94,.1);color:#bbf7d0;}
+  .fb-result.error{border:1px solid rgba(248,113,113,.25);background:rgba(239,68,68,.1);color:#fecaca;}
+  .fb-result .fb-result-retry{margin-left:10px;border:0;background:rgba(255,255,255,.1);color:inherit;font-weight:700;padding:5px 12px;border-radius:var(--radius-pill);cursor:pointer;}
+  .fb-result .fb-result-retry:hover{background:rgba(255,255,255,.18);}
+  @media(max-width:720px){
+    .feedback-head,.feedback-body{padding-left:20px;padding-right:20px;}
+    .feedback-foot,.feedback-result{margin-left:20px;margin-right:20px;}
+    .feedback-body{padding-bottom:4px;}
+    .feedback-title{font-size:20px;}
+  }
+
   @media(max-width:720px){
     header{flex-wrap:nowrap;padding:10px 12px;}
     .header-actions{gap:6px;}
@@ -4368,6 +4454,12 @@
         <span class="theme-toggle-icon" id="themeToggleIcon" aria-hidden="true"></span>
         <span id="themeToggleLabel">浅色</span>
       </button>
+      <button class="theme-toggle-btn footprint-btn" id="feedbackBtn" type="button" aria-haspopup="dialog" title="建议反馈：哪里不好用、希望增加什么功能">
+        <span class="fp-btn-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>
+        </span>
+        <span class="fp-btn-label">建议反馈</span>
+      </button>
       <button class="account-btn" id="accountBtn" type="button" aria-haspopup="dialog">
         <span class="account-dot" aria-hidden="true"></span>
         <span class="account-label" id="accountLabel">登录账号</span>
@@ -4947,6 +5039,93 @@
     </section>
   </div>
 
+  <!-- 建议反馈弹窗：低干扰、可填写、帮助产品迭代的用户反馈入口 -->
+  <div class="feedback-overlay" id="feedbackOverlay" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+    <section class="feedback-panel">
+      <div class="feedback-head">
+        <p class="feedback-kicker">Feedback</p>
+        <h2 class="feedback-title" id="feedbackTitle">帮我把这里做得更好</h2>
+        <p class="feedback-sub">哪里不好用、哪里可以更好，都欢迎告诉我。你的真实使用感受，会直接影响之后的优化。</p>
+        <button class="feedback-close" id="feedbackClose" type="button" aria-label="关闭">&times;</button>
+      </div>
+
+      <div class="feedback-body">
+        <!-- 反馈类型（多选） -->
+        <div class="fb-section">
+          <div class="fb-label">你想反馈什么？<span class="fb-label-opt">（可多选）</span></div>
+          <div class="fb-tags" id="fbTypeTags">
+            <button class="fb-tag" type="button" data-key="功能建议">功能建议</button>
+            <button class="fb-tag" type="button" data-key="页面体验">页面体验</button>
+            <button class="fb-tag" type="button" data-key="UI/视觉">UI / 视觉</button>
+            <button class="fb-tag" type="button" data-key="地图交互">地图交互</button>
+            <button class="fb-tag" type="button" data-key="数据问题">数据问题</button>
+            <button class="fb-tag" type="button" data-key="Bug问题">Bug问题</button>
+            <button class="fb-tag" type="button" data-key="其他">其他</button>
+          </div>
+        </div>
+
+        <!-- 快速问题 -->
+        <div class="fb-section">
+          <label class="fb-label" for="fbCategory">你觉得这个页面目前最需要优化的是？</label>
+          <select class="fb-select" id="fbCategory">
+            <option value="">请选择…</option>
+            <option value="地图操作">地图操作</option>
+            <option value="页面布局">页面布局</option>
+            <option value="城市记录">城市记录</option>
+            <option value="旅行轨迹">旅行轨迹</option>
+            <option value="照片管理">照片管理</option>
+            <option value="游客点评">游客点评</option>
+            <option value="页面速度">页面速度</option>
+            <option value="手机端体验">手机端体验</option>
+            <option value="其他">其他</option>
+          </select>
+        </div>
+
+        <!-- 建议输入 -->
+        <div class="fb-section">
+          <label class="fb-label" for="fbContent">你的建议</label>
+          <textarea class="fb-textarea" id="fbContent" maxlength="1000" placeholder="例如：我希望点击城市后可以直接看到最近一次旅行记录……&#10;告诉我哪里不好用，或者你希望增加什么功能。"></textarea>
+          <div class="fb-count" id="fbCount">0 / 1000</div>
+          <p class="fb-note">这个网站还在慢慢变好，你的建议可能就是下一个功能。</p>
+        </div>
+
+        <!-- 体验评分 -->
+        <div class="fb-section">
+          <div class="fb-label">目前使用体验怎么样？</div>
+          <div class="fb-stars" id="fbStars" role="radiogroup" aria-label="体验评分">
+            <button class="fb-star" type="button" data-val="1" role="radio" aria-label="1 分" aria-checked="false"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z"/></svg></button>
+            <button class="fb-star" type="button" data-val="2" role="radio" aria-label="2 分" aria-checked="false"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z"/></svg></button>
+            <button class="fb-star" type="button" data-val="3" role="radio" aria-label="3 分" aria-checked="false"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z"/></svg></button>
+            <button class="fb-star" type="button" data-val="4" role="radio" aria-label="4 分" aria-checked="false"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z"/></svg></button>
+            <button class="fb-star" type="button" data-val="5" role="radio" aria-label="5 分" aria-checked="false"><svg viewBox="0 0 24 24"><path d="M12 2l2.9 6.26 6.6.57-5 4.36 1.5 6.45L12 16.9l-5.99 3.74 1.5-6.45-5-4.36 6.6-.57z"/></svg></button>
+          </div>
+          <div class="fb-stars-hint" id="fbRatHint">1 = 很难使用 · 5 = 很满意</div>
+        </div>
+
+        
+
+        <!-- 联系方式（可选） -->
+        <div class="fb-section">
+          <label class="fb-label" for="fbContact">方便的话，可以留下联系方式（可选）</label>
+          <div class="fb-contact">
+            <input class="fb-optional" id="fbContact" type="text" maxlength="320" placeholder="邮箱或其他联系方式，方便我需要进一步了解时联系你" />
+            <label class="fb-check" id="fbAllowWrap" hidden>
+              <input type="checkbox" id="fbAllow" />
+              <span>允许通过账号邮箱联系我</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="fb-foot">
+        <button class="fb-cancel" id="fbCancel" type="button">取消</button>
+        <button class="fb-submit" id="fbSubmit" type="button">提交建议</button>
+      </div>
+
+      <div class="fb-result" id="fbResult" hidden role="status" aria-live="polite"></div>
+    </section>
+  </div>
+
 <!-- 【离线部署】中国省级边界 GeoJSON 本地缓存，避免 DataV CDN 不可达时地图加载失败 -->
 <script src="china-geo.js"></script>
 <!-- 【离线部署】34 省地级市边界 GeoJSON 本地缓存，城市点全量加载（371城），不再依赖 DataV CDN -->
@@ -4982,7 +5161,7 @@
     /* cobe v0.6.4 + phenomenon v1.6.0 (MIT) - inlined source, replaces blocked esm.sh/jsdelivr CDNs */
 var t=["x","y","z"],e=function(t){Object.assign(this,{uniforms:{},geometry:{vertices:[{x:0,y:0,z:0}]},mode:0,modifiers:{},attributes:[],multiplier:1,buffers:[]}),Object.assign(this,t),this.prepareProgram(),this.prepareUniforms(),this.prepareAttributes()};e.prototype.compileShader=function(t,e){var i=this.gl.createShader(t);return this.gl.shaderSource(i,e),this.gl.compileShader(i),i},e.prototype.prepareProgram=function(){var t=this.gl,e=this.vertex,i=this.fragment,r=t.createProgram();t.attachShader(r,this.compileShader(35633,e)),t.attachShader(r,this.compileShader(35632,i)),t.linkProgram(r),t.useProgram(r),this.program=r},e.prototype.prepareUniforms=function(){for(var t=Object.keys(this.uniforms),e=0;e<t.length;e+=1){var i=this.gl.getUniformLocation(this.program,t[e]);this.uniforms[t[e]].location=i}},e.prototype.prepareAttributes=function(){void 0!==this.geometry.vertices&&this.attributes.push({name:"aPosition",size:3}),void 0!==this.geometry.normal&&this.attributes.push({name:"aNormal",size:3}),this.attributeKeys=[];for(var t=0;t<this.attributes.length;t+=1)this.attributeKeys.push(this.attributes[t].name),this.prepareAttribute(this.attributes[t])},e.prototype.prepareAttribute=function(e){for(var i=this.geometry,r=this.multiplier,s=i.vertices,n=i.normal,a=new Float32Array(r*s.length*e.size),o=0;o<r;o+=1)for(var h=e.data&&e.data(o,r),u=o*s.length*e.size,f=0;f<s.length;f+=1)for(var c=0;c<e.size;c+=1){var l=this.modifiers[e.name];a[u]=void 0!==l?l(h,f,c,this):"aPosition"===e.name?s[f][t[c]]:"aNormal"===e.name?n[f][t[c]]:h[c],u+=1}this.attributes[this.attributeKeys.indexOf(e.name)].data=a,this.prepareBuffer(this.attributes[this.attributeKeys.indexOf(e.name)])},e.prototype.prepareBuffer=function(t){var e=t.data,i=t.name,r=t.size,s=this.gl.createBuffer();this.gl.bindBuffer(34962,s),this.gl.bufferData(34962,e,35044);var n=this.gl.getAttribLocation(this.program,i);this.gl.enableVertexAttribArray(n),this.gl.vertexAttribPointer(n,r,5126,!1,0,0),this.buffers[this.attributeKeys.indexOf(t.name)]={buffer:s,location:n,size:r}},e.prototype.render=function(t){var e=this,i=this.uniforms,r=this.multiplier,s=this.gl;s.useProgram(this.program);for(var n=0;n<this.buffers.length;n+=1){var a=this.buffers[n],o=a.location,h=a.buffer,u=a.size;s.enableVertexAttribArray(o),s.bindBuffer(34962,h),s.vertexAttribPointer(o,u,5126,!1,0,0)}Object.keys(t).forEach(function(e){i[e].value=t[e].value}),Object.keys(i).forEach(function(t){var r=i[t];e.uniformMap[r.type](r.location,r.value)}),s.drawArrays(this.mode,0,r*this.geometry.vertices.length),this.onRender&&this.onRender(this)},e.prototype.destroy=function(){for(var t=0;t<this.buffers.length;t+=1)this.gl.deleteBuffer(this.buffers[t].buffer);this.gl.deleteProgram(this.program),this.gl=null};var i=function(t){var e=this,i=t||{},r=i.canvas;void 0===r&&(r=document.querySelector("canvas"));var s=i.context;void 0===s&&(s={});var n=i.contextType;void 0===n&&(n="experimental-webgl");var a=i.settings;void 0===a&&(a={});var o=r.getContext(n,Object.assign({alpha:!1,antialias:!1},s));Object.assign(this,{gl:o,canvas:r,uniforms:{},instances:new Map,shouldRender:!0}),Object.assign(this,{devicePixelRatio:1,clearColor:[1,1,1,1],position:{x:0,y:0,z:2},clip:[.001,100]}),Object.assign(this,a),this.uniformMap={float:function(t,e){return o.uniform1f(t,e)},vec2:function(t,e){return o.uniform2fv(t,e)},vec3:function(t,e){return o.uniform3fv(t,e)},vec4:function(t,e){return o.uniform4fv(t,e)},mat2:function(t,e){return o.uniformMatrix2fv(t,!1,e)},mat3:function(t,e){return o.uniformMatrix3fv(t,!1,e)},mat4:function(t,e){return o.uniformMatrix4fv(t,!1,e)}},o.enable(o.DEPTH_TEST),o.depthFunc(o.LEQUAL),!1===o.getContextAttributes().alpha&&(o.clearColor.apply(o,this.clearColor),o.clearDepth(1)),this.onSetup&&this.onSetup(o),window.addEventListener("resize",function(){return e.resize()}),this.resize(),this.render()};i.prototype.resize=function(){var t=this.gl,e=this.canvas,i=this.devicePixelRatio,r=this.position;e.width=e.clientWidth*i,e.height=e.clientHeight*i;var s=t.drawingBufferWidth,n=t.drawingBufferHeight,a=s/n;t.viewport(0,0,s,n);var o=Math.tan(Math.PI/180*22.5),h=[1,0,0,0,0,1,0,0,0,0,1,0,r.x,r.y,(a<1?1:a)*-r.z,1];this.uniforms.uProjectionMatrix={type:"mat4",value:[.5/o,0,0,0,0,a/o*.5,0,0,0,0,-(this.clip[1]+this.clip[0])/(this.clip[1]-this.clip[0]),-1,0,0,-2*this.clip[1]*(this.clip[0]/(this.clip[1]-this.clip[0])),0]},this.uniforms.uViewMatrix={type:"mat4",value:[1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]},this.uniforms.uModelMatrix={type:"mat4",value:h}},i.prototype.toggle=function(t){t!==this.shouldRender&&(this.shouldRender=void 0!==t?t:!this.shouldRender,this.shouldRender&&this.render())},i.prototype.render=function(){var t=this;this.gl.clear(16640),this.instances.forEach(function(e){e.render(t.uniforms)}),this.onRender&&this.onRender(this),this.shouldRender&&requestAnimationFrame(function(){return t.render()})},i.prototype.add=function(t,i){void 0===i&&(i={uniforms:{}}),void 0===i.uniforms&&(i.uniforms={}),Object.assign(i.uniforms,JSON.parse(JSON.stringify(this.uniforms))),Object.assign(i,{gl:this.gl,uniformMap:this.uniformMap});var r=new e(i);return this.instances.set(t,r),r},i.prototype.remove=function(t){var e=this.instances.get(t);void 0!==e&&(e.destroy(),this.instances.delete(t))},i.prototype.destroy=function(){var t=this;this.instances.forEach(function(e,i){e.destroy(),t.instances.delete(i)}),this.toggle(!1)};window.__CobePhenomenon=i;
 
-const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrightness",N="baseColor",s="markerColor",G="glowColor",r="markers",P="diffuse",X="devicePixelRatio",f="dark",u="offset",l="scale",x="opacity",m="mapBaseBrightness",I={[M]:"A",[c]:"B",[R]:"m",[O]:"E",[N]:"R",[s]:"S",[G]:"z",[P]:"F",[f]:"G",[u]:"y",[l]:"C",[x]:"H",[m]:"I"},{PI:i,sin:d,cos:C}=Math,U=a=>[].concat(...a.map(o=>{let[_,L]=o.location;_=_*i/180,L=L*i/180-i;let S=C(_),e=[-S*C(L),d(_),S*d(L),o.size],t=o.color?[...o.color,1]:[0,0,0,0];return[...e,...t]}),[0,0,0,0,0,0,0,0]),p=(a,o)=>{let _=(e,t,n)=>({type:e,value:typeof o[t]=="undefined"?n:o[t]}),L=a.getContext("webgl2")?"webgl2":a.getContext("webgl")?"webgl":"experimental-webgl",S=new v({canvas:a,contextType:L,context:{alpha:!0,stencil:!1,antialias:!0,depth:!1,preserveDrawingBuffer:!1,...o.context},settings:{[X]:o[X]||1,onSetup:e=>{let t=e.RGB,n=e.UNSIGNED_BYTE,E=e.TEXTURE_2D,T=e.createTexture();e.bindTexture(E,T),e.texImage2D(E,0,t,1,1,0,t,n,new Uint8Array([0,0,0,0]));let A=new Image;A.onload=()=>{e.bindTexture(E,T),e.texImage2D(E,0,t,t,n,A),e.generateMipmap(E);let h=e.getParameter(e.CURRENT_PROGRAM),D=e.getUniformLocation(h,"J");e.texParameteri(E,e.TEXTURE_MIN_FILTER,e.NEAREST),e.texParameteri(E,e.TEXTURE_MAG_FILTER,e.NEAREST),e.uniform1i(D,0)},A.src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAACAAQAAAADMzoqnAAAAAXNSR0IArs4c6QAABA5JREFUeNrV179uHEUAx/Hf3JpbF+E2VASBsmVKTBcpKJs3SMEDcDwBiVJAAewYEBUivIHT0uUBIt0YCovKD0CRjUC4QfHYh8hYXu+P25vZ2Zm9c66gMd/GJ/tz82d3bk8GN4SrByYF2366FNTACIAkivVAAazQdnf3MvAlbNUQfOPAdQDvSAimMWhwy4I2g4SU+Kp04ISLpPBAKLxPyic3O/CCi+Y7rUJbiodcpDOFY7CgxCEXmdYD2EYK2s5lApOx5pEDDYCUwM1XdJUwBV11QQMg59kePSCaPAASQMEL2hwo6TJFgxpg+TgC2ymXPbuvc40awr3D1QCFfbH9kcoqAOkZozpQo0aqAGQRKCog/+tjkgbNFEtg2FffBvBGlSxHoAaAa1u6X4PBAwDiR8FFsrQgeUhfJTSALaB9jy5NCybJPn1SVFiWk7ywN+KzhH1aKAuydhGkbEF4lWohLXDXavlyFgHY7LBnLRdlAP6BS5Cc8RfVDXbkwN/oIvmY+6obbNeBP0JwTuMGu9gTzy1Q4RS/cWpfzszeYwd+CAFrtBW/Hur0gLbJGlD+/OjVwe/drfBxkbbg63dndEDfiEBlAd7ac0BPe1D6Jd8dfbLH+RI0OzseFB5s01/M+gMdAeluLOCAuaUA9Lezo/vSgXoCX9rtEiXnp7Q1W/CNyWcd8DXoS6jH/YZ5vAJEWY2dXFQe2TUgaFaNejCzJ98g6HnlVrsE58sDcYqg+9XY75fPqdoh/kRQWiXKg8MWlJQxUFMPjqnyujhFBE7UxIMjyszk0QwQlFsezImsyvUYYYVED2pk6m0Tg8T04Fwjk2kdAwSACqlM6gRRt3vQYAFGX0Ah7Ebx1H+MDRI5ui0QldH4j7FGcm90XdxD2Jg1AOEAVAKhEFXSn4cKUELurIAKwJ3MArypPscQaLhJFICJ0ohjDySAdH8AhDtCiTuMycH8CXzhH9jUACAO5uMhoAwA5i+T6WAKmmAqnLy80wxHqIPFYpqCwxGaYLt4Dyievg5kEoVEUAhs6pqKgFtDQYOuaXypaWKQfIuwwoGSZgfLsu/XAtI8cGN+h7Cc1A5oLOMhwlIPXuhu48AIvsSBkvtV9wsJRKCyYLfq5lTrQMFd1a262oqBck9K1V0YjQg0iEYYgpS1A9GlXQV5cykwm4A7BzVsxQqo7E+zCegO7Ma7yKgsuOcfKbMBwLC8wvVNYDsANYalEpOAa6zpWjTeMKGwEwC1CiQewJc5EKfgy7GmRAZA4vUVGwE2dPM/g0xuAInE/yG5aZ8ISxWGfYigUVbdyBElTHh2uCwGdfCkOLGgQVBh3Ewp+/QK4CDlR5Ws/Zf7yhCf8pH7vinWAvoVCQ6zz0NX5V/6GkAVV+2/5qsJ/gU8bsxpM8IeAQAAAABJRU5ErkJggg=="}}});return S.add("",{vertex:"attribute vec3 aPosition;uniform mat4 uProjectionMatrix;uniform mat4 uModelMatrix;uniform mat4 uViewMatrix;void main(){gl_Position=uProjectionMatrix*uModelMatrix*uViewMatrix*vec4(aPosition,1.);}",fragment:"precision highp float;uniform vec2 t,y;uniform vec3 R,S,z;uniform vec4 v[64*2];uniform float A,B,m,C,D,E,F,G,H,I;uniform sampler2D J;float K=1./m;mat3 L(float a,float b){float c=cos(a),d=cos(b),e=sin(a),f=sin(b);return mat3(d,f*e,-f*c,0.,c,e,f,d*-e,d*c);}vec3 w(vec3 c,out float x){c=c.xzy;float p=max(2.,floor(log2(2.236068*m*3.141593*(1.-c.z*c.z))*.72021));vec2 g=floor(pow(1.618034,p)/2.236068*vec2(1.,1.618034)+.5),d=fract((g+1.)*.618034)*6.283185-3.883222,e=-2.*g,f=vec2(atan(c.y,c.x),c.z-1.),q=floor(vec2(e.y*f.x-d.y*(f.y*m+1.),-e.x*f.x+d.x*(f.y*m+1.))/(d.x*e.y-e.x*d.y));float n=3.141593;vec3 r;for(float h=0.;h<4.;h+=1.){vec2 s=vec2(mod(h,2.),floor(h*.5));float j=dot(g,q+s);if(j>m)continue;float a=j,b=0.;if(a>=524288.)a-=524288.,b+=.803894;if(a>=262144.)a-=262144.,b+=.901947;if(a>=131072.)a-=131072.,b+=.950973;if(a>=65536.)a-=65536.,b+=.475487;if(a>=32768.)a-=32768.,b+=.737743;if(a>=16384.)a-=16384.,b+=.868872;if(a>=8192.)a-=8192.,b+=.934436;if(a>=4096.)a-=4096.,b+=.467218;if(a>=2048.)a-=2048.,b+=.733609;if(a>=1024.)a-=1024.,b+=.866804;if(a>=512.)a-=512.,b+=.433402;if(a>=256.)a-=256.,b+=.216701;if(a>=128.)a-=128.,b+=.108351;if(a>=64.)a-=64.,b+=.554175;if(a>=32.)a-=32.,b+=.777088;if(a>=16.)a-=16.,b+=.888544;if(a>=8.)a-=8.,b+=.944272;if(a>=4.)a-=4.,b+=.472136;if(a>=2.)a-=2.,b+=.236068;if(a>=1.)a-=1.,b+=.618034;float k=fract(b)*6.283185,i=1.-2.*j*K,l=sqrt(1.-i*i);vec3 o=vec3(cos(k)*l,sin(k)*l,i);float u=length(c-o);if(u<n)n=u,r=o;}x=n;return r.xzy;}void main(){vec2 b=(gl_FragCoord.xy/t*2.-1.)/C-y*vec2(1.,-1.)/t;b.x*=t.x/t.y;float c=dot(b,b);vec4 x=vec4(0.);float n=0.;if(c<=.64){for(int g=0;g<2;g++){vec4 e=vec4(0.);float a;vec3 u=vec3(0.,0.,1.),h=normalize(vec3(b,sqrt(.64-c)));h.z*=g>0?-1.:1.,u.z*=g>0?-1.:1.;vec3 i=h*L(B,A),j=w(i,a);float o=asin(j.y),k=acos(-j.x/cos(o));k=j.z<0.?-k:k;float M=max(texture2D(J,vec2(k*.5/3.141593,-(o/3.141593+.5))).x,I),N=smoothstep(8e-3,0.,a),l=dot(h,u),p=pow(l,F)*E,q=M*N*p,T=mix((1.-q)*pow(l,.4),q,G)+.1;e+=vec4(R*T,1.);int U=int(D);float V=0.;for(int d=0;d<64;d++){if(d>=U)break;vec4 r=v[d*2],O=v[d*2+1];vec3 s=r.xyz,P=s-i;float f=r.w;if(dot(P,P)>f*f*4.)continue;vec3 W=w(s,a);a=length(W-i);if(a<f)V+=smoothstep(f*.5,0.,a),e.xyz=O.w>.5?mix(e.xyz,O.xyz,smoothstep(f*.5,0.,a)*p):mix(e.xyz,S,smoothstep(f*.5,0.,a)*p);}e.xyz+=pow(1.-l,4.)*z,x+=e*(1.+(g>0?-H:H))/2.;}n=pow(dot(normalize(vec3(-b,sqrt(1.-c))),vec3(0.,0.,1.)),4.)*smoothstep(0.,1.,.2/(c-.64));}else{float Q=sqrt(.2/(c-.64));n=smoothstep(.5,1.,Q/(Q+1.));}gl_FragColor=x+vec4(n*z,n);}",uniforms:{t:{type:"vec2",value:[o.width,o.height]},A:_("float",M),B:_("float",c),m:_("float",R),E:_("float",O),I:_("float",m),R:_("vec3",N),S:_("vec3",s),F:_("float",P),z:_("vec3",G),G:_("float",f),v:{type:"vec4",value:U(o[r])},D:{type:"float",value:o[r].length},y:_("vec2",u,[0,0]),C:_("float",l,1),H:_("float",x,1)},mode:4,geometry:{vertices:[{x:-100,y:100,z:0},{x:-100,y:-100,z:0},{x:100,y:100,z:0},{x:100,y:-100,z:0},{x:-100,y:-100,z:0},{x:100,y:100,z:0}]},onRender:({uniforms:e})=>{let t={};if(o.onRender){t=o.onRender(t)||t;for(let n in I)t[n]!==void 0&&(e[I[n]].value=t[n]);t[r]!==void 0&&(e["v"].value=U(t[r]),e["D"].value=t[r].length),t.width&&t.height&&(e["t"].value=[t.width,t.height])}}}),S};window.__CobeCreateGlobe=p;
+const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrightness",N="baseColor",s="markerColor",G="glowColor",r="markers",P="diffuse",X="devicePixelRatio",f="dark",u="offset",l="scale",x="opacity",m="mapBaseBrightness",I={[M]:"A",[c]:"B",[R]:"m",[O]:"E",[N]:"R",[s]:"S",[G]:"z",[P]:"F",[f]:"G",[u]:"y",[l]:"C",[x]:"H",[m]:"I"},{PI:i,sin:d,cos:C}=Math,U=a=>[].concat(...a.map(o=>{let[_,L]=o.location;_=_*i/180,L=L*i/180-i;let S=C(_),e=[-S*C(L),d(_),S*d(L),o.size],t=o.color?[...o.color,1]:[0,0,0,0];return[...e,...t]}),[0,0,0,0,0,0,0,0]),p=(a,o)=>{let _=(e,t,n)=>({type:e,value:typeof o[t]=="undefined"?n:o[t]}),L=a.getContext("webgl2")?"webgl2":a.getContext("webgl")?"webgl":"experimental-webgl",S=new v({canvas:a,contextType:L,context:{alpha:!0,stencil:!1,antialias:!0,depth:!1,preserveDrawingBuffer:!1,...o.context},settings:{[X]:o[X]||1,onSetup:e=>{let t=e.RGB,n=e.UNSIGNED_BYTE,E=e.TEXTURE_2D,T=e.createTexture();e.bindTexture(E,T),e.texImage2D(E,0,t,1,1,0,t,n,new Uint8Array([0,0,0,0]));let A=new Image;A.onload=()=>{e.bindTexture(E,T),e.texImage2D(E,0,t,t,n,A),e.generateMipmap(E);let h=e.getParameter(e.CURRENT_PROGRAM),D=e.getUniformLocation(h,"J");e.texParameteri(E,e.TEXTURE_MIN_FILTER,e.NEAREST),e.texParameteri(E,e.TEXTURE_MAG_FILTER,e.NEAREST),e.uniform1i(D,0)},A.src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAQAAAACAAQAAAADMzoqnAAAAAXNSR0IArs4c6QAABA5JREFUeNrV179uHEUAx/Hf3JpbF+E2VASBsmVKTBcpKJs3SMEDcDwBiVJAAewYEBUivIHT0uUBIt0YCovKD0CRjUC4QfHYh8hYXu+P25vZ2Zm9c66gMd/GJ/tz82d3bk8GN4SrByYF2366FNTACIAkivVAAazQdnf3MvAlbNUQfOPAdQDvSAimMWhwy4I2g4SU+Kp04ISLpPBAKLxPyic3O/CCi+Y7rUJbiodcpDOFY7CgxCEXmdYD2EYK2s5lApOx5pEDDYCUwM1XdJUwBV11QQMg59kePSCaPAASQMEL2hwo6TJFgxpg+TgC2ymXPbuvc40awr3D1QCFfbH9kcoqAOkZozpQo0aqAGQRKCog/+tjkgbNFEtg2FffBvBGlSxHoAaAa1u6X4PBAwDiR8FFsrQgeUhfJTSALaB9jy5NCybJPn1SVFiWk7ywN+KzhH1aKAuydhGkbEF4lWohLXDXavlyFgHY7LBnLRdlAP6BS5Cc8RfVDXbkwN/oIvmY+6obbNeBP0JwTuMGu9gTzy1Q4RS/cWpfzszeYwd+CAFrtBW/Hur0gLbJGlD+/OjVwe/drfBxkbbg63dndEDfiEBlAd7ac0BPe1D6Jd8dfbLH+RI0OzseFB5s01/M+gMdAeluLOCAuaUA9Lezo/vSgXoCX9rtEiXnp7Q1W/CNyWcd8DXoS6jH/YZ5vAJEWY2dXFQe2TUgaFaNejCzJ98g6HnlVrsE58sDcYqg+9XY75fPqdoh/kRQWiXKg8MWlJQxUFMPjqnyujhFBE7UxIMjyszk0QwQlFsezImsyvUYYYVED2pk6m0Tg8T04Fwjk2kdAwSACqlM6gRRt3vQYAFGX0Ah7Ebx1H+MDRI5ui0QldH4j7FGcm90XdxD2Jg1AOEAVAKhEFXSn4cKUELurIAKwJ3MArypPscQaLhJFICJ0ohjDySAdH8AhDtCiTuMycH8CXzhH9jUACAO5uMhoAwA5i+T6WAKmmAqnLy80wxHqIPFYpqCwxGaYLt4Dyievg5kEoVEUAhs6pqKgFtDQYOuaXypaWKQfIuwwoGSZgfLsu/XAtI8cGN+h7Cc1A5oLOMhwlIPXuhu48AIvsSBkvtV9wsJRKCyYLfq5lTrQMFd1a262oqBck9K1V0YjQg0iEYYgpS1A9GlXQV5cykwm4A7BzVsxQqo7E+zCegO7Ma7yKgsuOcfKbMBwLC8wvVNYDsANYalEpOAa6zpWjTeMKGwEwC1CiQewJc5EKfgy7GmRAZA4vUVGwE2dPM/g0xuAInE/yG5aZ8ISxWGfYigUVbdyBElTHh2uCwGdfCkOLGgQVBh3Ewp+/QK4CDlR5Ws/Zf7yhCf8pH7vinWAvoVCQ6zz0NX5V/6GkAVV+2/5qsJ/gU8bsxpM8IeAQAAAABJRU5ErkJggg=="}}});return S.add("",{vertex:"attribute vec3 aPosition;uniform mat4 uProjectionMatrix;uniform mat4 uModelMatrix;uniform mat4 uViewMatrix;void main(){gl_Position=uProjectionMatrix*uModelMatrix*uViewMatrix*vec4(aPosition,1.);}",fragment:"precision highp float;uniform vec2 t,y;uniform vec3 R,S,z;uniform vec4 v[64*2];uniform float A,B,m,C,D,E,F,G,H,I;uniform sampler2D J;float K=1./m;mat3 L(float a,float b){float c=cos(a),d=cos(b),e=sin(a),f=sin(b);return mat3(d,f*e,-f*c,0.,c,e,f,d*-e,d*c);}vec3 w(vec3 c,out float x){c=c.xzy;float p=max(2.,floor(log2(2.236068*m*3.141593)*.72021));vec2 g=floor(pow(1.618034,p)/2.236068*vec2(1.,1.618034)+.5),d=fract((g+1.)*.618034)*6.283185-3.883222,e=-2.*g,f=vec2(atan(c.y,c.x),c.z-1.),q=floor(vec2(e.y*f.x-d.y*(f.y*m+1.),-e.x*f.x+d.x*(f.y*m+1.))/(d.x*e.y-e.x*d.y));float n=3.141593;vec3 r;for(float h=0.;h<4.;h+=1.){vec2 s=vec2(mod(h,2.),floor(h*.5));float j=dot(g,q+s);if(j>m)continue;float a=j,b=0.;if(a>=524288.)a-=524288.,b+=.803894;if(a>=262144.)a-=262144.,b+=.901947;if(a>=131072.)a-=131072.,b+=.950973;if(a>=65536.)a-=65536.,b+=.475487;if(a>=32768.)a-=32768.,b+=.737743;if(a>=16384.)a-=16384.,b+=.868872;if(a>=8192.)a-=8192.,b+=.934436;if(a>=4096.)a-=4096.,b+=.467218;if(a>=2048.)a-=2048.,b+=.733609;if(a>=1024.)a-=1024.,b+=.866804;if(a>=512.)a-=512.,b+=.433402;if(a>=256.)a-=256.,b+=.216701;if(a>=128.)a-=128.,b+=.108351;if(a>=64.)a-=64.,b+=.554175;if(a>=32.)a-=32.,b+=.777088;if(a>=16.)a-=16.,b+=.888544;if(a>=8.)a-=8.,b+=.944272;if(a>=4.)a-=4.,b+=.472136;if(a>=2.)a-=2.,b+=.236068;if(a>=1.)a-=1.,b+=.618034;float k=fract(b)*6.283185,i=1.-2.*j*K,l=sqrt(1.-i*i);vec3 o=vec3(cos(k)*l,sin(k)*l,i);float u=length(c-o);if(u<n)n=u,r=o;}x=n;return r.xzy;}void main(){vec2 b=(gl_FragCoord.xy/t*2.-1.)/C-y*vec2(1.,-1.)/t;b.x*=t.x/t.y;float c=dot(b,b);vec4 x=vec4(0.);float n=0.;if(c<=.64){for(int g=0;g<2;g++){vec4 e=vec4(0.);float a;vec3 u=vec3(0.,0.,1.),h=normalize(vec3(b,sqrt(.64-c)));h.z*=g>0?-1.:1.,u.z*=g>0?-1.:1.;vec3 i=h*L(B,A),j=w(i,a);float o=asin(j.y),k=acos(-j.x/cos(o));k=j.z<0.?-k:k;float M=max(texture2D(J,vec2(k*.5/3.141593,-(o/3.141593+.5))).x,I),N=smoothstep(1.3e-2,0.,a),l=dot(h,u),p=pow(l,F)*E,q=M*N*p,T=mix((1.-q)*pow(l,.4),q,G)+.1;e+=vec4(R*T,1.);int U=int(D);float V=0.;for(int d=0;d<64;d++){if(d>=U)break;vec4 r=v[d*2],O=v[d*2+1];vec3 s=r.xyz,P=s-i;float f=r.w;if(dot(P,P)>f*f*4.)continue;vec3 W=w(s,a);a=length(W-i);if(a<f)V+=smoothstep(f*.5,0.,a),e.xyz=O.w>.5?mix(e.xyz,O.xyz,smoothstep(f*.5,0.,a)*p):mix(e.xyz,S,smoothstep(f*.5,0.,a)*p);}e.xyz+=pow(1.-l,4.)*z,x+=e*(1.+(g>0?-H:H))/2.;}n=pow(dot(normalize(vec3(-b,sqrt(1.-c))),vec3(0.,0.,1.)),4.)*smoothstep(0.,1.,.2/(c-.64));}else{float Q=sqrt(.2/(c-.64));n=smoothstep(.5,1.,Q/(Q+1.));}gl_FragColor=x+vec4(n*z,n);}",uniforms:{t:{type:"vec2",value:[o.width,o.height]},A:_("float",M),B:_("float",c),m:_("float",R),E:_("float",O),I:_("float",m),R:_("vec3",N),S:_("vec3",s),F:_("float",P),z:_("vec3",G),G:_("float",f),v:{type:"vec4",value:U(o[r])},D:{type:"float",value:o[r].length},y:_("vec2",u,[0,0]),C:_("float",l,1),H:_("float",x,1)},mode:4,geometry:{vertices:[{x:-100,y:100,z:0},{x:-100,y:-100,z:0},{x:100,y:100,z:0},{x:100,y:-100,z:0},{x:-100,y:-100,z:0},{x:100,y:100,z:0}]},onRender:({uniforms:e})=>{let t={};if(o.onRender){t=o.onRender(t)||t;for(let n in I)t[n]!==void 0&&(e[I[n]].value=t[n]);t[r]!==void 0&&(e["v"].value=U(t[r]),e["D"].value=t[r].length),t.width&&t.height&&(e["t"].value=[t.width,t.height])}}}),S};window.__CobeCreateGlobe=p;
 
   </script>
 
@@ -9746,7 +9925,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         width:size||140,height:size||140,
         phi:phi,theta:theta,
         dark:tc.dark,diffuse:1.6,
-        mapSamples:9000,mapBrightness:tc.mapBrightness,
+        mapSamples:Math.max(16000,Math.round((size||140)*(size||140)/7)),mapBrightness:tc.mapBrightness,
         baseColor:tc.baseColor,
         glowColor:tc.glowColor,
         // 【修复】cobe 的 markerColor uniform 未传值时为 undefined，
@@ -9756,6 +9935,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         onRender:(state)=>{
           checkDrift();                            // 每帧校验几何漂移，杜绝过期尺寸/偏移
           state.width=size;state.height=size;
+          // 【环形断层修复】格点密度与球面面积成正比、每帧自适应：
+          // 9000 个固定格点在球体剪影边缘被透视径向压缩成切向同心弧，形成环状空白。
+          // 提高密度（随 size 平方增长）让边缘弧行压缩到亚像素、肉眼几乎不可见。
+          state.mapSamples=Math.max(16000,Math.round(size*size/7));
           // 主题切换即时生效：每帧按当前 body 主题覆盖配色与点阵亮度
           const cur=themeColors();
           state.dark=cur.dark;state.baseColor=cur.baseColor;state.glowColor=cur.glowColor;
@@ -14523,6 +14706,181 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     requestAnimationFrame(draw);
   })();
 
+</script>
+
+<script>
+/* =========================================================
+ * 建议反馈功能（自包含脚本，不依赖主应用闭包内的变量）
+ * 后端：Supabase 表 public.user_feedback + Edge Function `feedback`
+ * ========================================================= */
+(function(){
+  'use strict';
+  const APP_VERSION='1.3.0';
+  const MIN_CONTENT=10, MAX_CONTENT=1000;
+
+  const $id=id=>document.getElementById(id);
+  const overlay=$id('feedbackOverlay'), closeBtn=$id('feedbackClose'), cancelBtn=$id('fbCancel'), submitBtn=$id('fbSubmit');
+  const btn=$id('feedbackBtn');
+  const typeTagsEl=$id('fbTypeTags'), categoryEl=$id('fbCategory'), contentEl=$id('fbContent'), countEl=$id('fbCount');
+  const starsEl=$id('fbStars'), ratHintEl=$id('fbRatHint');
+  
+  const contactEl=$id('fbContact'), allowWrap=$id('fbAllowWrap'), allowEl=$id('fbAllow');
+  const resultEl=$id('fbResult');
+
+  // Supabase 客户端（与主应用共用同一公开配置；仅用于带鉴权调用 Edge Function）
+  const cfg=window.TRAVEL_SUPABASE_CONFIG||{};
+  const client=(window.supabase&&cfg.url&&cfg.publishableKey)
+    ? window.supabase.createClient(cfg.url,cfg.publishableKey,{auth:{persistSession:true,autoRefreshToken:true}})
+    : null;
+
+  const state={ types:new Set(), rating:0, submitting:false, loggedIn:false };
+
+  function detectBrowser(){
+    const ua=navigator.userAgent||'';
+    if(/Edg\//.test(ua)) return 'Edge';
+    if(/OPR\/|Opera/.test(ua)) return 'Opera';
+    if(/Firefox\//.test(ua)) return 'Firefox';
+    if(/Chrome\//.test(ua)) return 'Chrome';
+    if(/Safari\//.test(ua)) return 'Safari';
+    return 'Other';
+  }
+
+  function setResult(kind, html){
+    resultEl.className='fb-result '+(kind?'show '+kind:'show');
+    resultEl.innerHTML=html;
+  }
+  function clearResult(){ resultEl.className='fb-result'; resultEl.innerHTML=''; resultEl.hidden=true; }
+  function showResult(kind, html){ resultEl.hidden=false; resultEl.className='fb-result show '+(kind||''); resultEl.innerHTML=html; }
+
+  function updateCount(){
+    const n=contentEl.value.length;
+    countEl.textContent=n+' / '+MAX_CONTENT;
+    countEl.classList.toggle('warn', n>0 && n<MIN_CONTENT);
+  }
+
+  function renderStars(){
+    starsEl.querySelectorAll('.fb-star').forEach(s=>{
+      const on=parseInt(s.dataset.val)<=state.rating;
+      s.classList.toggle('active', on);
+      s.setAttribute('aria-checked', String(on));
+    });
+    ratHintEl.textContent = state.rating>0
+      ? '已选 '+state.rating+' 分 · 1 = 很难使用 · 5 = 很满意'
+      : '1 = 很难使用 · 5 = 很满意';
+  }
+
+  function openFeedback(){
+    clearResult();
+    state.types.clear();
+    state.rating=0;
+    contentEl.value=''; updateCount();
+    categoryEl.value='';
+    contactEl.value='';
+    allowEl.checked=false;
+    typeTagsEl.querySelectorAll('.fb-tag').forEach(t=>t.classList.remove('active'));
+    renderStars();
+    // 登录态决定是否显示「允许通过账号邮箱联系我」
+    state.loggedIn=false;
+    allowWrap.hidden=true;
+    if(client){
+      client.auth.getSession().then(({data})=>{
+        state.loggedIn=!!(data&&data.session);
+        allowWrap.hidden=!state.loggedIn;
+      }).catch(()=>{ allowWrap.hidden=true; });
+    }
+    overlay.classList.add('show');
+    document.body.classList.add('modal-open');
+    setTimeout(()=>contentEl.focus(),50);
+  }
+  function closeFeedback(){
+    overlay.classList.remove('show');
+    document.body.classList.remove('modal-open');
+  }
+
+  // --- 事件绑定 ---
+  btn.addEventListener('click', openFeedback);
+  closeBtn.addEventListener('click', closeFeedback);
+  cancelBtn.addEventListener('click', closeFeedback);
+  overlay.addEventListener('click', e=>{ if(e.target===overlay) closeFeedback(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape'&&overlay.classList.contains('show')) closeFeedback(); });
+
+  typeTagsEl.addEventListener('click', e=>{
+    const t=e.target.closest('.fb-tag'); if(!t) return;
+    const k=t.dataset.key;
+    if(state.types.has(k)){ state.types.delete(k); t.classList.remove('active'); }
+    else{ state.types.add(k); t.classList.add('active'); }
+  });
+
+  contentEl.addEventListener('input', updateCount);
+
+  starsEl.addEventListener('click', e=>{
+    const s=e.target.closest('.fb-star'); if(!s) return;
+    const v=parseInt(s.dataset.val);
+    state.rating=(state.rating===v)?0:v;
+    renderStars();
+  });
+
+  
+
+  async function submit(){
+    if(state.submitting) return;
+    const content=contentEl.value.trim();
+    if(content.length<MIN_CONTENT){
+      setResult('error','建议至少需要 '+MIN_CONTENT+' 个字，再写得具体一点会更有帮助。');
+      contentEl.focus();
+      return;
+    }
+    if(!client){
+      setResult('error','云端暂不可用，请稍后再试。你的内容已保留。');
+      return;
+    }
+    state.submitting=true;
+    submitBtn.disabled=true;
+    submitBtn.textContent='正在提交…';
+    clearResult();
+
+    const payload={
+      feedbackType:Array.from(state.types),
+      category:categoryEl.value||'其他',
+      content:content.slice(0,MAX_CONTENT),
+      rating:state.rating,
+      page:'china-map',
+      route:location.pathname,
+      module:'china-map',
+      viewport:(window.innerWidth||0)+'\u00d7'+(window.innerHeight||0),
+      browser:detectBrowser(),
+      appVersion:APP_VERSION,
+      contact:contactEl.value.trim(),
+      contactAllowed:state.loggedIn&&allowEl.checked,
+    };
+
+    try{
+      const {data,error}=await client.functions.invoke('feedback',{body:payload});
+      if(error){ throw error; }
+      if(data&&data.error){ throw new Error(data.error); }
+      // 成功
+      state.submitting=false;
+      submitBtn.disabled=false;
+      submitBtn.textContent='提交建议';
+      showResult('success','<span style="font-weight:800;">\u2713 谢谢你的建议</span><br>我会认真看看。');
+      setTimeout(()=>{
+        closeFeedback();
+        // 静默清空，避免下次打开残留成功态
+        setTimeout(()=>{ clearResult(); submitBtn.textContent='提交建议'; },250);
+      },1600);
+    }catch(err){
+      state.submitting=false;
+      submitBtn.disabled=false;
+      submitBtn.textContent='提交建议';
+      const msg=(err&&err.message)||'网络异常';
+      const friendly=/Failed to fetch|NetworkError|Failed to send a request/.test(msg)?'无法连接云端，请检查网络。':msg;
+      showResult('error','提交失败，请稍后再试。<span style="color:#cbd5e1;">'+friendly+'</span><button class="fb-result-retry" type="button" id="fbRetryBtn">重新提交</button>');
+      const retry=$id('fbRetryBtn');
+      if(retry) retry.addEventListener('click', submit);
+    }
+  }
+  submitBtn.addEventListener('click', submit);
+})();
 </script>
 </body>
 </html>

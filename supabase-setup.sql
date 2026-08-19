@@ -140,3 +140,32 @@ create policy "Users can delete their own city review"
 on public.city_reviews for delete
 to authenticated
 using ((select auth.uid()) = user_id);
+
+-- ===== 用户建议与反馈 =====
+-- 说明：「建议反馈」入口由浏览器通过 Edge Function `feedback` 写入，
+-- 该函数使用 service_role 密钥插入（绕过 RLS），因此本表无需任何 RLS 策略，
+-- 且撤销 anon/authenticated 的一切权限，客户端无法直接读取反馈（保护反馈隐私）。
+create table if not exists public.user_feedback (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete set null,
+  feedback_type text[] not null default '{}'::text[],
+  category text not null default 'other',
+  content text not null,
+  rating smallint not null default 0,
+  screenshots jsonb not null default '[]'::jsonb,
+  page text not null default '',
+  route text not null default '',
+  module text not null default '',
+  viewport text not null default '',
+  browser text not null default '',
+  app_version text not null default '',
+  contact_email text not null default '',
+  contact_allowed boolean not null default false,
+  status text not null default 'new',
+  created_at timestamptz not null default now()
+);
+
+alter table public.user_feedback enable row level security;
+
+revoke all on public.user_feedback from anon;
+revoke all on public.user_feedback from authenticated;
