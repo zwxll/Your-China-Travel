@@ -9641,42 +9641,80 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     let dragging=false,lastX=0,lastY=0;
 
     let chk=null;   // 几何快照：供每帧漂移校验比对
-    function measure(){
+    let bufSynced=0; // 画布缓冲已同步到的尺寸（见 syncBuffer）
+    // 【根因修复·偶发裁切】cobe/phenomenon 只在构造时和 window resize 时才把画布缓冲
+    // （canvas.width/height）同步为 clientWidth×DPR；measure() 只改 wrap 的 CSS 尺寸，
+    // 缓冲不会跟着变。本页唯一可靠的 resize 派发点是启动屏动画结束那一刻，若此后布局
+    // 再变（字体晚加载/面板尺寸稳定），最后一次 measure 的结果就"配"不上旧缓冲：
+    // 球体按新尺寸的 t 值绘制却被旧缓冲裁边，旧缓冲再被 CSS 拉伸到新 wrap 尺寸，
+    // 观感即"球变大+边缘被切"（多刷新几次时事件时序一变就会复现）。
+    // 此处每当 size 变化立即强制 phenomenon.resize() 重建缓冲与 viewport，竞态归零。
+    function syncBuffer(){
+      if(!globe||!globe.resize||bufSynced===size)return;
+      if(canvas.clientWidth<2)return;   // 隐藏/未布局时跳过，避免产生 0×0 缓冲
+      bufSynced=size;
+      globe.resize();                    // 按当前 clientWidth×DPR 重建缓冲+投影矩阵
+    }
+    function intersectionRect(){
+      // 可见区域 = scrollArea 与外层裁剪卡片（overflow:hidden）及视口的交集
       const r=scrollArea.getBoundingClientRect();
-      // 可见区域 = scrollArea 与外层裁剪卡片（overflow:hidden）及视口的交集。
-      // 直接用 scrollArea 自身尺寸在面板布局溢出/收缩时会按"不可见区域"居中，导致球体右下被裁。
       let L=r.left,T=r.top,R=r.right,B=r.bottom;
-      let c=null;
       if(clipCard){
-        c=clipCard.getBoundingClientRect();
+        const c=clipCard.getBoundingClientRect();
         L=Math.max(L,c.left);T=Math.max(T,c.top);R=Math.min(R,c.right);B=Math.min(B,c.bottom);
       }
       L=Math.max(L,0);T=Math.max(T,0);
       R=Math.min(R,window.innerWidth||R);B=Math.min(B,window.innerHeight||B);
-      const vw=Math.max(2,R-L),vh=Math.max(2,B-T);
-      // 再用 clientWidth/Height（内容盒，不含边框）兜底收紧
-      const cw=Math.min(vw,scrollArea.clientWidth||vw,c?c.clientWidth||vw:vw);
-      const ch2=Math.min(vh,scrollArea.clientHeight||vh,c?c.clientHeight||vh:vh);
-      // 地球直径 = 可见区短边×0.85（适当缩小，四周留呼吸空间）
-      size=Math.max(2,Math.round(Math.min(cw,ch2)*0.85));
-      wrap.style.width=wrap.style.height=size+'px';
-      // 按可见区中心定位（相对 scrollArea 内容原点；预览态滚动已归零）
-      wrap.style.left=(L+vw/2-r.left)+'px';
-      wrap.style.top=(T+vh/2-r.top)+'px';
-      wrap.style.transform='translate(-50%,-50%)';
-      chk={sl:r.left,st:r.top,sw:r.width,sh:r.height,iw:window.innerWidth||0,ih:window.innerHeight||0,
-           cl:c?c.left:0,ct:c?c.top:0,cw:c?c.width:0,cch:c?c.height:0};
+      return {r,L,T,vw:Math.max(2,R-L),vh:Math.max(2,B-T)};
     }
-    // 【修复】每帧几何漂移校验：字体晚加载、面板入场动画（transform 变化不触发 ResizeObserver）、
-    // 移动端地址栏收缩（改变 visualViewport 而非 window resize）等布局变化会让 measure() 的
-    // 结果过期——球体按旧几何放大/偏移导致间歇性裁切。预览态每帧比对快照，漂移立即重测。
+    function measure(){
+      const {r,L,T,vw,vh}=intersectionRect();
+      // 再用 clientWidth/Height（内容盒，不含边框）兜底收紧
+      const cw=Math.min(vw,scrollArea.clientWidth||vw);
+      const ch2=Math.min(vh,scrollArea.clientHeight||vh);
+      // 地球直径 = 可见区短边×0.85（适当缩小，四周留呼吸空间）
+      // 【补偿】cobe 着色器将实心球体画在画布 80% 处（|b|≤0.8，直径占画布 80%），
+      // 画布=0.85 时可见球体仅 0.85×0.8≈0.68，观感偏小。画布按 0.85/0.8 放大，
+      // 实心球体实际呈现 0.85（外圈辉光溢出 <1%，被画布裁掉肉眼不可察）
+      size=Math.max(2,Math.round(Math.min(cw,ch2)*0.85/0.8));
+      wrap.style.width=wrap.style.height=size+'px';
+      // 初始按可见区中心写入，随后闭环校正（见下）
+      let cx=L+vw/2-r.left,cy=T+vh/2-r.top;
+      wrap.style.left=cx+'px';wrap.style.top=cy+'px';
+      wrap.style.transform='translate(-50%,-50%)';
+      // 【闭环校正】写入后立即读回 wrap 的真实视觉矩形，与目标交集中心比对；
+      // 存在偏差（滚动偏移/边框/包含块坐标基准等一切干扰）直接按偏差平移，一步收敛。
+      // 不再依赖任何坐标系假设，从根本上杜绝"开环计算对了但视觉偏了"的间歇性裁切。
+      const w=wrap.getBoundingClientRect();
+      const dx=(L+vw/2)-(w.left+w.right)/2;
+      const dy=(T+vh/2)-(w.top+w.bottom)/2;
+      if(Math.abs(dx)>0.5||Math.abs(dy)>0.5){
+        wrap.style.left=(cx+dx)+'px';wrap.style.top=(cy+dy)+'px';
+      }
+      const c=clipCard?clipCard.getBoundingClientRect():null;
+      chk={sl:r.left,st:r.top,sw:r.width,sh:r.height,iw:window.innerWidth||0,ih:window.innerHeight||0,
+           sx:scrollArea.scrollLeft||0,sy:scrollArea.scrollTop||0,
+           cl:c?c.left:0,ct:c?c.top:0,cw:c?c.width:0,cch:c?c.height:0,
+           gs:size};
+      syncBuffer();  // CSS 尺寸落定后立即重建画布缓冲，杜绝缓冲过期
+    }
+    // 【修复】每帧几何漂移校验：布局变化（字体晚加载/入场动画/地址栏收缩）或滚动偏移
+    // 会让 measure() 的结果过期。每帧比对快照（含滚动偏移与球体尺寸），漂移立即重测。
     function checkDrift(){
       if(!chk)return;
       const r=scrollArea.getBoundingClientRect();
       const c=clipCard?clipCard.getBoundingClientRect():null;
       if(r.left!==chk.sl||r.top!==chk.st||r.width!==chk.sw||r.height!==chk.sh||
          (window.innerWidth||0)!==chk.iw||(window.innerHeight||0)!==chk.ih||
-         (c&&(c.left!==chk.cl||c.top!==chk.ct||c.width!==chk.cw||c.height!==chk.cch))) measure();
+         (scrollArea.scrollLeft||0)!==chk.sx||(scrollArea.scrollTop||0)!==chk.sy||
+         size!==chk.gs||
+         (c&&(c.left!==chk.cl||c.top!==chk.ct||c.width!==chk.cw||c.height!==chk.cch))){measure();return;}
+      // 终极闭环：wrap 自身视觉中心必须落在交集中心（1px 容差）。
+      // 覆盖一切输入比对盲区（CSS 过渡中、意外样式写入等），偏移当帧即被纠正。
+      const w=wrap.getBoundingClientRect();
+      const tx=(Math.max(r.left,c?c.left:r.left,0)+Math.min(r.right,c?c.right:r.right,window.innerWidth||r.right))/2;
+      const ty=(Math.max(r.top,c?c.top:r.top,0)+Math.min(r.bottom,c?c.bottom:r.bottom,window.innerHeight||r.bottom))/2;
+      if(Math.abs((w.left+w.right)/2-tx)>1||Math.abs((w.top+w.bottom)/2-ty)>1){measure();return;}
     }
     // 主题自适应配色：深色主题=近黑海洋+青蓝点阵；浅色主题=清透亮蓝球体+高亮点阵
     // （cobe 着色器中球身颜色=baseColor×光照，glowColor 控边缘辉光，mapBrightness 控点阵亮度；
