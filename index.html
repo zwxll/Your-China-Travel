@@ -7883,6 +7883,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     if(text==='继续同步') return '正在同步最新内容';
     if(text==='待同步') return '正在等待同步';
     if(/^同步 \d+\/\d+$/.test(text)) return '正在上传照片 '+text.slice(3);
+    if(/^下载 \d+\/\d+$/.test(text)) return '正在下载照片 '+text.slice(3);
     if(text==='已同步') return '同步完成';
     return text;
   }
@@ -8498,12 +8499,24 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     cloudSuppressDirty=true;
     try{
       clearTimeout(cloudSyncTimer);cloudSyncTimer=null;
+      const requiredPaths=collectSnapshotPaths(snapshot);
+      const totalImages=requiredPaths.size;
       const downloadedImages=await getLocalCloudImageCache();
+      let completedImages=[...requiredPaths].filter(p=>downloadedImages.has(p)).length;
+      const refreshProgress=()=>{
+        if(totalImages>0) setSyncStatus('下载 '+completedImages+'/'+totalImages,'syncing');
+      };
       async function cachedCloudImage(path){
         if(!path) return '';
-        if(!downloadedImages.has(path)) downloadedImages.set(path,downloadCloudImage(path));
+        if(!downloadedImages.has(path)){
+          downloadedImages.set(path,downloadCloudImage(path).then(url=>{
+            completedImages+=1;refreshProgress();
+            return url;
+          }));
+        }
         return downloadedImages.get(path);
       }
+      refreshProgress();
       const preparedPhotos=[];
       for(const remote of (snapshot.photos||[])){
         const dataUrl=await cachedCloudImage(remote.storagePath);
