@@ -169,3 +169,54 @@ alter table public.user_feedback enable row level security;
 
 revoke all on public.user_feedback from anon;
 revoke all on public.user_feedback from authenticated;
+
+-- ===== 个人主页 · 公开资料（公开我的资料信息）=====
+-- 每个用户一行个人公开资料。开启「公开我的资料信息」后写入 is_public=true；
+-- 他人（含游客）点击点评头像时据此读取该用户的公开昵称/头像/家乡资料。
+-- 邮箱、照片、账号登录信息不进入此表，永不对外公开。
+create table if not exists public.public_profiles (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  nickname text not null default '旅行者',
+  avatar_url text not null default '',
+  is_public boolean not null default false,
+  hometown_city_name text not null default '',
+  hometown_description text not null default '',
+  birth_month text not null default '',
+  tags jsonb not null default '[]'::jsonb,
+  attractions jsonb not null default '[]'::jsonb,
+  updated_at timestamptz not null default now()
+);
+
+alter table public.public_profiles enable row level security;
+
+revoke all on public.public_profiles from anon;
+grant select on public.public_profiles to anon;
+grant select, insert, update, delete on public.public_profiles to authenticated;
+
+-- 所有人可读取「已公开」的个人资料（未公开的仅本人可见）
+drop policy if exists "Anyone can read public profiles" on public.public_profiles;
+create policy "Anyone can read public profiles"
+on public.public_profiles for select
+to anon, authenticated
+using (is_public = true or (select auth.uid()) = user_id);
+
+-- 用户只能创建/更新自己的公开资料
+drop policy if exists "Users can create their own public profile" on public.public_profiles;
+create policy "Users can create their own public profile"
+on public.public_profiles for insert
+to authenticated
+with check ((select auth.uid()) = user_id);
+
+drop policy if exists "Users can update their own public profile" on public.public_profiles;
+create policy "Users can update their own public profile"
+on public.public_profiles for update
+to authenticated
+using ((select auth.uid()) = user_id)
+with check ((select auth.uid()) = user_id);
+
+-- 用户只能删除自己的公开资料
+drop policy if exists "Users can delete their own public profile" on public.public_profiles;
+create policy "Users can delete their own public profile"
+on public.public_profiles for delete
+to authenticated
+using ((select auth.uid()) = user_id);

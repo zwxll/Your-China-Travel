@@ -4373,6 +4373,83 @@
     background:rgba(0,0,0,.4);padding:6px 16px;border-radius:999px;
     backdrop-filter:blur(8px);
   }
+
+  /* ===== 个人主页 / 公开资料页（复用账号弹窗视觉，深色青蓝档案风） ===== */
+  .pp-overlay{
+    position:fixed;inset:0;z-index:10040;display:none;place-items:center;padding:20px;
+    background:rgba(0,0,0,.76);backdrop-filter:blur(18px) saturate(120%);
+    -webkit-backdrop-filter:blur(18px) saturate(120%);
+  }
+  .pp-overlay.show{display:grid;}
+  .pp-panel{
+    width:min(460px,100%);border:1px solid rgba(125,211,252,.22);border-radius:var(--radius);
+    background:linear-gradient(145deg,rgba(12,19,28,.98),rgba(5,8,12,.98));
+    box-shadow:0 28px 90px rgba(0,0,0,.72),inset 0 1px 0 rgba(255,255,255,.07);
+    max-height:calc(100dvh - 40px);display:flex;flex-direction:column;overflow:hidden;
+  }
+  .pp-head{position:relative;padding:24px 24px 16px;border-bottom:1px solid rgba(255,255,255,.07);}
+  .pp-kicker{margin:0 0 7px;color:var(--accent-l);font:700 11px/1.2 'Inter',sans-serif;letter-spacing:1.6px;text-transform:uppercase;}
+  .pp-head h2{margin:0;color:var(--ink);font:750 22px/1.2 'Inter',sans-serif;letter-spacing:-.4px;}
+  .pp-close{position:absolute;right:14px;top:14px;width:32px;height:32px;border:0;border-radius:var(--radius-xs);background:rgba(255,255,255,.06);color:#cbd5e1;font-size:20px;cursor:pointer;line-height:1;}
+  .pp-close:hover{background:rgba(255,255,255,.1);color:#fff;}
+  .pp-scroll{padding:18px 24px 22px;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+  .pp-block{display:grid;gap:12px;}
+  .pp-block + .pp-block{margin-top:20px;}
+  .pp-profile-card{display:flex;gap:16px;align-items:center;padding:16px;border:1px solid rgba(148,163,184,.18);border-radius:var(--radius-sm);background:rgba(255,255,255,.025);}
+  .pp-avatar{width:64px;height:64px;flex:0 0 auto;border-radius:50%;overflow:hidden;border:2px solid rgba(56,189,248,.32);background:#0d1520;display:grid;place-items:center;}
+  .pp-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
+  .pp-avatar .pp-avatar-letter{font-size:26px;font-weight:700;color:#38bdf8;line-height:1;}
+  .pp-profile-meta{display:grid;gap:5px;min-width:0;}
+  .pp-name{color:#f8fafc;font:700 18px/1.25 'Inter',sans-serif;overflow-wrap:anywhere;}
+  .pp-email{color:#94a3b8;font-size:12.5px;line-height:1.5;overflow-wrap:anywhere;}
+  .pp-section-title{display:flex;align-items:center;gap:8px;font:700 11px/1.2 'Inter',sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#94a3b8;margin:0;}
+  .pp-section-title .pp-home-chip{font-weight:600;letter-spacing:0;text-transform:none;color:#fbbf24;font-size:12px;}
+  .pp-section-title .pp-home-chip.off{color:#7f8da0;}
+  .pp-rows{display:grid;gap:10px;}
+  .pp-row{display:grid;gap:5px;padding:11px 13px;border:1px solid rgba(148,163,184,.14);border-radius:var(--radius-sm);background:rgba(255,255,255,.02);}
+  .pp-row-label{color:#7f8da0;font-size:11.5px;font-weight:600;}
+  .pp-row-value{color:#dbeafe;font-size:13.5px;line-height:1.6;overflow-wrap:anywhere;}
+  .pp-row-value.empty{color:#64748b;}
+  .pp-tags{display:flex;flex-wrap:wrap;gap:6px;}
+  .pp-tag{font-size:12px;padding:4px 10px;border-radius:999px;border:1px solid rgba(56,189,248,.28);background:rgba(56,189,248,.09);color:#bae6fd;}
+  .pp-chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .pp-chip{font-size:12.5px;padding:5px 11px;border-radius:var(--radius-sm);border:1px solid rgba(148,163,184,.2);background:rgba(255,255,255,.035);color:#dbeafe;}
+  .pp-public-block{padding-top:16px;border-top:1px solid rgba(255,255,255,.08);}
+  .pp-switch-row{display:flex;align-items:center;gap:14px;padding:13px;border:1px solid rgba(148,163,184,.18);border-radius:var(--radius-sm);background:rgba(255,255,255,.025);cursor:pointer;}
+  .pp-switch-copy{flex:1;display:grid;gap:4px;min-width:0;}
+  .pp-switch-title{color:#e0f7ff;font:700 14px/1.3 'Inter',sans-serif;}
+  .pp-switch-desc{color:#8a99ac;font-size:12px;line-height:1.6;}
+  .pp-switch{position:relative;flex:0 0 auto;width:46px;height:26px;border-radius:999px;background:rgba(148,163,184,.28);transition:background .2s ease,box-shadow .2s ease;}
+  .pp-switch-thumb{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#e6edf4;transition:transform .2s ease;}
+  .pp-switch[aria-checked="true"]{background:rgba(56,189,248,.85);box-shadow:0 0 16px rgba(56,189,248,.45);}
+  .pp-switch[aria-checked="true"] .pp-switch-thumb{transform:translateX(20px);}
+  .pp-empty{display:grid;place-items:center;gap:12px;padding:36px 20px;text-align:center;}
+  .pp-empty-icon{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:24px;border:1px solid rgba(148,163,184,.22);background:rgba(255,255,255,.03);}
+  .pp-empty-title{color:#e2e8f0;font:700 15px/1.4 'Inter',sans-serif;}
+  .pp-empty-sub{color:#8492a6;font-size:12.5px;line-height:1.6;}
+  .pp-foot{display:flex;gap:10px;padding:14px 24px 20px;border-top:1px solid rgba(255,255,255,.07);}
+  .pp-foot-btn{flex:1;height:42px;border-radius:var(--radius-pill);border:1px solid rgba(148,163,184,.25);background:rgba(255,255,255,.04);color:#dbeafe;font-weight:700;cursor:pointer;font-size:13.5px;}
+  .pp-foot-btn:hover{background:rgba(255,255,255,.08);}
+  .pp-foot-btn.primary{border-color:rgba(56,189,248,.45);background:rgba(56,189,248,.12);color:#e0f7ff;}
+  .pp-foot-btn.primary:hover{background:rgba(56,189,248,.2);}
+  /* 点评卡片头像/昵称可点击查看公开资料 */
+  .review-card-avatar,.review-card-user-name{cursor:pointer;}
+  .review-card-avatar:hover{box-shadow:0 0 0 2px rgba(56,189,248,.45);}
+  body.light-theme .review-card-avatar:hover{box-shadow:0 0 0 2px rgba(79,70,229,.45);}
+  body.light-theme .pp-overlay{background:rgba(238,242,255,.55);}
+  body.light-theme .pp-panel{background:linear-gradient(145deg,rgba(255,255,255,.99),rgba(245,247,255,.99));border-color:rgba(79,70,229,.22);}
+  body.light-theme .pp-head h2,body.light-theme .pp-name,body.light-theme .pp-row-value,body.light-theme .pp-switch-title{color:#1e293b;}
+  body.light-theme .pp-email,body.light-theme .pp-kicker,body.light-theme .pp-section-title{color:#64748b;}
+  body.light-theme .pp-row{background:rgba(15,23,42,.03);border-color:rgba(15,23,42,.1);}
+  body.light-theme .pp-chip{background:rgba(79,70,229,.06);border-color:rgba(79,70,229,.2);color:#4f46e5;}
+  body.light-theme .pp-tag{background:rgba(79,70,229,.08);border-color:rgba(79,70,229,.25);color:#4f46e5;}
+  body.light-theme .pp-empty-title{color:#1e293b;}
+  body.light-theme .pp-empty-sub{color:#64748b;}
+  @media(max-width:520px){
+    .pp-head{padding:20px 18px 14px;}
+    .pp-scroll{padding:15px 18px 18px;}
+    .pp-foot{padding:12px 18px 16px;}
+  }
 </style>
 </head>
 <body>
@@ -4449,6 +4526,12 @@
           <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 3.1 3.4 10.6v9.8a1 1 0 0 0 1 1h5.2v-5.6h4.8v5.6h5.2a1 1 0 0 0 1-1v-9.8L12 3.1z"/></svg>
         </span>
         <span class="fp-btn-label">我的家乡</span>
+      </button>
+      <button class="theme-toggle-btn footprint-btn" id="profileBtn" type="button" aria-label="查看个人主页" title="个人主页：查看并公开你的个人资料">
+        <span class="fp-btn-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        </span>
+        <span class="fp-btn-label">个人主页</span>
       </button>
       <button class="theme-toggle-btn" id="themeToggleBtn" type="button" aria-label="切换深色/浅色主题">
         <span class="theme-toggle-icon" id="themeToggleIcon" aria-hidden="true"></span>
@@ -5123,6 +5206,37 @@
       </div>
 
       <div class="fb-result" id="fbResult" hidden role="status" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <!-- ===== 个人主页（自己查看：可见邮箱 + 可公开设置） ===== -->
+  <div class="pp-overlay" id="profileOverlay" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+    <section class="pp-panel">
+      <div class="pp-head">
+        <p class="pp-kicker">Travel Profile</p>
+        <h2 id="profileTitle">个人主页</h2>
+        <button class="pp-close" id="profileCloseBtn" type="button" aria-label="关闭">&times;</button>
+      </div>
+      <div class="pp-scroll" id="profileBody"></div>
+      <div class="pp-foot">
+        <button class="pp-foot-btn" id="profileEditBtn" type="button">编辑资料</button>
+        <button class="pp-foot-btn primary" id="profileFootCloseBtn" type="button">关闭</button>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== 公开资料页（他人查看：只读、不含邮箱/照片/编辑） ===== -->
+  <div class="pp-overlay" id="publicProfileOverlay" role="dialog" aria-modal="true" aria-labelledby="publicProfileTitle">
+    <section class="pp-panel">
+      <div class="pp-head">
+        <p class="pp-kicker">Traveller Profile</p>
+        <h2 id="publicProfileTitle">TA 的个人资料</h2>
+        <button class="pp-close" id="publicProfileCloseBtn" type="button" aria-label="关闭">&times;</button>
+      </div>
+      <div class="pp-scroll" id="publicProfileBody"></div>
+      <div class="pp-foot">
+        <button class="pp-foot-btn primary" id="publicProfileFootCloseBtn" type="button">关闭</button>
+      </div>
     </section>
   </div>
 
@@ -8288,7 +8402,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         saveLocalProfileOnly({avatarUrl});
       }catch(e){console.warn('头像上传OSS失败',e);}
     }
-    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,reviews:reviews.map(r=>JSON.parse(JSON.stringify(r))),userProfile:{nickname:profile.nickname,avatarUrl,email:profile.email},savedAt:new Date().toISOString()};
+    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,reviews:reviews.map(r=>JSON.parse(JSON.stringify(r))),userProfile:{nickname:profile.nickname,avatarUrl,email:profile.email,isProfilePublic:!!profile.isProfilePublic},savedAt:new Date().toISOString()};
   }
 
   async function syncToCloud(options){
@@ -11471,24 +11585,32 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
 
   /* ---------- 模态框 ---------- */
+  let hometownEditMode=false; // 家乡模式下出生年月仅一次（隐藏「+ 加一次」与「第X次」计数）
   function collectVisitMonthInputs(){
     return Array.from(monthEntries.querySelectorAll('input[type="month"]')).map(input=>input.value);
   }
   function renderVisitMonthInputs(months){
-    const values=months&&months.length?months:[''];
+    const isHometown=hometownEditMode;
+    // 家乡模式：出生年月仅一次，只渲染第一个值，不显示「第X次」计数与多次条目
+    const values=isHometown
+      ? [(months&&months.length?months[0]:'')]
+      : (months&&months.length?months:['']);
     monthEntries.innerHTML='';
     values.forEach((value,index)=>{
       const row=document.createElement('div');
       row.className='month-entry';
-      const label=document.createElement('span');
-      label.className='month-entry-index';
-      label.textContent='第'+(index+1)+'次';
+      if(!isHometown){
+        const label=document.createElement('span');
+        label.className='month-entry-index';
+        label.textContent='第'+(index+1)+'次';
+        row.appendChild(label);
+      }
       const input=document.createElement('input');
       input.type='month';
       input.value=value||'';
-      input.setAttribute('aria-label','第'+(index+1)+'次游玩年月');
-      row.append(label,input);
-      if(values.length>1){
+      input.setAttribute('aria-label', isHometown?'出生年月':('第'+(index+1)+'次游玩年月'));
+      row.appendChild(input);
+      if(!isHometown && values.length>1){
         const remove=document.createElement('button');
         remove.type='button';
         remove.className='month-remove-btn';
@@ -11522,6 +11644,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     if(hometownBannerEl) hometownBannerEl.style.display=isHometown?'flex':'none';
     const monthPickerLabelEl=document.getElementById('monthPickerLabel');
     if(monthPickerLabelEl) monthPickerLabelEl.textContent=isHometown?'出生年月':'游玩年月';
+    hometownEditMode=isHometown;
+    if(monthAddBtn) monthAddBtn.style.display=isHometown?'none':'';
     const coverLabelEl=document.getElementById('coverLabel');
     if(coverLabelEl) coverLabelEl.textContent=isHometown?'家乡封面':'城市封面';
     const cityDescLabelEl=document.getElementById('cityDescLabel');
@@ -11921,13 +12045,14 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       ?'<div class="review-card-photos">'+r.photos.map(p=>'<img src="'+p+'" alt="照片" />').join('')+'</div>'
       :'';
     const authorName=r.nickname||r.userName||'旅行者';
+    const uid=(r.userId||'').toString();
     const avatarHtml=r.avatarUrl
       ?'<img src="'+r.avatarUrl+'" alt="" />'
       :'<span class="review-card-avatar-letter">'+escapeHtml(authorName[0])+'</span>';
     const rTime=r.publishedAt||r.createdAt||'';
     const timeStr=rTime?formatTimeAgo(rTime):'';
     const needsSync=isMine&&metaUpdatedAt&&reviewUpdatedAt&&metaUpdatedAt>reviewUpdatedAt;
-    return '<div class="review-card'+(isMine?' review-card-mine':'')+'">'+
+    return '<div class="review-card'+(isMine?' review-card-mine':'')+'" data-profile-click="1" data-uid="'+escapeHtml(uid)+'" data-name="'+escapeHtml(authorName)+'" data-mine="'+(isMine?'1':'0')+'">'+
       (needsSync?'<div class="review-sync-banner">你的旅行记录有新的修改 <button class="review-action-btn" data-sync="1">同步最新内容</button></div>':'')+
       '<div class="review-card-user-row">'+
         '<div class="review-card-avatar">'+avatarHtml+'</div>'+
@@ -13914,6 +14039,247 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   start();
   // Canvas Text 效果已停用，改用 Variable Proximity 可变字体效果（Figtree + 动态颜色 + 发光）
   // initFootprintCanvas();
+
+  /* ===== 个人主页 / 公开资料页 ===== */
+  const profileOverlay=$('profileOverlay'), profileBody=$('profileBody');
+  const publicProfileOverlay=$('publicProfileOverlay'), publicProfileBody=$('publicProfileBody');
+  const publicProfileTitle=$('publicProfileTitle');
+
+  function getProfilePublicFlag(){ return !!getUserProfile().isProfilePublic; }
+
+  function syncPublicProfileToCloud(payload){
+    if(!cloudClient||!cloudUser||!cloudUser.id||!payload||!payload.user_id) return;
+    cloudClient.from('public_profiles').upsert(payload,{onConflict:'user_id'}).then(res=>{
+      if(res.error&&!isCloudSetupError(res.error)) console.warn('同步公开资料到云端失败',res.error);
+    }).catch(e=>{ console.warn('同步公开资料到云端失败',e); });
+  }
+
+  async function buildPublicProfilePayload(isPublic){
+    const p=getUserProfile();
+    const home=getFootprintHome();
+    let meta=null;
+    if(home){ try{ meta=await getCityMeta(home.cityKey); }catch(e){ meta=null; } }
+    const tags=meta?(meta.tags||[]).map(t=>typeof t==='string'?t:(t&&t.text)||'').filter(Boolean):[];
+    const attractions=meta?(meta.attractions||[]).map(a=>(a&&a.name)||'').filter(Boolean):[];
+    return {
+      user_id:cloudUser&&cloudUser.id?cloudUser.id:null,
+      nickname:p.nickname||'旅行者',
+      avatar_url:p.avatarUrl||'',
+      is_public:!!isPublic,
+      hometown_city_name:home?home.name:'',
+      hometown_description:meta?(meta.description||''):'',
+      birth_month:meta?(getVisitMonths(meta)[0]||''):'',
+      tags:tags,
+      attractions:attractions,
+      updated_at:new Date().toISOString(),
+    };
+  }
+
+  async function setProfilePublicFlag(on){
+    saveUserProfile({isProfilePublic:!!on});
+    if(cloudUser&&cloudUser.id){
+      const payload=on?await buildPublicProfilePayload(true):{user_id:cloudUser.id,is_public:false};
+      syncPublicProfileToCloud(payload);
+    }
+  }
+
+  async function loadPublicUserIdProfile(userId){
+    if(!cloudClient||!userId) return null;
+    try{
+      const {data,error}=await cloudClient.from('public_profiles').select('*').eq('user_id',userId).eq('is_public',true).maybeSingle();
+      if(error) return null;
+      return data;
+    }catch(e){ return null; }
+  }
+
+  function ppAvatarLetter(nickname){ return (nickname||'旅').trim()[0]||'旅'; }
+
+  function renderAvatarInto(el,avatarUrl,nickname){
+    if(avatarUrl){
+      if(isOssPath(avatarUrl)){
+        const cached=avatarCache.get(avatarUrl);
+        if(cached){ el.innerHTML='<img src="'+cached+'" alt="头像" />'; }
+        else{
+          el.innerHTML='<span class="pp-avatar-letter">'+ppAvatarLetter(nickname)+'</span>';
+          resolveAvatarUrl(avatarUrl).then(d=>{ if(d){ el.innerHTML='<img src="'+d+'" alt="头像" />'; } });
+        }
+      }else{
+        el.innerHTML='<img src="'+avatarUrl+'" alt="头像" />';
+      }
+    }else{
+      el.innerHTML='<span class="pp-avatar-letter">'+ppAvatarLetter(nickname)+'</span>';
+    }
+  }
+
+  function ppTagsHtml(tags){
+    if(!tags||!tags.length) return '<span class="pp-row-value empty">暂无标签</span>';
+    return '<div class="pp-tags">'+tags.map(t=>'<span class="pp-tag">#'+escapeHtml(t)+'</span>').join('')+'</div>';
+  }
+  function ppAttractionsHtml(attractions){
+    if(!attractions||!attractions.length) return '<span class="pp-row-value empty">暂无景点信息</span>';
+    return '<div class="pp-chips">'+attractions.map(a=>'<span class="pp-chip">'+escapeHtml(a)+'</span>').join('')+'</div>';
+  }
+
+  async function renderMyProfilePage(){
+    const p=getUserProfile();
+    const nickname=p.nickname||'旅行者';
+    const email=(cloudUser&&cloudUser.email)||p.email||'';
+    const home=getFootprintHome();
+    let meta=null;
+    if(home){ try{ meta=await getCityMeta(home.cityKey); }catch(e){ meta=null; } }
+    const desc=meta?(meta.description||''):'';
+    const birthMonth=meta?(getVisitMonths(meta)[0]||''):'';
+    const tags=meta?(meta.tags||[]).map(t=>typeof t==='string'?t:(t&&t.text)||'').filter(Boolean):[];
+    const attractions=meta?(meta.attractions||[]).map(a=>(a&&a.name)||'').filter(Boolean):[];
+    const isPublic=getProfilePublicFlag();
+
+    profileBody.innerHTML=
+      '<div class="pp-block">'+
+        '<div class="pp-profile-card">'+
+          '<div class="pp-avatar" id="ppAvatar"></div>'+
+          '<div class="pp-profile-meta">'+
+            '<div class="pp-name">'+escapeHtml(nickname)+'</div>'+
+            '<div class="pp-email">'+(email?escapeHtml(email):'<span class="pp-row-value empty">暂未绑定邮箱</span>')+'</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pp-block">'+
+        '<div class="pp-section-title">我的家乡 '+(home?'<span class="pp-home-chip">'+escapeHtml(home.name)+'</span>':'<span class="pp-home-chip off">尚未设置家乡</span>')+'</div>'+
+        '<div class="pp-rows">'+
+          '<div class="pp-row"><span class="pp-row-label">家乡简介</span>'+(desc?'<span class="pp-row-value">'+escapeHtml(desc)+'</span>':'<span class="pp-row-value empty">暂未填写家乡简介</span>')+'</div>'+
+          '<div class="pp-row"><span class="pp-row-label">出生年月</span>'+(birthMonth?'<span class="pp-row-value">'+formatMonth(birthMonth)+'</span>':'<span class="pp-row-value empty">暂未填写</span>')+'</div>'+
+          '<div class="pp-row"><span class="pp-row-label">标签</span>'+ppTagsHtml(tags)+'</div>'+
+          '<div class="pp-row"><span class="pp-row-label">景点</span>'+ppAttractionsHtml(attractions)+'</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pp-block pp-public-block">'+
+        '<div class="pp-section-title">公开设置</div>'+
+        '<div class="pp-switch-row" id="ppSwitchRow" role="button" tabindex="0">'+
+          '<span class="pp-switch-copy">'+
+            '<span class="pp-switch-title">公开我的资料信息</span>'+
+            '<span class="pp-switch-desc">开启后，其他用户在游客点评中点击你的头像时，可以查看你公开的个人资料与家乡信息。</span>'+
+          '</span>'+
+          '<span class="pp-switch" id="ppPublicSwitch" role="switch" aria-checked="'+(isPublic?'true':'false')+'"><span class="pp-switch-thumb"></span></span>'+
+        '</div>'+
+      '</div>';
+
+    renderAvatarInto($('ppAvatar'),p.avatarUrl,nickname);
+
+    const switchEl=$('ppPublicSwitch');
+    const rowEl=$('ppSwitchRow');
+    const toggle=async()=>{
+      const next=switchEl.getAttribute('aria-checked')!=='true';
+      switchEl.setAttribute('aria-checked',String(next));
+      try{
+        await setProfilePublicFlag(next);
+      }catch(e){ console.warn(e); }
+      toast(next?'已公开个人资料':'已关闭公开资料');
+    };
+    rowEl.addEventListener('click',toggle);
+    rowEl.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); toggle(); } });
+  }
+
+  function openMyProfilePage(){
+    profileOverlay.classList.add('show');
+    document.body.classList.add('modal-open');
+    renderMyProfilePage();
+  }
+  function closeMyProfilePage(){
+    profileOverlay.classList.remove('show');
+    if(!reviewsOverlay.classList.contains('show')) document.body.classList.remove('modal-open');
+  }
+
+  function renderPublicProfileEmpty(name){
+    publicProfileTitle.textContent='个人资料';
+    publicProfileBody.innerHTML=
+      '<div class="pp-empty">'+
+        '<div class="pp-empty-icon">🔒</div>'+
+        '<div class="pp-empty-title">'+(name?escapeHtml(name)+' 暂未公开个人资料':'该用户暂未公开个人资料')+'</div>'+
+        '<div class="pp-empty-sub">对方还没有开启「公开我的资料信息」，暂时无法查看。</div>'+
+      '</div>';
+  }
+
+  async function renderPublicProfile(data){
+    if(!data){ renderPublicProfileEmpty(); return; }
+    const nickname=data.nickname||'旅行者';
+    const desc=data.hometown_description||'';
+    const birthMonth=data.birth_month||'';
+    const tags=(data.tags||[]).map(t=>typeof t==='string'?t:(t&&t.text)||'').filter(Boolean);
+    const attractions=(data.attractions||[]).map(a=>typeof a==='string'?a:(a&&a.name)||'').filter(Boolean);
+    publicProfileTitle.textContent='TA 的个人资料';
+    publicProfileBody.innerHTML=
+      '<div class="pp-block">'+
+        '<div class="pp-profile-card">'+
+          '<div class="pp-avatar" id="pubAvatar"></div>'+
+          '<div class="pp-profile-meta">'+
+            '<div class="pp-name">'+escapeHtml(nickname)+'</div>'+
+            '<div class="pp-email">'+(data.hometown_city_name?('家乡 · '+escapeHtml(data.hometown_city_name)):'旅行者')+'</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      '<div class="pp-block">'+
+        '<div class="pp-section-title">TA 的家乡</div>'+
+        '<div class="pp-rows">'+
+          '<div class="pp-row"><span class="pp-row-label">家乡简介</span>'+(desc?'<span class="pp-row-value">'+escapeHtml(desc)+'</span>':'<span class="pp-row-value empty">暂未填写家乡简介</span>')+'</div>'+
+          '<div class="pp-row"><span class="pp-row-label">出生年月</span>'+(birthMonth?'<span class="pp-row-value">'+formatMonth(birthMonth)+'</span>':'<span class="pp-row-value empty">暂未填写</span>')+'</div>'+
+          '<div class="pp-row"><span class="pp-row-label">标签</span>'+ppTagsHtml(tags)+'</div>'+
+          '<div class="pp-row"><span class="pp-row-label">景点</span>'+ppAttractionsHtml(attractions)+'</div>'+
+        '</div>'+
+      '</div>';
+    renderAvatarInto($('pubAvatar'),data.avatar_url,nickname);
+  }
+
+  function openPublicProfileOverlay(){ publicProfileOverlay.classList.add('show'); document.body.classList.add('modal-open'); }
+  function closePublicProfileOverlay(){
+    publicProfileOverlay.classList.remove('show');
+    if(!reviewsOverlay.classList.contains('show')) document.body.classList.remove('modal-open');
+  }
+
+  async function openPublicProfile(uid,name){
+    openPublicProfileOverlay();
+    publicProfileBody.innerHTML='<div class="pp-empty"><div class="pp-empty-title">加载中…</div></div>';
+    const data=await loadPublicUserIdProfile(uid);
+    if(data){
+      await renderPublicProfile(data);
+    }else{
+      renderPublicProfileEmpty(name);
+    }
+  }
+
+  function openProfileFromReviewCard(dataset){
+    const mine=dataset.mine==='1';
+    const uid=dataset.uid||'';
+    const name=dataset.name||'';
+    if(mine){ openMyProfilePage(); return; }
+    if(!uid){ openPublicProfileOverlay(); renderPublicProfileEmpty(name); return; }
+    openPublicProfile(uid,name);
+  }
+
+  // 顶部「个人主页」按钮
+  const profileBtnEl=$('profileBtn');
+  if(profileBtnEl) profileBtnEl.addEventListener('click',openMyProfilePage);
+
+  // 个人主页弹窗交互
+  $('profileCloseBtn').addEventListener('click',closeMyProfilePage);
+  $('profileFootCloseBtn').addEventListener('click',closeMyProfilePage);
+  $('profileEditBtn').addEventListener('click',()=>{ closeMyProfilePage(); openAuth(); });
+  profileOverlay.addEventListener('click',e=>{ if(e.target===profileOverlay) closeMyProfilePage(); });
+
+  // 公开资料弹窗交互
+  $('publicProfileCloseBtn').addEventListener('click',closePublicProfileOverlay);
+  $('publicProfileFootCloseBtn').addEventListener('click',closePublicProfileOverlay);
+  publicProfileOverlay.addEventListener('click',e=>{ if(e.target===publicProfileOverlay) closePublicProfileOverlay(); });
+
+  // 游客点评：点击头像/昵称查看公开资料（事件委托，绑定一次）
+  reviewsBody.addEventListener('click',e=>{
+    if(e.target.closest('.review-card-actions')||e.target.closest('[data-sync],[data-edit],[data-delete]')) return;
+    const avatar=e.target.closest('.review-card-avatar');
+    const uname=e.target.closest('.review-card-user-name');
+    if(!avatar&&!uname) return;
+    const card=e.target.closest('.review-card[data-profile-click]');
+    if(!card) return;
+    openProfileFromReviewCard(card.dataset);
+  });
 })();
 
 /* ===== 分层堆叠相册预览器（独立 IIFE） =====
