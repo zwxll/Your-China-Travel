@@ -6161,6 +6161,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   const NORMAL_LABEL_ZOOM_THRESHOLD=8; // 未点亮城市名：缩放达到该值后全国自动显示
   const CITY_BORDER_ZOOM_THRESHOLD=7.5;  // 城市边界线：zoom≥7.5 时显示，避免缩小视图下密集线条干扰
   let _cityBordersActive=false;          // 城市边界地图是否已加载（zoom<阈值时用 china 轻量地图）
+  let _cityBordersHiddenDuringRoam=false; // 拖动时临时隐藏高成本城市多边形，停止后恢复
   let cityPoints=[];                       // 所有地级市散点 [{name,value:[lng,lat],cityKey,adcode}]
   let citiesWithPhotos=new Set();          // 有照片的城市 cityKey
   let photoCountByCity=new Map();          // cityKey -> 照片数量
@@ -6429,7 +6430,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       selectedArea:'rgba(2,132,199,.28)',selectedBorder:'#0284c7',
       selectedShadow:'rgba(2,132,199,.30)',visitedShadow:'rgba(2,132,199,.14)',
       selectedLabel:'#be123c',
-      cityBorder:'rgba(148,163,184,.55)',
+      cityBorder:'rgba(2,132,199,.40)',provinceBorder:'#0284c7',
       tooltipBg:'rgba(255,255,255,.97)',tooltipBorder:'rgba(100,116,139,.35)',tooltipText:'#1f2a37'
     }:{
       area:'#050505',border:'#475569',
@@ -6445,7 +6446,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       selectedArea:'rgba(14,165,233,.34)',selectedBorder:'#7dd3fc',
       selectedShadow:'rgba(56,189,248,.45)',visitedShadow:'rgba(56,189,248,.18)',
       selectedLabel:'#e0f7ff',
-      cityBorder:'rgba(71,85,105,.5)',
+      cityBorder:'rgba(56,189,248,.38)',provinceBorder:'#38bdf8',
       tooltipBg:'rgba(8,8,8,.97)',tooltipBorder:'rgba(71,85,105,.5)',tooltipText:'#f8fafc'
     };
   }
@@ -6662,7 +6663,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       ],
       series:[
         {
-          name:'城市',type:'scatter',coordinateSystem:'geo',geoIndex:1,data:[],
+          name:'城市',type:'scatter',coordinateSystem:'geo',geoIndex:2,data:[],
           symbolSize:p=>(isCapital(p)?13:7)*markerScale(),z:5,
           itemStyle:{color:tc.markerNormal,opacity:.9,borderColor:tc.markerBorder,borderWidth:1.2},
           label:{show:false},
@@ -6673,7 +6674,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
           }
         },
         {
-          name:'已记录',type:'effectScatter',coordinateSystem:'geo',geoIndex:1,data:[],
+          name:'已记录',type:'effectScatter',coordinateSystem:'geo',geoIndex:2,data:[],
           symbolSize:p=>(isCapital(p)?20:15)*markerScale(),z:6,showEffectOn:'render',
           rippleEffect:{brushType:'stroke',scale:2.0,period:3.5},
           itemStyle:{color:tc.markerVisited,shadowBlur:8,shadowColor:tc.markerVisitedShadow},
@@ -6702,7 +6703,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         {
           // 已点亮城市名标注系列：effectScatter 数据项标签在部分环境下不稳定，
           // 改由独立 scatter 系列（symbolSize 0.1 不可见、silent 不响应鼠标）专职承载城市名
-          name:'已记录城市名',type:'scatter',coordinateSystem:'geo',geoIndex:1,data:[],
+          name:'已记录城市名',type:'scatter',coordinateSystem:'geo',geoIndex:2,data:[],
           symbolSize:0.1,silent:true,z:7,
           label:{
             show:false,
@@ -6721,7 +6722,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         },
         {
           // 我的家乡标记：独立系列（金色），始终显示在最上层
-          name:'家乡',type:'scatter',coordinateSystem:'geo',geoIndex:1,data:[],
+          name:'家乡',type:'scatter',coordinateSystem:'geo',geoIndex:2,data:[],
           symbol:'circle',symbolSize:p=>18*markerScale(),z:8,
           itemStyle:{color:tc.markerHome,borderColor:'#ffffff',borderWidth:2,shadowBlur:6,shadowColor:tc.markerHomeShadow},
           label:{show:false},
@@ -6757,7 +6758,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
        const fontW=8,fontH=15; // 单字宽高估算
        const pad=6;
        const pts=visited.map(d=>{
-         const px=myChart.convertToPixel('geo',d.value);
+         const px=myChart.convertToPixel({geoIndex:2},d.value);
          return {cityKey:d.cityKey,name:d.name,px,chosen:null};
        });
        // 计算某城市在某方向的标签矩形
@@ -6779,7 +6780,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
        // 省内未点亮城市的灰色标签（series[0]）作为障碍物预置，避免青色名字压上去
        (opt.series[0].data||[]).forEach(d=>{
          if(!d.label||!d.label.show) return;
-         const px=myChart.convertToPixel('geo',d.value);
+         const px=myChart.convertToPixel({geoIndex:2},d.value);
          if(!px) return;
          const w=Math.max(d.name.length*7.5+10,44),h=17;
          placed.push({rect:{x1:px[0]+4,y1:px[1]-h/2,x2:px[0]+4+w,y2:px[1]+h/2},gray:true});
@@ -6800,7 +6801,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
        // 家乡金色大标记作为障碍物，避免城市名被它遮挡
        const home2=getFootprintHome();
        if(home2){
-         const hpx=myChart.convertToPixel('geo',home2.value);
+         const hpx=myChart.convertToPixel({geoIndex:2},home2.value);
          if(hpx){
            const hr=9*s+3;
            placed.push({rect:{x1:hpx[0]-hr,y1:hpx[1]-hr,x2:hpx[0]+hr,y2:hpx[1]+hr},home:true});
@@ -6840,17 +6841,57 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
        myChart.setOption({series:[{},{},{data:newData}]});
      }
      recomputeLabelPositions=computeLabelPositions;
-    // 即时同步：georoam 触发时立即同步散点大小 + 省份标签
-    // 【性能优化】整个 syncLabelLayout 用 rAF 节流：roam 高频触发时合并为每帧一次 setOption，消除卡顿拖影
+    // geo[2] 接收拖动，城市散点也直接绑定 geo[2]；拖动中只同步其余图层的中心/缩放，
+    // 字号、标签、边界和卡片布局等重操作留到停止 70ms 后统一完成。
     let labelRafId=null;
     let roamThrottleId=null;
+    let roamEndTimer=null;
+    const ROAM_END_DELAY=70;
     let lastLabelRefreshState='';  // 【性能优化】缓存标签刷新状态，仅在阈值跨越时调用 refreshCityNameLabels
+    function currentRoamState(){
+      // getOption 会复制整棵配置树；拖动热路径优先从 ECharts 模型读取当前 geo 状态。
+      const model=myChart.getModel&&myChart.getModel().getComponent('geo',2);
+      if(model&&model.option){
+        return {
+          zoom:model.option.zoom||1.18,
+          center:model.option.center||[108,35.5]
+        };
+      }
+      const opt=myChart.getOption();
+      return {
+        zoom:opt.geo[2].zoom||opt.geo[1].zoom||1.18,
+        center:opt.geo[2].center||opt.geo[1].center||[108,35.5]
+      };
+    }
+    function syncRoamGeometry(){
+      const state=currentRoamState();
+      currentZoom=state.zoom;
+      // 城市边界包含大量多边形：拖动时隐藏且不再逐帧同步，避免放大视图严重掉帧。
+      // 城市点、文字已绑定 geo[2]，这里只需让轻量省份底图跟随。
+      const geoUpdates=[{zoom:state.zoom,center:state.center}];
+      if(_cityBordersActive&&!_cityBordersHiddenDuringRoam){
+        _cityBordersHiddenDuringRoam=true;
+        geoUpdates.push({show:false});
+        // 拖动期间市界图层暂时隐藏，恢复轻量省界作为视觉参照；每次拖动只切换一次。
+        applyProvinceRegionStyles();
+      }
+      myChart.setOption({
+        animation:false,
+        geo:geoUpdates
+      },{silent:true});
+      syncProvinceCardsDuringRoam();
+    }
     function syncLabelLayout(){
-      // 【性能优化】roam 每帧只执行一次 setOption：已排队则跳过，避免高频全量更新 option
+      clearTimeout(roamEndTimer);
+      roamEndTimer=setTimeout(()=>{
+        if(roamThrottleId){ cancelAnimationFrame(roamThrottleId); roamThrottleId=null; }
+        doSyncLabelLayout();
+      },ROAM_END_DELAY);
+
       if(roamThrottleId) return;
       roamThrottleId=requestAnimationFrame(()=>{
         roamThrottleId=null;
-        doSyncLabelLayout();
+        syncRoamGeometry();
       });
     }
     function doSyncLabelLayout(){
@@ -6867,11 +6908,14 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         const pf=provinceFontSize();
         const showCityBorder=zoom>=CITY_BORDER_ZOOM_THRESHOLD&&cityBoundaries;
         // 【性能优化】zoom 跨越阈值时：切换地图 + 更新边框样式（仅此一次，不在 roam 中重复）
-        if(showCityBorder!==_cityBordersActive){
+        if(showCityBorder!==_cityBordersActive||_cityBordersHiddenDuringRoam){
           _cityBordersActive=showCityBorder;
+          _cityBordersHiddenDuringRoam=false;
           const borderMap=showCityBorder?'china_cities':'china';
           const tcPre=chartThemeColors();
-          myChart.setOption({geo:[{},{map:borderMap,itemStyle:{areaColor:'transparent',borderColor:showCityBorder?tcPre.cityBorder:'transparent',borderWidth:showCityBorder?.5:0,borderType:'dashed',shadowBlur:0}}]});
+          myChart.setOption({geo:[{},{show:true,map:borderMap,itemStyle:{areaColor:'transparent',borderColor:showCityBorder?tcPre.cityBorder:'transparent',borderWidth:showCityBorder?.5:0,borderType:'dashed',shadowBlur:0}}]});
+          // 市界启用时降低市界亮度，并由省级底图绘制更亮的实线省界，保持清晰层级。
+          applyProvinceRegionStyles();
         }
         const tc=chartThemeColors();
         // 【性能优化】roam 同步 geo[0] 和 geo[2]；geo[1] 仅同步 zoom/center 不重绘城市多边形（传 zoom/center 不触发 map 重绘）
@@ -6886,7 +6930,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
               label:{show:false},
               emphasis:{label:{show:false}}
             },
-            {zoom:zoom,center:center},  // geo[1] 同步 zoom/center 让散点跟随移动
+            {show:true,zoom:zoom,center:center},  // geo[1] 仅在停止拖动后恢复并校准城市边界
             {
               // 省份汉字始终显示，fontSize 随缩放自适应；同步 zoom/center 跟上 geo[2]
               zoom:zoom,center:center,
@@ -6922,8 +6966,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         }
     }
     myChart.on('georoam',syncLabelLayout);
-    // 初始化时立即同步一次散点大小与涟漪效果
-    syncLabelLayout();
+    // 初始化时立即同步一次散点大小与涟漪效果，不等待拖动节流计时器
+    doSyncLabelLayout();
 
     // 鼠标悬停时动态切换 tooltip 外框尺寸：
     // 点亮城市（有照片）→ 等比例放大1.2倍；未记录城市 → 原始尺寸
@@ -7552,7 +7596,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       card.style.left=x+'px';card.style.top=y+'px';
       // 连线实时跟随卡片
       if(myChart){
-        const point=myChart.convertToPixel('geo',city.value);
+        const point=myChart.convertToPixel({geoIndex:2},city.value);
         if(point&&Number.isFinite(point[0])&&Number.isFinite(point[1])){
           const path=provinceFocusLines.querySelector('path[data-city="'+city.cityKey+'"]');
           if(path){
@@ -7630,6 +7674,15 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     }
   },true);
 
+  // 拖动热路径：只让已经完成布局的卡片跟随城市并重绘连线，不执行碰撞检测或重新排版。
+  function syncProvinceCardsDuringRoam(){
+    if(!myChart||(!selectedProvinceName&&currentView!=='province')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
+    const cards=Array.from(provinceFocusCards.querySelectorAll('.province-map-card'));
+    if(!cards.length||!cards.every(card=>Number.isFinite(parseFloat(card.style.left))&&Number.isFinite(parseFloat(card.style.top)))) return;
+    panFollowCards(cards);
+    updateProvinceCardLines();
+  }
+
   // 纯平移地图时：卡片位置保持不动，仅按城市最新像素位置重绘连线
   function updateProvinceCardLines(){
     if(!myChart||(!selectedProvinceName&&currentView!=='province')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
@@ -7641,7 +7694,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     provinceFocusCities.forEach((item,index)=>{
       const card=cards[index];
       if(!card) return;
-      const point=myChart.convertToPixel('geo',item.city.value);
+      const point=myChart.convertToPixel({geoIndex:2},item.city.value);
       if(!point||!Number.isFinite(point[0])||!Number.isFinite(point[1])) return;
       const x=parseFloat(card.style.left),y=parseFloat(card.style.top);
       if(!Number.isFinite(x)||!Number.isFinite(y)) return;
@@ -7659,7 +7712,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   // 【跟随城市】地图平移/缩放/混合操作时，每张卡片按各自城市的屏幕位移量同步移动，
   // 卡片与城市的相对位置保持不变，连线长短/弯曲完全固定；同步更新位置缓存（防抖持久化）
   function panFollowCards(cards){
-    const points=provinceFocusCities.map(item=>myChart.convertToPixel('geo',item.city.value));
+    const points=provinceFocusCities.map(item=>myChart.convertToPixel({geoIndex:2},item.city.value));
     const valid=points.length>0&&points.every(p=>p&&Number.isFinite(p[0])&&Number.isFinite(p[1]));
     if(valid&&provinceFocusLastPoints&&provinceFocusLastPoints.length===points.length){
       let moved=false;
@@ -7698,7 +7751,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       return;
     }
     const width=mapWrapEl.clientWidth,height=mapWrapEl.clientHeight;
-    const points=provinceFocusCities.map(item=>myChart.convertToPixel('geo',item.city.value));
+    const points=provinceFocusCities.map(item=>myChart.convertToPixel({geoIndex:2},item.city.value));
     provinceFocusLines.setAttribute('viewBox','0 0 '+width+' '+height);
     provinceFocusLines.innerHTML='';
     const mobile=window.innerWidth<=640;
@@ -8930,6 +8983,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   function applyProvinceRegionStyles(){
     if(!myChart) return;
     const t=chartThemeColors();
+    const cityBordersVisible=_cityBordersActive&&!_cityBordersHiddenDuringRoam;
     const regions=Object.keys(PROVINCE_MAP).map(code=>{
       const name=PROVINCE_MAP[code];
       const selected=name===selectedProvinceName;
@@ -8939,10 +8993,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         name,
         itemStyle:{
           areaColor:selected?t.selectedArea:(visited?t.visitedArea:t.unvisitedArea),
-          borderColor:selected?t.selectedBorder:(visited?t.visitedBorder:t.unvisitedBorder),
-          borderWidth:selected?2:(visited?1.35:.8),
+          borderColor:cityBordersVisible?(selected?t.selectedBorder:t.provinceBorder):(selected?t.selectedBorder:(visited?t.visitedBorder:t.unvisitedBorder)),
+          borderWidth:cityBordersVisible?(selected?2.2:1.25):(selected?2:(visited?1.35:.8)),
           shadowColor:selected?t.selectedShadow:(visited?t.visitedShadow:t.unvisitedShadow),
-          shadowBlur:selected?18:(visited?7:0)
+          shadowBlur:cityBordersVisible?0:(selected?18:(visited?7:0))
         },
         // 选中省份仅改变标签颜色，字体（fontFamily/fontSize/fontWeight/lineHeight/阴影）完全继承 geo 级配置，
         // 避免 region 级 label 覆盖导致字体回退、字重突变，与城市标签字体保持一致
@@ -9309,7 +9363,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     const w=mapWrapEl.clientWidth,h=mapWrapEl.clientHeight;
     fpLinesEl.setAttribute('viewBox','0 0 '+w+' '+h);
     s.px=s.route.map(r=>{
-      const p=myChart.convertToPixel('geo',r.value);
+      const p=myChart.convertToPixel({geoIndex:2},r.value);
       return (p&&Number.isFinite(p[0])&&Number.isFinite(p[1]))?p:null;
     });
     if(s.px.some(p=>!p)) return;                       // 地图未就绪，跳过本轮
