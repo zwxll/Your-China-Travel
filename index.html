@@ -1979,6 +1979,8 @@
     background:var(--accent);box-shadow:0 0 0 4px rgba(56,189,248,.12),0 0 12px rgba(56,189,248,.45);
   }
   .account-sync-status.syncing::before{animation:accountSyncPulse 1.15s ease-in-out infinite;}
+  .account-sync-status.partial{border-color:rgba(251,191,36,.28);background:rgba(245,158,11,.09);color:#fde68a;}
+  .account-sync-status.partial::before{background:#fbbf24;box-shadow:0 0 0 4px rgba(251,191,36,.12);}
   .account-sync-status.error{border-color:rgba(248,113,113,.25);background:rgba(239,68,68,.09);color:#fecaca;}
   .account-sync-status.error::before{background:#f87171;box-shadow:0 0 0 4px rgba(248,113,113,.12);}
   @keyframes accountSyncPulse{50%{opacity:.35;transform:scale(.72);}}
@@ -8762,41 +8764,61 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     if(!requiredPaths.size) return true;
     return [...requiredPaths].every(path=>cache.has(path));
   }
+  async function createTolerantCloudImageLoader(snapshot,actionText){
+    const requiredPaths=collectSnapshotPaths(snapshot);
+    const cache=await getLocalCloudImageCache();
+    let succeeded=[...requiredPaths].filter(path=>cache.has(path)).length;
+    let settled=succeeded,failed=0;
+    const refreshProgress=()=>{
+      if(requiredPaths.size>0) setSyncStatus(actionText+' '+settled+'/'+requiredPaths.size,'syncing');
+    };
+    async function load(path){
+      if(!path) return '';
+      if(!cache.has(path)){
+        cache.set(path,(async ()=>{
+          try{
+            const dataUrl=await downloadCloudImage(path);
+            succeeded+=1;
+            return dataUrl;
+          }catch(error){
+            failed+=1;
+            console.warn('跳过无法下载的云端照片',path,error);
+            return '';
+          }finally{
+            settled+=1;
+            refreshProgress();
+          }
+        })());
+      }
+      return cache.get(path);
+    }
+    refreshProgress();
+    return {load,stats:()=>({succeeded,failed,total:requiredPaths.size})};
+  }
   async function restoreCloudSnapshot(snapshot,updatedAt){
     setSyncStatus('下载中','syncing');
     cloudSuppressDirty=true;
     try{
       clearTimeout(cloudSyncTimer);cloudSyncTimer=null;
-      const requiredPaths=collectSnapshotPaths(snapshot);
-      const totalImages=requiredPaths.size;
-      const downloadedImages=await getLocalCloudImageCache();
-      let completedImages=[...requiredPaths].filter(p=>downloadedImages.has(p)).length;
-      const refreshProgress=()=>{
-        if(totalImages>0) setSyncStatus('下载 '+completedImages+'/'+totalImages,'syncing');
-      };
-      async function cachedCloudImage(path){
-        if(!path) return '';
-        if(!downloadedImages.has(path)){
-          downloadedImages.set(path,downloadCloudImage(path).then(url=>{
-            completedImages+=1;refreshProgress();
-            return url;
-          }));
-        }
-        return downloadedImages.get(path);
-      }
-      refreshProgress();
+      const imageLoader=await createTolerantCloudImageLoader(snapshot,'下载');
       const preparedPhotos=[];
       for(const remote of (snapshot.photos||[])){
-        const dataUrl=await cachedCloudImage(remote.storagePath);
+        const dataUrl=await imageLoader.load(remote.storagePath);
+        if(!dataUrl) continue;
         const rec={...remote,dataUrl};delete rec.id;
         preparedPhotos.push(rec);
       }
       const preparedMetas=[];
       for(const remoteMeta of (snapshot.cityMeta||[])){
         const meta=JSON.parse(JSON.stringify(remoteMeta));
-        meta.coverImage=await cachedCloudImage(meta.coverStoragePath);
+        meta.coverImage=await imageLoader.load(meta.coverStoragePath);
         for(const att of (meta.attractions||[])){
-          for(const ph of (att.photos||[])) ph.dataUrl=await cachedCloudImage(ph.storagePath);
+          const availablePhotos=[];
+          for(const ph of (att.photos||[])){
+            ph.dataUrl=await imageLoader.load(ph.storagePath);
+            if(ph.dataUrl) availablePhotos.push(ph);
+          }
+          att.photos=availablePhotos;
         }
         preparedMetas.push(meta);
       }
@@ -8814,7 +8836,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       localStorage.setItem(CLOUD_DIRTY_KEY,'0');
       if(updatedAt) localStorage.setItem(CLOUD_UPDATED_KEY,updatedAt);
       await refreshState();
-      setSyncStatus('已同步','');
+      const stats=imageLoader.stats();
+      if(stats.failed>0) setSyncStatus('已恢复 '+stats.succeeded+'/'+stats.total+'，'+stats.failed+'张不可用','partial');
+      else setSyncStatus('已同步','');
     }finally{cloudSuppressDirty=false;}
   }
 
@@ -8824,19 +8848,15 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     cloudSuppressDirty=true;
     try{
       clearTimeout(cloudSyncTimer);cloudSyncTimer=null;
-      const downloadedImages=await getLocalCloudImageCache();
-      async function cachedCloudImage(path){
-        if(!path) return '';
-        if(!downloadedImages.has(path)) downloadedImages.set(path,downloadCloudImage(path));
-        return downloadedImages.get(path);
-      }
+      const imageLoader=await createTolerantCloudImageLoader(snapshot,'合并');
       const localPhotos=await getAllPhotos();
       const existingPhotoCloudIds=new Set(localPhotos.map(p=>p.cloudId).filter(Boolean));
       const existingPhotoPaths=new Set(localPhotos.map(p=>p.storagePath).filter(Boolean));
       for(const remote of (snapshot.photos||[])){
         if(remote.cloudId&&existingPhotoCloudIds.has(remote.cloudId)) continue;
         if(remote.storagePath&&existingPhotoPaths.has(remote.storagePath)) continue;
-        const dataUrl=await cachedCloudImage(remote.storagePath);
+        const dataUrl=await imageLoader.load(remote.storagePath);
+        if(!dataUrl) continue;
         const rec={...remote,dataUrl};delete rec.id;
         await addPhoto(rec);
         if(rec.cloudId) existingPhotoCloudIds.add(rec.cloudId);
@@ -8847,9 +8867,14 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       for(const remoteMeta of (snapshot.cityMeta||[])){
         if(existingMetaKeys.has(remoteMeta.cityKey)) continue;
         const meta=JSON.parse(JSON.stringify(remoteMeta));
-        meta.coverImage=await cachedCloudImage(meta.coverStoragePath);
+        meta.coverImage=await imageLoader.load(meta.coverStoragePath);
         for(const att of (meta.attractions||[])){
-          for(const ph of (att.photos||[])) ph.dataUrl=await cachedCloudImage(ph.storagePath);
+          const availablePhotos=[];
+          for(const ph of (att.photos||[])){
+            ph.dataUrl=await imageLoader.load(ph.storagePath);
+            if(ph.dataUrl) availablePhotos.push(ph);
+          }
+          att.photos=availablePhotos;
         }
         await putLocalMeta(meta);
         existingMetaKeys.add(meta.cityKey);
