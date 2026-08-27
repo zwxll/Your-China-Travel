@@ -546,16 +546,23 @@
     box-shadow:0 2px 10px rgba(31,42,55,.04);
     z-index:20;
   }
-  .brand{display:flex;align-items:center;gap:12px;min-width:0;}
+  .brand{display:flex;align-items:center;gap:13px;min-width:0;}
   .brand .pin{
-    flex:0 0 auto;width:40px;height:40px;border-radius:12px;
+    flex:0 0 auto;width:40px;height:40px;border-radius:13px;
     display:grid;place-items:center;color:#fff;
     background:linear-gradient(135deg,var(--accent),var(--accent-d));
-    box-shadow:0 6px 14px rgba(232,148,60,.4);
+    box-shadow:0 6px 14px rgba(14,165,233,.38),inset 0 1px 0 rgba(255,255,255,.22);
+    position:relative;
   }
+  /* 相机图标外圈微光，呼应青蓝主题 */
+  .brand .pin::after{
+    content:"";position:absolute;inset:-3px;border-radius:16px;
+    border:1px solid rgba(56,189,248,.28);pointer-events:none;
+  }
+  .brand-text{display:flex;flex-direction:column;gap:2px;min-width:0;}
   .brand h1{
-    margin:0;font-size:20px;font-weight:800;letter-spacing:.8px;
-    line-height:1.3;
+    margin:0;font-size:20px;font-weight:800;letter-spacing:1.6px;
+    line-height:1.25;
     /* Shiny Text 闪光效果（参考 reactbits shiny-text: spread=135, speed=1.6s, delay=1.4s, yoyo, pauseOnHover）*/
     background:linear-gradient(135deg,
       #7dd3fc 0%, #7dd3fc 42%,
@@ -566,7 +573,8 @@
     animation:shinyTextYoyo 6s ease-in-out infinite;
   }
   .brand .sub{
-    margin:4px 0 0;font-size:12px;line-height:1.4;letter-spacing:.3px;
+    margin:0;font-size:12px;line-height:1.4;letter-spacing:1px;
+    max-width:min(34vw,420px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     background:linear-gradient(135deg,
       #93c9ef 0%, #93c9ef 42%,
       #eaf7ff 50%,
@@ -575,6 +583,7 @@
     -webkit-background-clip:text;background-clip:text;color:transparent;
     animation:shinyTextYoyo 6s ease-in-out infinite;
     animation-delay:.8s;
+    padding-left:1.6px;   /* 抵消中文引号起始的视觉缩进，与主标题对齐 */
   }
   /* Shiny Text yoyo 动画：正向扫光1.6s → 停顿1.4s → 反向扫光1.6s → 停顿1.4s，总周期6s */
   @keyframes shinyTextYoyo{
@@ -706,15 +715,15 @@
   .province-focus-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
   .province-focus-lines path{
     fill:none;
-    stroke:rgba(56,189,248,.72);stroke-width:1.25;vector-effect:non-scaling-stroke;
-    filter:drop-shadow(0 0 5px rgba(56,189,248,.5));
+    stroke:rgba(129,140,248,.76);stroke-width:1.35;vector-effect:non-scaling-stroke;
+    filter:drop-shadow(0 0 4px rgba(99,102,241,.34));
   }
-  .province-focus-lines circle{fill:#7dd3fc;filter:drop-shadow(0 0 6px rgba(56,189,248,.8));}
+  .province-focus-lines circle{fill:#a5b4fc;filter:drop-shadow(0 0 5px rgba(129,140,248,.55));}
   body.light-theme .province-focus-lines path{
-    stroke:rgba(3,105,161,.82);
-    filter:drop-shadow(0 0 4px rgba(3,105,161,.3));
+    stroke:rgba(79,70,229,.78);
+    filter:drop-shadow(0 0 3px rgba(67,56,202,.20));
   }
-  body.light-theme .province-focus-lines circle{fill:#0369a1;filter:drop-shadow(0 0 5px rgba(3,105,161,.4));}
+  body.light-theme .province-focus-lines circle{fill:#4f46e5;filter:drop-shadow(0 0 4px rgba(67,56,202,.30));}
   .province-map-card{
     position:absolute;width:154px;height:70px;display:grid;grid-template-columns:62px 1fr;
     overflow:hidden;pointer-events:auto;cursor:pointer;border:1px solid rgba(125,211,252,.28);
@@ -921,6 +930,49 @@
     background:#fbbf24;
     box-shadow:0 0 8px rgba(245,158,11,.75);
   }
+
+  /* ===== 人生寄语：顶栏下边缘折叠按钮 + 展开面板（未设置寄语时隐藏）===== */
+  .motto-toggle-btn{
+    position:absolute;top:0;left:50%;transform:translateX(-50%);z-index:8;
+    width:44px;height:20px;padding:0;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+    border:1px solid rgba(56,189,248,.38);border-top:none;
+    border-radius:0 0 12px 12px;
+    background:rgba(6,12,20,.88);
+    color:#7dd3fc;
+    transition:background .2s ease,color .2s ease,box-shadow .2s ease;
+  }
+  .motto-toggle-btn:hover{
+    background:rgba(14,165,233,.18);color:#e0f2fe;
+    box-shadow:0 4px 14px rgba(56,189,248,.35);
+  }
+  .motto-toggle-btn svg{transition:transform .3s ease;}
+  .motto-toggle-btn[aria-expanded="true"] svg{transform:rotate(180deg);}
+  body.light-theme .motto-toggle-btn{
+    background:rgba(255,255,255,.92);border-color:rgba(79,70,229,.32);color:#4f46e5;
+  }
+  body.light-theme .motto-toggle-btn:hover{
+    background:rgba(99,102,241,.12);color:#312e81;
+    box-shadow:0 4px 14px rgba(79,70,229,.28);
+  }
+  .motto-panel{
+    position:absolute;top:44px;left:50%;transform:translateX(-50%);z-index:7;
+    max-width:min(76vw,760px);text-align:center;pointer-events:none;
+    font-weight:600;font-size:clamp(22px,2.4vw,36px);line-height:1.6;
+    letter-spacing:1.2px;color:#eaf6ff;overflow-wrap:anywhere;
+    text-shadow:0 0 26px rgba(56,189,248,.55),0 2px 14px rgba(0,0,0,.65);
+    animation:mottoPanelIn .45s ease both;
+  }
+  @keyframes mottoPanelIn{
+    from{opacity:0;transform:translate(-50%,-12px);}
+    to{opacity:1;transform:translate(-50%,0);}
+  }
+  body.light-theme .motto-panel{
+    color:#17324d;
+    text-shadow:0 0 20px rgba(79,70,229,.22),0 2px 10px rgba(255,255,255,.85);
+  }
+  body.fullscreen-grid .motto-toggle-btn,body.fullscreen-grid .motto-panel{display:none;}
+  @media (prefers-reduced-motion:reduce){.motto-panel{animation:none;}.motto-toggle-btn svg{transition:none;}}
 
   /* ===== 地图搜索框（嵌入右侧面板顶部，跟随文档流）===== */
   /* 视觉对标 uiverse.io/Lakshay-art/curvy-earwig-22：多层圆锥渐变边框搜索框 */
@@ -2127,6 +2179,7 @@
     header{flex-wrap:nowrap;padding:10px 12px;}
     .header-actions{gap:6px;}
     .stats{display:none;}
+    .motto-toggle-btn,.motto-panel{display:none;}
     .account-btn{max-width:126px;padding:0 11px;}
     .auth-panel-head,.auth-form,.account-panel{padding-left:20px;padding-right:20px;}
     .auth-tabs{margin-left:20px;margin-right:20px;}
@@ -2135,9 +2188,9 @@
   /* 移动端适配 */
   @media (max-width:640px){
     header{padding:10px 14px;gap:8px;}
-    .brand .pin{width:34px;height:34px;}
-    .brand h1{font-size:17px;}
-    .brand .sub{font-size:11px;}
+    .brand .pin{width:34px;height:34px;border-radius:11px;}
+    .brand h1{font-size:17px;letter-spacing:1.2px;}
+    .brand .sub{font-size:11px;letter-spacing:.8px;}
     .stat{padding:5px 10px;min-width:60px;}
     .stat span{font-size:15px;}
     .legend{left:10px;bottom:10px;font-size:11px;padding:8px 11px;}
@@ -4399,9 +4452,43 @@
   .pp-avatar{width:64px;height:64px;flex:0 0 auto;border-radius:50%;overflow:hidden;border:2px solid rgba(56,189,248,.32);background:#0d1520;display:grid;place-items:center;}
   .pp-avatar img{width:100%;height:100%;object-fit:cover;display:block;}
   .pp-avatar .pp-avatar-letter{font-size:26px;font-weight:700;color:#38bdf8;line-height:1;}
-  .pp-profile-meta{display:grid;gap:5px;min-width:0;}
+  .pp-profile-meta{display:grid;gap:5px;min-width:0;flex:1;}
   .pp-name{color:#f8fafc;font:700 18px/1.25 'Inter',sans-serif;overflow-wrap:anywhere;}
   .pp-email{color:#94a3b8;font-size:12.5px;line-height:1.5;overflow-wrap:anywhere;}
+  .pp-email-empty{color:#64748b;}
+  .pp-stats{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+    border:1px solid rgba(56,189,248,.18);border-radius:var(--radius-sm);
+    background:linear-gradient(135deg,rgba(56,189,248,.08),rgba(255,255,255,.018));overflow:hidden;
+  }
+  .pp-stat{display:grid;place-content:center;justify-items:center;gap:4px;margin:0;padding:13px 10px;text-align:center;min-width:0;}
+  .pp-stat + .pp-stat{border-left:1px solid rgba(148,163,184,.14);}
+  .pp-stat-value{color:#e0f7ff;font:750 20px/1.1 'Inter',sans-serif;letter-spacing:-.4px;white-space:nowrap;}
+  .pp-stat-value small{font-size:10px;font-weight:650;color:#7dd3fc;margin-left:2px;letter-spacing:0;}
+  .pp-stat-label{color:#8a99ac;font-size:10.5px;line-height:1.3;}
+  .pp-stat-value,.pp-stat-label{margin:0;}
+  .pp-stats-note{margin:-3px 2px 0;color:#64748b;font-size:10.5px;line-height:1.45;text-align:right;}
+  .pp-motto-card{
+    position:relative;display:grid;gap:10px;padding:14px 15px 13px 19px;
+    border:1px solid rgba(56,189,248,.2);border-radius:var(--radius-sm);
+    background:linear-gradient(135deg,rgba(56,189,248,.09),rgba(255,255,255,.018));overflow:hidden;
+  }
+  .pp-motto-card::before{content:'';position:absolute;left:0;top:14px;bottom:14px;width:3px;border-radius:0 3px 3px 0;background:linear-gradient(180deg,#7dd3fc,#0ea5e9);box-shadow:0 0 12px rgba(56,189,248,.55);}
+  .pp-motto-title-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .pp-motto-hint{color:#64748b;font-size:10.5px;line-height:1.4;text-align:right;}
+  .pp-motto-input{
+    width:100%;min-height:72px;resize:vertical;padding:10px 11px;border:1px solid rgba(148,163,184,.18);
+    border-radius:var(--radius-xs);outline:none;background:rgba(0,0,0,.2);color:#e0f7ff;
+    font:500 13.5px/1.65 inherit;transition:border-color .2s ease,box-shadow .2s ease;
+  }
+  .pp-motto-input::placeholder{color:#5f6d80;}
+  .pp-motto-input:focus{border-color:rgba(56,189,248,.62);box-shadow:0 0 0 3px rgba(56,189,248,.1);}
+  .pp-motto-actions{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .pp-motto-count{color:#64748b;font-size:10.5px;font-variant-numeric:tabular-nums;}
+  .pp-motto-save{height:32px;padding:0 15px;border:1px solid rgba(56,189,248,.42);border-radius:var(--radius-pill);background:rgba(56,189,248,.12);color:#dff7ff;font-weight:700;font-size:12px;cursor:pointer;}
+  .pp-motto-save:hover{background:rgba(56,189,248,.2);}
+  .pp-motto-display{position:relative;margin:0;padding:15px 17px 15px 28px;color:#dff7ff;font:550 14px/1.7 inherit;letter-spacing:.2px;overflow-wrap:anywhere;}
+  .pp-motto-display::before{content:'“';position:absolute;left:8px;top:6px;color:#38bdf8;font:700 30px/1 Georgia,serif;opacity:.82;}
   .pp-section-title{display:flex;align-items:center;gap:8px;font:700 11px/1.2 'Inter',sans-serif;letter-spacing:1.2px;text-transform:uppercase;color:#94a3b8;margin:0;}
   .pp-section-title .pp-home-chip{font-weight:600;letter-spacing:0;text-transform:none;color:#fbbf24;font-size:12px;}
   .pp-section-title .pp-home-chip.off{color:#7f8da0;}
@@ -4441,6 +4528,9 @@
   body.light-theme .pp-head h2,body.light-theme .pp-name,body.light-theme .pp-row-value,body.light-theme .pp-switch-title{color:#1e293b;}
   body.light-theme .pp-email,body.light-theme .pp-kicker,body.light-theme .pp-section-title{color:#64748b;}
   body.light-theme .pp-row{background:rgba(15,23,42,.03);border-color:rgba(15,23,42,.1);}
+  body.light-theme .pp-motto-card{background:linear-gradient(135deg,rgba(79,70,229,.07),rgba(255,255,255,.72));border-color:rgba(79,70,229,.18);}
+  body.light-theme .pp-motto-input{background:rgba(255,255,255,.82);border-color:rgba(15,23,42,.12);color:#1e293b;}
+  body.light-theme .pp-motto-display{color:#334155;}
   body.light-theme .pp-chip{background:rgba(79,70,229,.06);border-color:rgba(79,70,229,.2);color:#4f46e5;}
   body.light-theme .pp-tag{background:rgba(79,70,229,.08);border-color:rgba(79,70,229,.25);color:#4f46e5;}
   body.light-theme .pp-empty-title{color:#1e293b;}
@@ -4477,7 +4567,7 @@
       <h1 class="smt-title" id="launchTitleSMT">Chinese Footprint</h1>
     </div>
     <!-- 副标题：smokytex 烟雾文字特效（纯色文字，无渐变填充）-->
-    <p class="launch-subtitle" id="launchSubtitleSMT">点亮你走过的每一座城市</p>
+    <p class="launch-subtitle" id="launchSubtitleSMT">记录一座城，也记录那时的自己</p>
     <!-- 启动按钮：Shiny CTA 风格（内容包裹在单个 span 内，供呼吸光晕 span::before 使用）-->
     <button class="launch-btn" id="startBtn">
       <span><span class="sparkle">✦</span>开始记录</span>
@@ -4501,13 +4591,16 @@
   <header>
     <div class="brand">
       <div class="pin" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-          <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5z"/>
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 8.5A2.5 2.5 0 0 1 5.5 6h1.4a2 2 0 0 0 1.7-.95l.75-1.2A1.6 1.6 0 0 1 10.7 3h2.6c.55 0 1.07.28 1.37.75l.74 1.2A2 2 0 0 0 17.1 6h1.4A2.5 2.5 0 0 1 21 8.5v8A2.5 2.5 0 0 1 18.5 19h-13A2.5 2.5 0 0 1 3 16.5v-8z"/>
+          <circle cx="12" cy="12.5" r="3.6"/>
+          <circle cx="12" cy="12.5" r="1" fill="currentColor" stroke="none"/>
+          <path d="M17.6 9.6h.01" stroke-width="2.2"/>
         </svg>
       </div>
-      <div>
+      <div class="brand-text">
         <h1>记录我的中国行</h1>
-        <p class="sub">点亮你走过的每一座城市</p>
+        <p class="sub" id="brandMotto" title="记录一座城，也记录那时的自己">“记录一座城，也记录那时的自己”</p>
       </div>
     </div>
     <div class="header-actions">
@@ -4552,6 +4645,11 @@
 
   <main id="mapWrap">
     <div id="map"></div>
+    <!-- 人生寄语：顶栏下边缘折叠按钮（点击向下展开/向上收起，未设置寄语时隐藏） -->
+    <button class="motto-toggle-btn" id="mottoToggleBtn" type="button" aria-expanded="false" aria-controls="mottoPanel" aria-label="展开人生寄语" title="展开/收起人生寄语" hidden>
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+    </button>
+    <div class="motto-panel" id="mottoPanel" hidden></div>
     <div class="province-focus-layer" id="provinceFocusLayer" hidden aria-live="polite">
       <svg class="province-focus-lines" id="provinceFocusLines" aria-hidden="true"></svg>
       <div id="provinceFocusCards"></div>
@@ -4584,13 +4682,14 @@
       <div class="title">图例</div>
       <div class="row"><i class="dot blue"></i>未记录城市<span class="op-hint">单击编辑</span></div>
       <div class="row"><i class="dot gold"></i>已记录城市<span class="op-hint">单击编辑 · 双击查看</span></div>
-      <div class="row"><i class="dot home"></i>我的家乡<span class="op-hint">金色标记</span></div>
+      <div class="row"><i class="dot home"></i>我的家乡<span class="op-hint">单击编辑 · 双击查看</span></div>
     </div>
     <!-- 左侧数据面板：城市视图统计 + 蛇形时间轴 -->
     <div class="left-panel" id="leftPanel">
       <div class="dash-card star-border">
         <div class="view-tabs">
-          <button class="view-tab active" data-view="city">城市视图</button>
+          <button class="view-tab active" data-view="default" title="基础地图：放大后显示全部市界">默认视图</button>
+          <button class="view-tab" data-view="city" title="高亮显示所有已到达城市的边界线">城市视图</button>
           <button class="view-tab" data-view="province">省份视图</button>
         </div>
         <!-- ===== Variable Proximity 可变字体效果：Chinese Footprint（reactbits variable-proximity）===== -->
@@ -6172,6 +6271,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   let provinceFocusCities=[];              // 当前省份悬浮卡片对应城市
   let provinceFocusRenderToken=0;          // 避免快速切换省份时旧异步结果覆盖新结果
   let provinceFocusLayoutRaf=0;
+  // 城市视图平移时整层走合成位移；停止后再一次性写回卡片坐标并精确重绘连线。
+  let cityCardRoamX=0;
+  let cityCardRoamY=0;
+  let cityCardRoamActive=false;
 
   /* ---------- ECharts 多 CDN 加载 ---------- */
   const ECHARTS_CDNS=[
@@ -6340,6 +6443,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       geo:[
         {center:[cx,cy],zoom:target},
         {center:[cx,cy],zoom:target},
+        {center:[cx,cy],zoom:target},
         {center:[cx,cy],zoom:target}
       ]
     });
@@ -6359,6 +6463,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       const res=await fetchWithTimeout(GEO_BASE+'100000_full.json',20000);
       if(!res.ok) throw new Error('全国地图数据请求失败');
       china=await res.json();
+      try{ if(!window.CHINA_GEO) window.CHINA_GEO=china; }catch(e){}   // 缓存供已到达城市边界（直辖市）复用
     }
     echarts.registerMap('china', china);
 
@@ -6430,7 +6535,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       selectedArea:'rgba(2,132,199,.28)',selectedBorder:'#0284c7',
       selectedShadow:'rgba(2,132,199,.30)',visitedShadow:'rgba(2,132,199,.14)',
       selectedLabel:'#be123c',
-      cityBorder:'rgba(2,132,199,.40)',provinceBorder:'#0284c7',
+      cityBorder:'rgba(2,132,199,.40)',provinceBorder:'#0284c7',visitedCityBorder:'rgba(2,132,199,.85)',
       tooltipBg:'rgba(255,255,255,.97)',tooltipBorder:'rgba(100,116,139,.35)',tooltipText:'#1f2a37'
     }:{
       area:'#050505',border:'#475569',
@@ -6446,7 +6551,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       selectedArea:'rgba(14,165,233,.34)',selectedBorder:'#7dd3fc',
       selectedShadow:'rgba(56,189,248,.45)',visitedShadow:'rgba(56,189,248,.18)',
       selectedLabel:'#e0f7ff',
-      cityBorder:'rgba(56,189,248,.38)',provinceBorder:'#38bdf8',
+      cityBorder:'rgba(56,189,248,.38)',provinceBorder:'#38bdf8',visitedCityBorder:'rgba(56,189,248,.9)',
       tooltipBg:'rgba(8,8,8,.97)',tooltipBorder:'rgba(71,85,105,.5)',tooltipText:'#f8fafc'
     };
   }
@@ -6494,6 +6599,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       ]
     });
     applyProvinceRegionStyles();
+    if(typeof updateVisitedBorderLayer==='function') updateVisitedBorderLayer();   // 已到达城市边界颜色跟随主题
     if(typeof updateScatterData==='function') updateScatterData();   // 数据项级城市名标签颜色写死在数据里，需重建刷新
     if(typeof recomputeLabelPositions==='function') recomputeLabelPositions();
   }
@@ -6659,6 +6765,19 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
           emphasis:{disabled:true},
           label:{show:true,formatter:p=>provinceShort(p.name),color:tc.label,fontSize:13,fontWeight:700,lineHeight:18,textShadowColor:tc.labelShadow,textShadowBlur:3},
           labelLayout:{hideOverlap:true}
+        },
+        {
+          // 已到达城市边界图层（z:4，位于市界图层之上、城市散点之下）：
+          // 仅「城市视图」显示，高亮所有已到达城市（已点亮城市+家乡）的边界线；
+          // 默认视图/省份视图隐藏。显隐与样式由 updateVisitedBorderLayer 统一管理。
+          map:'china',name:'visited_city_borders',
+          roam:false,
+          zoom:1.18,center:[108,35.5],scaleLimit:{min:0.8,max:14},
+          silent:true,animation:false,
+          z:4,show:false,
+          itemStyle:{areaColor:'transparent',borderColor:'transparent',borderWidth:0,borderType:'solid',shadowBlur:0},
+          emphasis:{disabled:true},
+          label:{show:false}
         }
       ],
       series:[
@@ -6675,8 +6794,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         },
         {
           name:'已记录',type:'effectScatter',coordinateSystem:'geo',geoIndex:2,data:[],
-          symbolSize:p=>(isCapital(p)?20:15)*markerScale(),z:6,showEffectOn:'render',
-          rippleEffect:{brushType:'stroke',scale:2.0,period:3.5},
+          symbolSize:p=>(isCapital(p)?15:11)*markerScale(),z:6,showEffectOn:'render',
+          rippleEffect:{brushType:'stroke',scale:1.5,period:3.5},
           itemStyle:{color:tc.markerVisited,shadowBlur:8,shadowColor:tc.markerVisitedShadow},
           // 已记录城市标签：默认缩小状态下不显示，放大到阈值后显示并自动错开
           label:{
@@ -6874,17 +6993,26 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         geoUpdates.push({show:false});
         // 拖动期间市界图层暂时隐藏，恢复轻量省界作为视觉参照；每次拖动只切换一次。
         applyProvinceRegionStyles();
+      }else{
+        geoUpdates.push({});   // geo[1] 占位（无变化）
       }
+      // geo[2] 占位（自身处理 roam）；geo[3] 已到达城市边界层要素轻量，拖动期间持续跟随
+      geoUpdates.push({},{zoom:state.zoom,center:state.center});
       myChart.setOption({
         animation:false,
         geo:geoUpdates
       },{silent:true});
+      // 城市视图与省份视图共用同一套规则：逐卡跟随城市坐标，并在同一帧重绘连线。
       syncProvinceCardsDuringRoam();
     }
     function syncLabelLayout(){
+      if(cityCardRoamActive){
+        commitCityCardRoamTransform();
+      }
       clearTimeout(roamEndTimer);
       roamEndTimer=setTimeout(()=>{
         if(roamThrottleId){ cancelAnimationFrame(roamThrottleId); roamThrottleId=null; }
+        commitCityCardRoamTransform();
         doSyncLabelLayout();
       },ROAM_END_DELAY);
 
@@ -6900,7 +7028,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         const zoom=opt.geo[2].zoom||opt.geo[1].zoom||1.18;
         currentZoom=zoom;
         // 省份卡片交给布局函数自判：缩放/容器无实质变化时只重绘连线，卡片绝不动
-        if(selectedProvinceName||currentView==='province') requestProvinceFocusLayout();
+        if(selectedProvinceName||currentView==='province'||currentView==='city') requestProvinceFocusLayout();
       const center=opt.geo[2].center||opt.geo[1].center||[108,35.5];
       // 城市名显示条件：放大到阈值 / 省份视图 / 已选中省份，三者其一即需要标签布局
         const showLabel=zoom>=LABEL_ZOOM_THRESHOLD||currentView==='province'||!!selectedProvinceName;
@@ -6936,12 +7064,13 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
               zoom:zoom,center:center,
               label:{show:true,fontSize:pf,fontWeight:700,lineHeight:Math.round(pf*1.4),color:tc.label,textShadowColor:tc.labelShadow,textShadowBlur:3},
               labelLayout:{hideOverlap:true}
-            }
+            },
+            {zoom:zoom,center:center}   // geo[3] 已到达城市边界层跟随缩放平移
           ],
           series:[
             {symbolSize:p=>(isCapital(p)?13:7)*s},
-            {symbolSize:p=>(isCapital(p)?20:15)*s,
-             rippleEffect:{brushType:'stroke',scale:4.2*(s<0.8?0.65:1),period:4.5},
+            {symbolSize:p=>(isCapital(p)?15:11)*s,
+             rippleEffect:{brushType:'stroke',scale:3.0*(s<0.8?0.65:1),period:4.5},
              // 城市名统一由系列2静态标签渲染，悬停标签永远禁用，避免与静态标签重复
              emphasis:{label:{show:false}}}
           ]
@@ -7400,6 +7529,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   /* ---------- 省份点击聚焦：城市照片卡片 + 地图连接线 ---------- */
   function clearProvinceFocus(){
+    resetCityCardRoamTransform();
     selectedProvinceName='';
     provinceFocusCities=[];
     provinceFocusRenderToken++;
@@ -7426,7 +7556,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   async function renderProvinceFocusCards(provinceName){
     const token=++provinceFocusRenderToken;
-    const showAllLitCities=currentView==='province'&&!provinceName;
+    const showAllLitCities=(currentView==='province'||currentView==='city')&&!provinceName;
     const provinceCities=cityPoints
       .filter(city=>citiesWithPhotos.has(city.cityKey)&&(showAllLitCities||provinceOf(city.adcode)===provinceName))
       .sort((a,b)=>(photoCountByCity.get(b.cityKey)||0)-(photoCountByCity.get(a.cityKey)||0));
@@ -7442,10 +7572,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       };
     }));
     const viewStillMatches=showAllLitCities
-      ?currentView==='province'&&!selectedProvinceName
+      ?(currentView==='province'||currentView==='city')&&!selectedProvinceName
       :selectedProvinceName===provinceName;
     if(token!==provinceFocusRenderToken||!viewStillMatches) return;
 
+    resetCityCardRoamTransform();
     provinceFocusCards.innerHTML='';
     provinceFocusLines.innerHTML='';
     provinceFocusCities=cardCities;
@@ -7531,6 +7662,49 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
   // 上一次各城市的屏幕像素坐标，作为平移检测基线（城市集合变化时置 null）
   let provinceFocusLastPoints=null;
+
+  // 城市视图拖动热路径：卡片与连线作为两个合成层整体移动，避免每帧逐卡
+  // convertToPixel、DOM 定位和 SVG 节点重建。地图停止后再写回真实位置。
+  function renderCityCardRoamTransform(){
+    if(!cityCardRoamActive) return;
+    const transform='translate3d('+cityCardRoamX+'px,'+cityCardRoamY+'px,0)';
+    provinceFocusCards.style.transform=transform;
+    provinceFocusLines.style.transform=transform;
+  }
+
+  function resetCityCardRoamTransform(){
+    cityCardRoamX=0;
+    cityCardRoamY=0;
+    cityCardRoamActive=false;
+    provinceFocusCards.style.transform='';
+    provinceFocusLines.style.transform='';
+  }
+
+  function commitCityCardRoamTransform(){
+    if(!cityCardRoamActive) return;
+    const dx=cityCardRoamX,dy=cityCardRoamY;
+    resetCityCardRoamTransform();
+    const cards=Array.from(provinceFocusCards.querySelectorAll('.province-map-card'));
+    const width=mapWrapEl.clientWidth,height=mapWrapEl.clientHeight;
+    cards.forEach((card,index)=>{
+      const item=provinceFocusCities[index];
+      const left=parseFloat(card.style.left),top=parseFloat(card.style.top);
+      if(!item||!Number.isFinite(left)||!Number.isFinite(top)) return;
+      const nextLeft=left+dx,nextTop=top+dy;
+      card.style.left=nextLeft+'px';
+      card.style.top=nextTop+'px';
+      if(width&&height){
+        const pct={xPct:+(nextLeft/width).toFixed(4),yPct:+(nextTop/height).toFixed(4)};
+        cardPosCache[item.city.cityKey]=pct;
+        if(cardPins[item.city.cityKey]) cardPins[item.city.cityKey]=pct;
+      }
+    });
+    if(cards.length) saveCardPositionsDebounced();
+    const points=provinceFocusCities.map(item=>myChart&&myChart.convertToPixel({geoIndex:2},item.city.value));
+    if(points.length&&points.every(point=>point&&Number.isFinite(point[0])&&Number.isFinite(point[1]))) {
+      provinceFocusLastPoints=points;
+    }
+  }
 
   // 城市点→卡片锚点的贝塞尔连线路径（自动布局与拖拽共用，保证线条跟随一致）
   // 锚点=卡片边界上离城市最近的点；城市点进入卡片范围时投影到最近边，避免线长归零消失
@@ -7676,7 +7850,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   // 拖动热路径：只让已经完成布局的卡片跟随城市并重绘连线，不执行碰撞检测或重新排版。
   function syncProvinceCardsDuringRoam(){
-    if(!myChart||(!selectedProvinceName&&currentView!=='province')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
+    if(!myChart||(!selectedProvinceName&&currentView!=='province'&&currentView!=='city')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
     const cards=Array.from(provinceFocusCards.querySelectorAll('.province-map-card'));
     if(!cards.length||!cards.every(card=>Number.isFinite(parseFloat(card.style.left))&&Number.isFinite(parseFloat(card.style.top)))) return;
     panFollowCards(cards);
@@ -7685,7 +7859,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   // 纯平移地图时：卡片位置保持不动，仅按城市最新像素位置重绘连线
   function updateProvinceCardLines(){
-    if(!myChart||(!selectedProvinceName&&currentView!=='province')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
+    if(!myChart||(!selectedProvinceName&&currentView!=='province'&&currentView!=='city')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
     const cards=Array.from(provinceFocusCards.querySelectorAll('.province-map-card'));
     if(!cards.length) return;
     const width=mapWrapEl.clientWidth,height=mapWrapEl.clientHeight;
@@ -7740,7 +7914,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
 
   function layoutProvinceFocusCards(){
-    if(!myChart||(!selectedProvinceName&&currentView!=='province')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
+    if(!myChart||(!selectedProvinceName&&currentView!=='province'&&currentView!=='city')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
     const cards=Array.from(provinceFocusCards.querySelectorAll('.province-map-card'));
     if(!cards.length) return;
     // 【卡片冻结·逐卡判定】已有像素位置的卡片绝不再被布局移动——唯一移动方式 = 鼠标拖动卡片
@@ -8046,7 +8220,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     authDesc.textContent=signedIn
       ?'同一账号在不同设备登录后，会显示相同的旅行记录。'
       :(localOnly?'当前内容不会上传云端。':'登录后可跨设备同步，也可以选择仅在本机使用。');
-    if(signedIn) loadProfileToUI();
+    loadProfileToUI();
     if(!signedIn){
       setChangePasswordOpen(false);
       setSyncStatus('仅本机','');
@@ -8095,6 +8269,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   /* ===== 用户资料（头像+昵称）账号级存储 ===== */
   const PROFILE_KEY_PREFIX='travelUserProfile_';
+  const LIFE_MOTTO_MAX_LENGTH=60;
+  function normalizeLifeMotto(value){
+    return String(value||'').replace(/\s+/g,' ').trim().slice(0,LIFE_MOTTO_MAX_LENGTH);
+  }
   function getProfileKey(){
     if(cloudUser&&cloudUser.id) return PROFILE_KEY_PREFIX+cloudUser.id;
     if(cloudUser&&cloudUser.email) return PROFILE_KEY_PREFIX+cloudUser.email;
@@ -8121,11 +8299,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       const localRaw=localStorage.getItem(localKey);
       if(!localRaw) return;
       const localProfile=JSON.parse(localRaw);
-      if(!localProfile.nickname&&!localProfile.avatarUrl) return;
+      if(!localProfile.nickname&&!localProfile.avatarUrl&&!localProfile.lifeMotto) return;
       const userRaw=localStorage.getItem(userKey);
       if(userRaw){
         const userProfile=JSON.parse(userRaw);
-        if(userProfile.nickname||userProfile.avatarUrl) return;
+        if(userProfile.nickname||userProfile.avatarUrl||userProfile.lifeMotto) return;
       }
       localStorage.setItem(userKey,localRaw);
       localStorage.removeItem(localKey);
@@ -8186,7 +8364,41 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     profileNickname.textContent=p.nickname||'旅行者';
     profileEmail.textContent=cloudUser?(cloudUser.email||''):'';
     renderProfileAvatar(p.avatarUrl);
+    const motto=normalizeLifeMotto(p.lifeMotto);
+    const mottoBtn=$('mottoToggleBtn'),mottoPanel=$('mottoPanel');
+    if(mottoBtn&&mottoPanel){
+      if(motto){
+        mottoBtn.hidden=false;
+        mottoPanel.textContent='“'+motto+'”';
+        if(mottoBtn.getAttribute('aria-expanded')==='true'){
+          mottoPanel.hidden=false;
+        }
+      }else{
+        mottoBtn.hidden=true;
+        mottoPanel.hidden=true;
+        mottoPanel.textContent='';
+      }
+    }
   }
+
+  /* ===== 人生寄语折叠按钮：点击向下展开 / 再次点击收起（状态持久化）===== */
+  (function(){
+    const btn=$('mottoToggleBtn'),panel=$('mottoPanel');
+    if(!btn||!panel) return;
+    const STORAGE_KEY='travelMottoExpanded';
+    if(localStorage.getItem(STORAGE_KEY)==='1'){
+      btn.setAttribute('aria-expanded','true');
+      btn.setAttribute('aria-label','收起人生寄语');
+      if(!btn.hidden&&panel.textContent) panel.hidden=false;
+    }
+    btn.addEventListener('click',()=>{
+      const expand=btn.getAttribute('aria-expanded')!=='true';
+      btn.setAttribute('aria-expanded',String(expand));
+      btn.setAttribute('aria-label',expand?'收起人生寄语':'展开人生寄语');
+      panel.hidden=!expand;
+      try{ localStorage.setItem(STORAGE_KEY,expand?'1':'0'); }catch(e){}
+    });
+  })();
 
   /* ===== 昵称编辑 ===== */
   function openNicknameEdit(){
@@ -8456,7 +8668,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         saveLocalProfileOnly({avatarUrl});
       }catch(e){console.warn('头像上传OSS失败',e);}
     }
-    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,reviews:reviews.map(r=>JSON.parse(JSON.stringify(r))),userProfile:{nickname:profile.nickname,avatarUrl,email:profile.email,isProfilePublic:!!profile.isProfilePublic},savedAt:new Date().toISOString()};
+    return {version:1,photos:cloudPhotos,cityMeta:cloudMetas,reviews:reviews.map(r=>JSON.parse(JSON.stringify(r))),userProfile:{nickname:profile.nickname,avatarUrl,email:profile.email,lifeMotto:normalizeLifeMotto(profile.lifeMotto),isProfilePublic:!!profile.isProfilePublic},savedAt:new Date().toISOString()};
   }
 
   async function syncToCloud(options){
@@ -8492,6 +8704,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         if(syncEpoch!==cloudSyncEpoch||cloudSigningOut||!cloudUser) throw Object.assign(new Error('同步已取消'),{name:'AbortError'});
         localStorage.setItem(CLOUD_OWNER_KEY,cloudUser.id);
         localStorage.setItem(CLOUD_DIRTY_KEY,'0');
+        if(getProfilePublicFlag()){
+          buildPublicProfilePayload(true).then(syncPublicProfileToCloud).catch(e=>console.warn('更新公开旅行统计失败',e));
+        }
         setSyncStatus('已同步','');
         if(options&&options.notify) toast('旅行资料已同步到云端');
       }catch(error){
@@ -8977,7 +9192,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
 
   /* ---------- 面板数据更新 ---------- */
-  let currentView='city'; // 'city' | 'province'
+  let currentView='default'; // 'default'（默认视图）| 'city'（城市视图）| 'province'（省份视图）
   let visitedProvinces=new Set();
 
   function applyProvinceRegionStyles(){
@@ -9031,6 +9246,79 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     provProgFillEl.style.width=(litProv/TOTAL_PROVINCES*100)+'%';
     updateTotalTripKm();                                 // 总计行程（异步重算，token 防旧值覆盖）
     applyProvinceRegionStyles();
+    // 已到达城市集合可能变化（上传/删除照片、设置家乡）：重建城市视图高亮边界
+    rebuildVisitedCityBorders();
+    updateVisitedBorderLayer();
+  }
+
+  /* ---------- 城市视图：已到达城市边界高亮 ---------- */
+  let visitedCityBorders=null;  // 已点亮城市 adcode 集合（仅城市视图 geo[3] 使用）
+  let _visitedBorderKey='';     // 已点亮城市集合签名
+  let _visitedBorderMapReady=false;
+
+  // 使用完整全国坐标系渲染已点亮城市，避免局部 GeoJSON 被 ECharts 重新缩放后边界漂移。
+  function rebuildVisitedCityBorders(){
+    if(!cityBoundaries||!cityPoints.length){ visitedCityBorders=null; return false; }
+    const adcodes=new Set();
+    for(const cityKey of citiesWithPhotos){
+      const cp=cityPoints.find(c=>c.cityKey===cityKey);
+      if(cp&&cp.adcode) adcodes.add(String(cp.adcode));
+    }
+    const key=[...adcodes].sort().join(',');
+    if(!key){
+      if(visitedCityBorders){ visitedCityBorders=null; _visitedBorderKey=''; }
+      return false;
+    }
+    if(key===_visitedBorderKey) return !!visitedCityBorders;   // 集合无变化
+    if(!_visitedBorderMapReady){
+      const fullFeatures=[
+        ...(cityBoundaries.features||[]),
+        ...((window.CHINA_GEO&&window.CHINA_GEO.features)||[])
+      ].map(f=>({
+        ...f,
+        properties:{...(f.properties||{}),name:String((f.properties||{}).adcode||(f.properties||{}).name||'')}
+      }));
+      echarts.registerMap('china_visited_cities',{
+        type:'FeatureCollection',
+        features:fullFeatures
+      });
+      _visitedBorderMapReady=true;
+    }
+    visitedCityBorders=adcodes;
+    _visitedBorderKey=key;
+    return true;
+  }
+
+  // 城市视图专用：geo[3] 已到达城市边界层的显隐与样式（默认视图/省份视图隐藏）
+  function updateVisitedBorderLayer(){
+    if(!myChart) return;
+    const show=currentView==='city'&&!!visitedCityBorders;
+    const tc=chartThemeColors();
+    const opt=myChart.getOption();
+    const zoom=opt.geo[2].zoom||opt.geo[1].zoom||1.18;
+    const center=opt.geo[2].center||opt.geo[1].center||[108,35.5];
+    const regions=show?[...visitedCityBorders].map(adcode=>({
+      name:adcode,
+      itemStyle:{
+        areaColor:'transparent',
+        borderColor:tc.visitedCityBorder,
+        borderWidth:1.8,
+        borderType:'solid',
+        shadowBlur:0
+      }
+    })):[];
+    myChart.setOption({geo:[{},{},{},{
+      show:show,
+      map:show?'china_visited_cities':'china',
+      zoom:zoom,center:center,
+      regions,
+      itemStyle:{
+        areaColor:'transparent',
+        borderColor:'transparent',
+        borderWidth:0,
+        borderType:'solid',shadowBlur:0
+      }
+    }]});
   }
 
   /* ---------- 省份视图切换 ---------- */
@@ -9052,9 +9340,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     });
     if(!myChart) return;
     applyProvinceRegionStyles();
+    // 城市视图显示已到达城市边界高亮层，默认/省份视图隐藏
+    updateVisitedBorderLayer();
     // 视图切换后刷新城市名显隐（currentView 在上方已更新，标签需按新视图规则重算）
     updateScatterData();
-    if(view==='province') await renderProvinceFocusCards('');
+    if(view==='province'||view==='city') await renderProvinceFocusCards('');
   }
 
   // ===== 修复点：事件绑定限定到顶部地图切换按钮组，避免右侧按钮误触发 setView =====
@@ -9562,6 +9852,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         closeFpHomePicker();
         updateTotalTripKm();                 // 换家后城市视图统计卡的总计行程同步重算
         if(typeof updateScatterData==='function') updateScatterData();   // 刷新地图上的「家」金色标记
+        // 家乡属于已到达城市：城市视图边界高亮集合同步更新
+        if(typeof rebuildVisitedCityBorders==='function') rebuildVisitedCityBorders();
+        if(typeof updateVisitedBorderLayer==='function') updateVisitedBorderLayer();
         if(fpPickerMode==='hometown'){
           // 我的家乡：选择后进入城市编辑页（功能与点亮城市一致），不启动足迹回放
           toast('我的家乡已设置为「'+c.name+'」');
@@ -11189,7 +11482,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       // 刷新弯曲时间轴（收集已点亮城市并渲染迷你时间轴）
       timelineCities=await collectTimelineCities();
       renderMiniTimeline();
-      if(selectedProvinceName||currentView==='province') await renderProvinceFocusCards(selectedProvinceName);
+      if(selectedProvinceName||currentView==='province'||currentView==='city') await renderProvinceFocusCards(selectedProvinceName);
     }catch(e){
       console.error(e);
       toast('本地数据读取失败：'+(e.message||e),true);
@@ -13013,7 +13306,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   function focusCityOnMap(item){
     if(!myChart) return;
     const z=Math.max(currentZoom,4);
-    myChart.setOption({geo:[{center:item.value,zoom:z},{center:item.value,zoom:z},{center:item.value,zoom:z}]});
+    myChart.setOption({geo:[{center:item.value,zoom:z},{center:item.value,zoom:z},{center:item.value,zoom:z},{center:item.value,zoom:z}]});
     // 触发 georoam 以更新标签和散点大小（geo[2] 在顶层 zlevel 处理 roam）
     myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_labels',zoom:1.0001,originX:400,originY:300});
   }
@@ -13136,7 +13429,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
     // 缩放定位到目标城市（zoom 至少 5，确保看得清）
     const z5=Math.max(currentZoom,5);
-    myChart.setOption({geo:[{center:[lng,lat],zoom:z5},{center:[lng,lat],zoom:z5},{center:[lng,lat],zoom:z5}]});
+    myChart.setOption({geo:[{center:[lng,lat],zoom:z5},{center:[lng,lat],zoom:z5},{center:[lng,lat],zoom:z5},{center:[lng,lat],zoom:z5}]});
     myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_labels',zoom:1.0001,originX:400,originY:300});
 
     // 高亮闪烁：通过 ECharts emphasis 临时高亮目标城市散点
@@ -14134,16 +14427,21 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     if(home){ try{ meta=await getCityMeta(home.cityKey); }catch(e){ meta=null; } }
     const tags=meta?(meta.tags||[]).map(t=>typeof t==='string'?t:(t&&t.text)||'').filter(Boolean):[];
     const attractions=meta?(meta.attractions||[]).map(a=>(a&&a.name)||'').filter(Boolean):[];
+    const travelStats=await getProfileTravelStats();
     return {
       user_id:cloudUser&&cloudUser.id?cloudUser.id:null,
       nickname:p.nickname||'旅行者',
       avatar_url:p.avatarUrl||'',
+      life_motto:normalizeLifeMotto(p.lifeMotto),
       is_public:!!isPublic,
       hometown_city_name:home?home.name:'',
       hometown_description:meta?(meta.description||''):'',
       birth_month:meta?(getVisitMonths(meta)[0]||''):'',
       tags:tags,
       attractions:attractions,
+      visited_city_count:travelStats.cities,
+      visited_province_count:travelStats.provinces,
+      travel_distance_km:Math.round(travelStats.totalKm*10)/10,
       updated_at:new Date().toISOString(),
     };
   }
@@ -14193,9 +14491,29 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     return '<div class="pp-chips">'+attractions.map(a=>'<span class="pp-chip">'+escapeHtml(a)+'</span>').join('')+'</div>';
   }
 
+  async function getProfileTravelStats(){
+    const provinceNames=new Set();
+    for(const cityKey of citiesWithPhotos){
+      const city=cityPoints.find(c=>c.cityKey===cityKey);
+      const province=city&&provinceOf(city.adcode);
+      if(province) provinceNames.add(province);
+    }
+    const home=getFootprintHome();
+    const cities=await collectTimelineCities();
+    let previous=home&&home.value,totalKm=0;
+    for(const city of cities){
+      if(!city.value) continue;
+      if(home&&city.cityKey===home.cityKey){ previous=city.value; continue; }
+      if(previous) totalKm+=fpHavKm(previous,city.value);
+      previous=city.value;
+    }
+    return {cities:citiesWithPhotos.size,provinces:provinceNames.size,totalKm};
+  }
+
   async function renderMyProfilePage(){
     const p=getUserProfile();
     const nickname=p.nickname||'旅行者';
+    const lifeMotto=normalizeLifeMotto(p.lifeMotto);
     const email=(cloudUser&&cloudUser.email)||p.email||'';
     const home=getFootprintHome();
     let meta=null;
@@ -14205,6 +14523,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     const tags=meta?(meta.tags||[]).map(t=>typeof t==='string'?t:(t&&t.text)||'').filter(Boolean):[];
     const attractions=meta?(meta.attractions||[]).map(a=>(a&&a.name)||'').filter(Boolean):[];
     const isPublic=getProfilePublicFlag();
+    const travelStats=await getProfileTravelStats();
 
     profileBody.innerHTML=
       '<div class="pp-block">'+
@@ -14212,8 +14531,21 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
           '<div class="pp-avatar" id="ppAvatar"></div>'+
           '<div class="pp-profile-meta">'+
             '<div class="pp-name">'+escapeHtml(nickname)+'</div>'+
-            '<div class="pp-email">'+(email?escapeHtml(email):'<span class="pp-row-value empty">暂未绑定邮箱</span>')+'</div>'+
+            '<div class="pp-email">'+(email?escapeHtml(email):'<span class="pp-email-empty">暂未绑定邮箱</span>')+'</div>'+
           '</div>'+
+        '</div>'+
+        '<dl class="pp-stats" aria-label="旅行统计">'+
+          '<div class="pp-stat"><dd class="pp-stat-value">'+travelStats.cities+'</dd><dt class="pp-stat-label">到达城市</dt></div>'+
+          '<div class="pp-stat"><dd class="pp-stat-value">'+travelStats.provinces+'</dd><dt class="pp-stat-label">覆盖省份</dt></div>'+
+          '<div class="pp-stat"><dd class="pp-stat-value">'+fpFmtKm(travelStats.totalKm)+'<small>km</small></dd><dt class="pp-stat-label">旅行里程</dt></div>'+
+        '</dl>'+
+        '<p class="pp-stats-note">里程按家乡与城市到访顺序的直线距离估算</p>'+
+      '</div>'+
+      '<div class="pp-block">'+
+        '<div class="pp-motto-card">'+
+          '<div class="pp-motto-title-row"><div class="pp-section-title">人生寄语</div><span class="pp-motto-hint">展示在顶栏下方寄语栏与公开主页</span></div>'+
+          '<textarea class="pp-motto-input" id="ppMottoInput" maxlength="'+LIFE_MOTTO_MAX_LENGTH+'" placeholder="写下一句想陪自己走很久的话">'+escapeHtml(lifeMotto)+'</textarea>'+
+          '<div class="pp-motto-actions"><span class="pp-motto-count" id="ppMottoCount">'+lifeMotto.length+' / '+LIFE_MOTTO_MAX_LENGTH+'</span><button class="pp-motto-save" id="ppMottoSave" type="button">保存寄语</button></div>'+
         '</div>'+
       '</div>'+
       '<div class="pp-block">'+
@@ -14237,6 +14569,22 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       '</div>';
 
     renderAvatarInto($('ppAvatar'),p.avatarUrl,nickname);
+
+    const mottoInput=$('ppMottoInput'),mottoCount=$('ppMottoCount'),mottoSave=$('ppMottoSave');
+    mottoInput.addEventListener('input',()=>{
+      mottoCount.textContent=mottoInput.value.length+' / '+LIFE_MOTTO_MAX_LENGTH;
+    });
+    mottoSave.addEventListener('click',async()=>{
+      const motto=normalizeLifeMotto(mottoInput.value);
+      mottoInput.value=motto;
+      mottoCount.textContent=motto.length+' / '+LIFE_MOTTO_MAX_LENGTH;
+      saveUserProfile({lifeMotto:motto});
+      loadProfileToUI();
+      if(getProfilePublicFlag()&&cloudUser&&cloudUser.id){
+        try{ syncPublicProfileToCloud(await buildPublicProfilePayload(true)); }catch(e){ console.warn(e); }
+      }
+      toast(motto?'人生寄语已保存':'已清除地图寄语');
+    });
 
     const switchEl=$('ppPublicSwitch');
     const rowEl=$('ppSwitchRow');
@@ -14275,10 +14623,16 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   async function renderPublicProfile(data){
     if(!data){ renderPublicProfileEmpty(); return; }
     const nickname=data.nickname||'旅行者';
+    const lifeMotto=normalizeLifeMotto(data.life_motto);
     const desc=data.hometown_description||'';
     const birthMonth=data.birth_month||'';
     const tags=(data.tags||[]).map(t=>typeof t==='string'?t:(t&&t.text)||'').filter(Boolean);
     const attractions=(data.attractions||[]).map(a=>typeof a==='string'?a:(a&&a.name)||'').filter(Boolean);
+    const travelStats={
+      cities:Math.max(0,Number(data.visited_city_count)||0),
+      provinces:Math.max(0,Number(data.visited_province_count)||0),
+      totalKm:Math.max(0,Number(data.travel_distance_km)||0),
+    };
     publicProfileTitle.textContent='TA 的个人资料';
     publicProfileBody.innerHTML=
       '<div class="pp-block">'+
@@ -14289,7 +14643,14 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
             '<div class="pp-email">'+(data.hometown_city_name?('家乡 · '+escapeHtml(data.hometown_city_name)):'旅行者')+'</div>'+
           '</div>'+
         '</div>'+
+        '<dl class="pp-stats" aria-label="TA 的旅行统计">'+
+          '<div class="pp-stat"><dd class="pp-stat-value">'+travelStats.cities+'</dd><dt class="pp-stat-label">到达城市</dt></div>'+
+          '<div class="pp-stat"><dd class="pp-stat-value">'+travelStats.provinces+'</dd><dt class="pp-stat-label">覆盖省份</dt></div>'+
+          '<div class="pp-stat"><dd class="pp-stat-value">'+fpFmtKm(travelStats.totalKm)+'<small>km</small></dd><dt class="pp-stat-label">旅行里程</dt></div>'+
+        '</dl>'+
+        '<p class="pp-stats-note">里程按家乡与城市到访顺序的直线距离估算</p>'+
       '</div>'+
+      (lifeMotto?'<div class="pp-block"><div class="pp-motto-card"><div class="pp-section-title">人生寄语</div><p class="pp-motto-display">'+escapeHtml(lifeMotto)+'</p></div></div>':'')+
       '<div class="pp-block">'+
         '<div class="pp-section-title">TA 的家乡</div>'+
         '<div class="pp-rows">'+

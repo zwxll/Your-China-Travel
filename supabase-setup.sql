@@ -178,14 +178,24 @@ create table if not exists public.public_profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   nickname text not null default '旅行者',
   avatar_url text not null default '',
+  life_motto text not null default '',
   is_public boolean not null default false,
   hometown_city_name text not null default '',
   hometown_description text not null default '',
   birth_month text not null default '',
   tags jsonb not null default '[]'::jsonb,
   attractions jsonb not null default '[]'::jsonb,
+  visited_city_count integer not null default 0 check (visited_city_count >= 0),
+  visited_province_count integer not null default 0 check (visited_province_count >= 0),
+  travel_distance_km numeric not null default 0 check (travel_distance_km >= 0),
   updated_at timestamptz not null default now()
 );
+
+-- 兼容已经创建过 public_profiles 表的项目
+alter table public.public_profiles add column if not exists life_motto text not null default '';
+alter table public.public_profiles add column if not exists visited_city_count integer not null default 0 check (visited_city_count >= 0);
+alter table public.public_profiles add column if not exists visited_province_count integer not null default 0 check (visited_province_count >= 0);
+alter table public.public_profiles add column if not exists travel_distance_km numeric not null default 0 check (travel_distance_km >= 0);
 
 alter table public.public_profiles enable row level security;
 
