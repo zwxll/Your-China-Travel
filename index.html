@@ -699,7 +699,8 @@
     background:linear-gradient(135deg,rgba(14,165,233,.5),rgba(56,189,248,.35),rgba(2,132,199,.5));
     box-shadow:0 0 10px rgba(14,165,233,.18),0 0 20px rgba(56,189,248,.08);
   }
-  .stat span{display:block;font-size:18px;font-weight:800;color:var(--accent-d);line-height:1.1;}
+  .stat span{display:block;font-size:18px;font-weight:800;color:var(--accent-d);line-height:1.1;white-space:nowrap;}
+  .stat .stat-unit{display:inline;font-size:9px;font-weight:700;color:var(--muted);margin-left:2px;}
   .stat label{font-size:11px;color:var(--muted);}
 
   /* 地图区 */
@@ -4630,6 +4631,8 @@
       <div class="stats">
         <div class="stat"><span id="cityStat">0</span><label>座城市</label></div>
         <div class="stat"><span id="photoStat">0</span><label>张照片</label></div>
+        <div class="stat"><span id="provinceStat">0</span><label>覆盖省份</label></div>
+        <div class="stat"><span id="distanceStat">0<span class="stat-unit">km</span></span><label>总计行程</label></div>
       </div>
       <button class="theme-toggle-btn footprint-btn" id="footprintBtn" type="button" aria-label="查看人生地图足迹" title="人生地图足迹：从家出发，按时间顺序回放航线">
         <span class="fp-btn-ico" aria-hidden="true">
@@ -6066,7 +6069,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         mapError=$('mapError'), mapWrapEl=$('mapWrap'),
         provinceFocusLayer=$('provinceFocusLayer'), provinceFocusLines=$('provinceFocusLines'),
         provinceFocusCards=$('provinceFocusCards'), provinceFocusMore=$('provinceFocusMore');
-  const cityStatEl=$('cityStat'), photoStatEl=$('photoStat');
+  const cityStatEl=$('cityStat'), photoStatEl=$('photoStat'),
+        provinceStatEl=$('provinceStat'), distanceStatEl=$('distanceStat');
   // 数字自增动画：从当前值平滑过渡到目标值
   function animateCount(el,target){
     const start=parseInt(el.textContent)||0;
@@ -9292,6 +9296,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     // 城市进度
     litCityCountEl.textContent=litCity;
     litProvCountEl.textContent=litProv;
+    animateCount(provinceStatEl,litProv);
     cityProgCurEl.textContent=litCity;
     cityProgTotalEl.textContent=totalCity;
     cityProgFillEl.style.width=(totalCity?litCity/totalCity*100:0)+'%';
@@ -9514,7 +9519,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         if(prev) total+=fpHavKm(prev,c.value);
         prev=c.value;
       }
-      totalTripKmEl.textContent=fpFmtKm(total);
+      const formattedDistance=fpFmtKm(total);
+      totalTripKmEl.textContent=formattedDistance;
+      distanceStatEl.firstChild.nodeValue=formattedDistance;
     }catch(e){}
   }
 
