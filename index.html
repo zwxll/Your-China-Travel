@@ -126,6 +126,8 @@
   body.light-theme .stat{background:#ffffff;}
   body.light-theme .dash-card{background:rgba(255,255,255,.94);}
   body.light-theme .legend{background:rgba(255,255,255,.86);}
+  body.light-theme .legend-toggle{background:#f7f9fc;color:#3d7fb8;border-color:rgba(61,127,184,.28);}
+  body.light-theme .legend-toggle:hover{background:#e8edf3;color:#2b6cb0;}
   body.light-theme .map-search .input,body.light-theme .map-search #search-icon,
   body.light-theme .map-search-results,body.light-theme .modal-head,body.light-theme .icon-btn,
   body.light-theme .thumb,body.light-theme .empty,body.light-theme .view-tab.active,
@@ -914,12 +916,30 @@
     background:rgba(8,8,8,.82);backdrop-filter:blur(10px);
     -webkit-backdrop-filter:blur(10px);
     border:1px solid rgba(248,250,252,.08);box-shadow:var(--shadow-sm);
-    font-size:12px;color:#3f4a57;pointer-events:none;
+    font-size:12px;color:#3f4a57;
     font-weight:500;
+    pointer-events:none;
   }
-  .legend .title{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.5px;margin-bottom:2px;}
+  .legend-head{display:flex;align-items:center;justify-content:space-between;gap:14px;}
+  .legend .title{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.5px;}
+  .legend-content{display:flex;flex-direction:column;gap:8px;}
   .legend .row{display:flex;align-items:center;gap:8px;}
   .legend .op-hint{margin-left:2px;font-size:10px;color:var(--muted);opacity:.9;}
+  .legend-toggle{
+    width:24px;height:24px;padding:0;display:grid;place-items:center;flex:0 0 auto;
+    border:1px solid rgba(125,211,252,.26);border-radius:8px;
+    background:rgba(5,13,20,.92);color:#7dd3fc;cursor:pointer;pointer-events:auto;
+    transition:background .18s ease,color .18s ease,border-color .18s ease;
+  }
+  .legend-toggle:hover{background:rgba(14,165,233,.14);color:#e0f2fe;border-color:rgba(125,211,252,.58);}
+  .legend-toggle:focus-visible{outline:2px solid var(--accent);outline-offset:2px;}
+  .legend-toggle-arrow{
+    width:7px;height:7px;border-right:1.5px solid currentColor;border-bottom:1.5px solid currentColor;
+    transform:rotate(45deg) translate(-1px,-1px);transition:transform .18s ease;
+  }
+  body.legend-collapsed .legend{gap:0;padding:8px 10px;}
+  body.legend-collapsed .legend-content{display:none;}
+  body.legend-collapsed .legend-toggle-arrow{transform:rotate(225deg) translate(-1px,-1px);}
   .dot{width:12px;height:12px;border-radius:50%;display:inline-block;}
   .dot.blue{background:var(--blue);box-shadow:0 0 0 2px rgba(56,189,248,.25);}
   .dot.gold{
@@ -2213,6 +2233,7 @@
 
   @media (prefers-reduced-motion:reduce){
     .left-panel,.dash-panel,.panel-collapse-toggle,.panel-collapse-toggle .panel-toggle-arrow{transition:none;}
+    .legend-toggle,.legend-toggle-arrow{transition:none;}
     .province-map-card{animation:none;}
   }
 
@@ -4680,11 +4701,19 @@
       <button class="fp-ctl" id="fpHomeBtn" type="button" title="设置家的城市">🏠</button>
       <button class="fp-ctl" id="fpCloseBtn" type="button" title="关闭足迹回放">✕</button>
     </div>
-    <div class="legend">
-      <div class="title">图例</div>
-      <div class="row"><i class="dot blue"></i>未记录城市<span class="op-hint">单击编辑</span></div>
-      <div class="row"><i class="dot gold"></i>已记录城市<span class="op-hint">单击编辑 · 双击查看</span></div>
-      <div class="row"><i class="dot home"></i>我的家乡<span class="op-hint">单击编辑 · 双击查看</span></div>
+    <div class="legend" id="mapLegend">
+      <div class="legend-head">
+        <div class="title">图例</div>
+        <button class="legend-toggle" id="legendToggle" type="button" aria-controls="legendContent"
+                aria-expanded="true" aria-label="收起图例" title="收起图例">
+          <span class="legend-toggle-arrow" aria-hidden="true"></span>
+        </button>
+      </div>
+      <div class="legend-content" id="legendContent">
+        <div class="row"><i class="dot blue"></i>未记录城市<span class="op-hint">单击编辑</span></div>
+        <div class="row"><i class="dot gold"></i>已记录城市<span class="op-hint">单击编辑 · 双击查看</span></div>
+        <div class="row"><i class="dot home"></i>我的家乡<span class="op-hint">单击编辑 · 双击查看</span></div>
+      </div>
     </div>
     <!-- 左侧数据面板：城市视图统计 + 蛇形时间轴 -->
     <div class="left-panel" id="leftPanel">
@@ -14212,6 +14241,27 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       });
       applyState();
     });
+  })();
+
+  /* ===== 地图图例收起/展开 ===== */
+  (function setupLegendCollapse(){
+    const button=document.getElementById('legendToggle');
+    if(!button) return;
+    let collapsed=false;
+    try{collapsed=localStorage.getItem('travel-legend-collapsed')==='1';}catch(e){}
+    const applyState=()=>{
+      document.body.classList.toggle('legend-collapsed',collapsed);
+      button.setAttribute('aria-expanded',String(!collapsed));
+      const action=collapsed?'展开':'收起';
+      button.setAttribute('aria-label',`${action}图例`);
+      button.title=`${action}图例`;
+    };
+    button.addEventListener('click',()=>{
+      collapsed=!collapsed;
+      applyState();
+      try{localStorage.setItem('travel-legend-collapsed',collapsed?'1':'0');}catch(e){}
+    });
+    applyState();
   })();
 
   /* ===== 【滚轮事件隔离】城市列表区块滚轮不冒泡到页面 ===== */
