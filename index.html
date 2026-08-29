@@ -2184,6 +2184,8 @@
   .fb-check{display:flex;align-items:center;gap:8px;color:#94a3b8;font-size:12px;cursor:pointer;}
   .fb-check input{accent-color:var(--accent);width:15px;height:15px;margin:0;}
   .fb-check[hidden]{display:none;}
+  .fb-follow-tip{margin:2px 0 0;font-size:12px;color:#8b99ad;}
+  .fb-follow-tip b{color:#7dd3fc;font-weight:700;letter-spacing:.4px;}
   .fb-foot{display:flex;justify-content:flex-end;gap:10px;padding:16px 26px 20px;border-top:1px solid rgba(255,255,255,.07);flex:0 0 auto;}
   .fb-cancel{height:40px;padding:0 18px;border:1px solid rgba(148,163,184,.25);border-radius:var(--radius-pill);background:rgba(255,255,255,.04);color:#dbeafe;font-weight:700;cursor:pointer;}
   .fb-cancel:hover{background:rgba(255,255,255,.08);}
@@ -5353,6 +5355,7 @@
               <input type="checkbox" id="fbAllow" />
               <span>允许通过账号邮箱联系我</span>
             </label>
+            <p class="fb-follow-tip">你也可以抖音搜索账号：<b>Vvxxx1223</b>，查看最新进度</p>
           </div>
         </div>
       </div>
@@ -7641,7 +7644,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   async function renderProvinceFocusCards(provinceName){
     const token=++provinceFocusRenderToken;
-    const showAllLitCities=(currentView==='province'||currentView==='city')&&!provinceName;
+    // 省份视图不再全量铺开城市卡片与连线（地图保持清爽）；城市视图保持原行为，点击具体省份仍展示该省卡片
+    const showAllLitCities=currentView==='city'&&!provinceName;
     const provinceCities=cityPoints
       .filter(city=>citiesWithPhotos.has(city.cityKey)&&(showAllLitCities||provinceOf(city.adcode)===provinceName))
       .sort((a,b)=>(photoCountByCity.get(b.cityKey)||0)-(photoCountByCity.get(a.cityKey)||0));
