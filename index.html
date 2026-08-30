@@ -1193,7 +1193,7 @@
   /* ===== 发光层：大范围柔和偏蓝光晕（与底板背景色系一致，低饱和度）===== */
   .map-search .glow{
     overflow:hidden;
-    filter:blur(30px);
+    filter:blur(8px);
     opacity:.3;
     max-height:130px;max-width:354px;
   }
@@ -4682,6 +4682,7 @@
   .journey-empty strong{font-size:20px;color:#d6ecf7;margin-bottom:10px;}
   .journey-archive-overlay.life-mode{background:rgba(2,8,16,.7);}
   .journey-archive-overlay.life-mode .journey-archive{
+    width:min(1680px,100%);height:min(880px,calc(100dvh - 48px));
     background:
       radial-gradient(ellipse at 78% 24%,rgba(160,127,120,.25),transparent 39%),
       radial-gradient(ellipse at 46% 3%,rgba(92,130,186,.2),transparent 43%),
@@ -4690,13 +4691,16 @@
   .journey-archive-overlay.life-mode .journey-archive-head{
     background:linear-gradient(90deg,rgba(77,139,220,.08),transparent 65%);
   }
-  .journey-archive-overlay.life-mode .journey-archive-body{padding-top:32px;}
-  .life-year-list{width:min(850px,100%);margin:0 auto;padding:0 0 10px;}
+  .journey-archive-overlay.life-mode .journey-archive-body{padding:18px 20px 20px;overflow:hidden;}
+  .life-archive-layout{height:100%;min-height:0;display:grid;grid-template-columns:minmax(380px,.78fr) minmax(520px,1.35fr);gap:18px;}
+  .life-timeline-pane{min-width:0;min-height:0;overflow:auto;padding:4px 12px 20px 0;overscroll-behavior:contain;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:rgba(122,171,255,.38) rgba(255,255,255,.04);}
+  .life-timeline-pane::-webkit-scrollbar{width:6px}.life-timeline-pane::-webkit-scrollbar-track{background:rgba(255,255,255,.04);border-radius:6px}.life-timeline-pane::-webkit-scrollbar-thumb{background:rgba(122,171,255,.38);border-radius:6px}
+  .life-year-list{width:100%;margin:0;padding:0;}
   .life-year{
-    display:grid;grid-template-columns:minmax(0,1fr) 30px minmax(0,1fr);position:relative;min-height:150px;
+    display:grid;grid-template-columns:84px 24px minmax(0,1fr);position:relative;min-height:150px;
   }
   .life-year:last-child{min-height:0;}
-  .life-year-label{font:600 34px/1.2 'Playfair Display','Microsoft YaHei',serif;color:#edf5ff;padding-top:0;padding-right:20px;text-align:right;}
+  .life-year-label{font:600 26px/1.2 'Playfair Display','Microsoft YaHei',serif;color:#edf5ff;padding-top:0;padding-right:12px;text-align:right;}
   .life-year-spine{position:relative;min-height:100%;border-left:1px solid rgba(255,255,255,.16);}
   .life-year-spine i{position:absolute;z-index:1;left:-5px;top:0;width:9px;height:9px;border-radius:50%;background:#7aabff;box-shadow:0 0 13px #5e9cff;}
   .life-year-content{min-width:0;padding:0 0 30px 20px;}
@@ -4716,11 +4720,18 @@
   .life-city-entry b{font:500 14px 'Microsoft YaHei',sans-serif;color:#edf5ff;}
   .life-city-entry em{font-style:normal;font-size:11px;color:#7289a9;white-space:nowrap;justify-self:end;}
   .life-city-entry span{grid-column:1/-1;display:block;font-size:11px;color:#6f86a5;}
+  .life-photo-dome{min-width:0;min-height:0;overflow:hidden;display:flex;flex-direction:column;border:1px solid rgba(125,179,255,.14);border-radius:14px;background:#08182a;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
+  .life-photo-dome-head{position:relative;z-index:7;flex:0 0 auto;min-height:54px;padding:12px 16px;border-bottom:1px solid rgba(125,179,255,.12);display:flex;align-items:center;justify-content:space-between;gap:16px;background:rgba(8,24,42,.94);}
+  .life-photo-dome-head b,.life-photo-dome-head span{display:block}.life-photo-dome-head b{font-size:14px;color:#dbeaff}.life-photo-dome-head span{margin-top:3px;font-size:11px;color:#7892b2}.life-photo-dome-head em{font-style:normal;font-size:11px;color:#82b3fa;white-space:nowrap;}
+  .life-photo-dome-stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;}
+  .life-photo-dome-empty{height:100%;min-height:340px;display:grid;place-content:center;gap:8px;text-align:center;color:#7892ad}.life-photo-dome-empty strong{font-size:17px;color:#dbeaff}.life-photo-dome-empty span{font-size:13px;}
   .journey-stat-strip{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px;margin-bottom:14px;}
   .journey-stat-tile{padding:17px;border:1px solid rgba(125,211,252,.12);border-radius:14px;background:rgba(125,211,252,.045);}
   .journey-stat-tile span,.journey-stat-tile small{display:block;}.journey-stat-tile span{font-size:14px;color:#839daf;}
   .journey-stat-tile strong{display:block;margin:10px 0 5px;font-size:26px;color:#e5f4fb;}.journey-stat-tile strong em{font-size:16px;font-weight:500;font-style:normal;color:#7aa9bf;margin-left:6px;}
   .journey-stat-tile small{color:#617d90;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .journey-stat-main{display:flex;align-items:center;justify-content:space-between;gap:10px;}.journey-stat-main>strong{margin-block:8px 4px;}
+  .journey-stat-coverage{--coverage:0deg;flex:0 0 auto;width:62px;height:62px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#56c9f5 var(--coverage),rgba(125,211,252,.08) 0);}.journey-stat-coverage::before{content:"";grid-area:1/1;width:44px;height:44px;border-radius:50%;background:#071525;}.journey-stat-coverage div{grid-area:1/1;z-index:1;text-align:center;line-height:1.05;}.journey-stat-coverage b,.journey-stat-coverage span{display:block;}.journey-stat-coverage b{font-size:13px;color:#e5f4fb;}.journey-stat-coverage span{margin-top:3px;font-size:8px;color:#718c9e;}
   .journey-insight-grid{display:grid;grid-template-columns:1.35fr 1fr;gap:14px;}
   .journey-chart{min-height:245px;padding:20px;border:1px solid rgba(125,211,252,.1);border-radius:16px;background:rgba(1,10,20,.36);}
   .journey-chart h3{font-size:18px;color:#dcecf5;margin:0 0 4px;}.journey-chart>p{font-size:13px;color:#647f91;margin:0 0 20px;}
@@ -4728,26 +4739,29 @@
   .year-bar,.month-bar-archive{height:100%;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;min-width:0;}
   .year-bar i,.month-bar-archive i{width:min(38px,68%);min-height:4px;border-radius:6px 6px 2px 2px;background:linear-gradient(0deg,#0878b0,#6bd3fa);box-shadow:0 -7px 18px rgba(56,189,248,.16);}
   .year-bar b,.month-bar-archive b{font-size:13px;color:#91a8b7;margin-top:7px;}.year-bar span,.month-bar-archive span{font-size:13px;color:#7dd3fc;margin-bottom:5px;}
-  .city-rank-list{display:grid;gap:14px;margin-top:24px;}.city-rank-row{display:grid;grid-template-columns:28px 84px 1fr 46px;align-items:center;gap:10px;font-size:14px;color:#9db1be;}
+  .city-rank-list{display:grid;gap:14px;margin-top:24px;}.city-rank-list.is-scrollable{max-height:160px;overflow-y:auto;padding-right:8px;scrollbar-gutter:stable;scrollbar-width:thin;scrollbar-color:rgba(81,199,243,.35) rgba(125,211,252,.05);}
+  .city-rank-list.is-scrollable::-webkit-scrollbar{width:5px;}.city-rank-list.is-scrollable::-webkit-scrollbar-track{background:rgba(125,211,252,.05);border-radius:5px;}.city-rank-list.is-scrollable::-webkit-scrollbar-thumb{background:rgba(81,199,243,.35);border-radius:5px;}
+  .city-rank-row{display:grid;grid-template-columns:28px 84px 1fr 58px;align-items:center;gap:10px;font-size:14px;color:#9db1be;}.city-rank-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}.city-rank-row>strong{text-align:right;white-space:nowrap;}
   .city-rank-row>i{height:3px;border-radius:3px;background:rgba(125,211,252,.08);}.city-rank-row>i em{display:block;height:100%;border-radius:inherit;background:#51c7f3;}
-  .coverage-archive{display:grid;place-items:center;}.coverage-ring-archive{--coverage:0deg;width:134px;height:134px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#56c9f5 var(--coverage),rgba(125,211,252,.08) 0);}
-  .coverage-ring-archive::before{content:"";grid-area:1/1;width:96px;height:96px;border-radius:50%;background:#071525;}.coverage-ring-archive div{grid-area:1/1;z-index:1;text-align:center;}.coverage-ring-archive strong,.coverage-ring-archive span{display:block;}.coverage-ring-archive strong{font-size:26px;color:#e5f4fb;}.coverage-ring-archive span{font-size:13px;color:#718c9e;margin-top:4px;}
   body.light-theme .journey-archive-overlay{background:rgba(220,232,241,.76);}
   body.light-theme .journey-archive{background:linear-gradient(145deg,rgba(250,253,255,.98),rgba(235,244,250,.98));border-color:rgba(2,132,199,.24);box-shadow:0 24px 70px rgba(44,72,92,.2),inset 0 1px 0 rgba(255,255,255,.9);}
   body.light-theme .journey-archive-head{background:linear-gradient(90deg,rgba(14,165,233,.08),transparent 65%);border-color:rgba(2,132,199,.14);}
-  body.light-theme .journey-archive-head h2,body.light-theme .journey-empty strong,body.light-theme .life-year-label,body.light-theme .life-city-entry b,body.light-theme .journey-stat-tile strong,body.light-theme .journey-chart h3,body.light-theme .coverage-ring-archive strong{color:#183044;}
+  body.light-theme .journey-archive-head h2,body.light-theme .journey-empty strong,body.light-theme .life-year-label,body.light-theme .life-city-entry b,body.light-theme .journey-stat-tile strong,body.light-theme .journey-chart h3{color:#183044;}
   body.light-theme .journey-archive-head p,body.light-theme .journey-empty,body.light-theme .life-city-entry span,body.light-theme .journey-stat-tile span,body.light-theme .journey-stat-tile small,body.light-theme .journey-chart>p,body.light-theme .city-rank-row{color:#587287;}
   body.light-theme .journey-archive-close{background:rgba(255,255,255,.8);color:#365a70;border-color:rgba(2,132,199,.2);}
   body.light-theme .journey-archive-overlay.life-mode .journey-archive{background:radial-gradient(ellipse at 78% 24%,rgba(240,211,198,.4),transparent 39%),linear-gradient(135deg,rgba(247,251,255,.99),rgba(224,237,248,.99));}
   body.light-theme .life-city-entry,body.light-theme .journey-stat-tile,body.light-theme .journey-chart{background:rgba(255,255,255,.58);border-color:rgba(2,132,199,.14);}
   body.light-theme .life-year-spine{border-color:rgba(2,132,199,.22);}
   body.light-theme .life-year-note,body.light-theme .life-city-entry span{color:#587287;}
-  body.light-theme .coverage-ring-archive::before{background:#edf6fb;}
+  body.light-theme .life-photo-dome{background:#e8f1f8;border-color:rgba(2,132,199,.16);}
+  body.light-theme .life-photo-dome-head{background:rgba(232,241,248,.95);border-color:rgba(2,132,199,.14);}body.light-theme .life-photo-dome-head b,body.light-theme .life-photo-dome-empty strong{color:#183044;}body.light-theme .life-photo-dome-head span,body.light-theme .life-photo-dome-empty{color:#587287;}
+  body.light-theme .journey-stat-coverage::before{background:#edf6fb;}body.light-theme .journey-stat-coverage b{color:#183044;}
   @keyframes archiveFade{from{opacity:0}to{opacity:1}}
   @media(max-width:1500px){.header-actions{gap:6px}.footprint-btn .fp-btn-label{display:none}}
   @media(max-width:1180px){.journey-stat-strip{grid-template-columns:repeat(3,1fr)}.journey-insight-grid{grid-template-columns:1fr}}
+  @media(max-width:1040px){.journey-archive-overlay.life-mode .journey-archive-body{overflow:auto}.life-archive-layout{height:auto;display:flex;flex-direction:column}.life-timeline-pane{order:1;overflow:visible;padding-right:0}.life-photo-dome{order:2;flex:0 0 480px}.life-photo-dome-stage{min-height:420px}}
   @media(max-width:720px){
-    .journey-archive-overlay{padding:16px 8px}.journey-archive{border-radius:14px}.journey-archive-head{padding:18px 58px 16px 18px;min-height:84px}.journey-archive-head h2{font-size:22px}.journey-archive-body{padding:18px 14px 28px}.journey-stat-strip{grid-template-columns:repeat(2,1fr)}.journey-stat-tile{padding:13px}.journey-insight-grid{display:block}.journey-chart{margin-bottom:12px}.life-year{grid-template-columns:minmax(0,1fr) 22px minmax(0,1fr);min-height:132px}.life-year-label{font-size:20px;padding-right:8px}.life-year-content{padding:0 0 24px 10px}.life-city-entry{width:100%;min-height:50px}.journey-archive-close{right:12px;top:18px}
+    .journey-archive-overlay{padding:16px 8px}.journey-archive{border-radius:14px}.journey-archive-head{padding:18px 58px 16px 18px;min-height:84px}.journey-archive-head h2{font-size:22px}.journey-archive-body{padding:18px 14px 28px}.journey-archive-overlay.life-mode .journey-archive{height:calc(100dvh - 24px)}.journey-archive-overlay.life-mode .journey-archive-body{padding:14px}.journey-stat-strip{grid-template-columns:repeat(2,1fr)}.journey-stat-tile{padding:13px}.journey-insight-grid{display:block}.journey-chart{margin-bottom:12px}.life-year{grid-template-columns:68px 22px minmax(0,1fr);min-height:132px}.life-year-label{font-size:20px;padding-right:8px}.life-year-content{padding:0 0 24px 10px}.life-city-entry{width:100%;min-height:50px}.life-photo-dome{flex-basis:400px}.life-photo-dome-stage{min-height:344px}.journey-archive-close{right:12px;top:18px}
   }
   @media(prefers-reduced-motion:reduce){.life-city-entry{transition:none;}.life-city-entry:hover{transform:none;}}
 
@@ -4785,6 +4799,189 @@
   body.light-theme .city-add-result{color:#20384a;}body.light-theme .city-add-result:hover,body.light-theme .city-add-result.selected{background:#e8f6fc;}
   @media(max-width:560px){.city-add-overlay{padding:12px}.city-add-dialog{padding:34px 18px 22px;border-radius:18px}.city-add-dialog h2{font-size:23px}.city-add-trigger{min-width:84px;padding:0 11px;}}
 </style>
+  <style>
+.dg-root {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  --dg-radius: 520px;
+  --dg-viewer-pad: 72px;
+  --dg-circ: calc(var(--dg-radius) * 3.14);
+  --dg-rot-y: calc((360deg / var(--dg-segments-x)) / 2);
+  --dg-rot-x: calc((360deg / var(--dg-segments-y)) / 2);
+  --dg-item-width: calc(var(--dg-circ) / var(--dg-segments-x));
+  --dg-item-height: calc(var(--dg-circ) / var(--dg-segments-y));
+  --dg-surface: #08182a;
+}
+
+.dg-root,
+.dg-root * { box-sizing: border-box; }
+
+.dg-main {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  background: var(--dg-surface);
+}
+
+.dg-stage {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  perspective: calc(var(--dg-radius) * 2);
+  perspective-origin: 50% 50%;
+  contain: layout paint size;
+}
+
+.dg-sphere,
+.dg-item,
+.dg-image { transform-style: preserve-3d; }
+
+.dg-sphere {
+  transform: translateZ(calc(var(--dg-radius) * -1));
+  will-change: transform;
+}
+
+.dg-item {
+  width: calc(var(--dg-item-width) * var(--dg-size-x));
+  height: calc(var(--dg-item-height) * var(--dg-size-y));
+  position: absolute;
+  inset: -999px;
+  margin: auto;
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  transform:
+    rotateY(calc(var(--dg-rot-y) * (var(--dg-offset-x) + ((var(--dg-size-x) - 1) / 2)) + var(--dg-rot-y-delta, 0deg)))
+    rotateX(calc(var(--dg-rot-x) * (var(--dg-offset-y) - ((var(--dg-size-y) - 1) / 2)) + var(--dg-rot-x-delta, 0deg)))
+    translateZ(var(--dg-radius));
+}
+
+.dg-image {
+  position: absolute;
+  display: block;
+  inset: 9px;
+  border: 1px solid rgba(151, 199, 255, .18);
+  border-radius: var(--dg-tile-radius, 12px);
+  background: var(--dg-surface);
+  overflow: hidden;
+  backface-visibility: hidden;
+  cursor: grab;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  pointer-events: auto;
+  transform: translateZ(0);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08);
+  transition: border-color 180ms ease, filter 180ms ease;
+}
+
+.dg-image:hover { border-color: rgba(135, 190, 255, .62); }
+.dg-image:active { cursor: grabbing; }
+.dg-image:focus-visible { outline: 2px solid #78adff; outline-offset: 2px; }
+
+.dg-image img,
+.dg-enlarge img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  pointer-events: none;
+  backface-visibility: hidden;
+  filter: var(--dg-image-filter, none);
+}
+
+.dg-overlay,
+.dg-overlay-blur {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.dg-overlay {
+  background-image: radial-gradient(rgba(8, 24, 42, 0) 61%, var(--dg-surface) 100%);
+}
+
+.dg-overlay-blur {
+  -webkit-mask-image: radial-gradient(rgba(8, 24, 42, 0) 68%, var(--dg-surface) 92%);
+  mask-image: radial-gradient(rgba(8, 24, 42, 0) 68%, var(--dg-surface) 92%);
+  display: none;
+}
+
+.dg-edge-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 92px;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(to bottom, transparent, var(--dg-surface));
+}
+
+.dg-edge-fade.top { top: 0; transform: rotate(180deg); }
+.dg-edge-fade.bottom { bottom: 0; }
+
+.dg-viewer {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--dg-viewer-pad);
+}
+
+.dg-scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgba(1, 7, 15, .58);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 300ms ease;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.dg-root[data-enlarging="true"] .dg-scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dg-enlarge {
+  position: absolute;
+  z-index: 30;
+  overflow: hidden;
+  border: 1px solid rgba(151, 199, 255, .32);
+  border-radius: var(--dg-enlarge-radius, 24px);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .12);
+  pointer-events: none;
+  transform-origin: top left;
+  will-change: left, top, width, height, opacity;
+}
+
+body.light-theme .dg-root { --dg-surface: #e8f1f8; }
+body.light-theme .dg-image { border-color: rgba(2, 132, 199, .22); }
+body.light-theme .dg-overlay { background-image: radial-gradient(rgba(232, 241, 248, 0) 61%, var(--dg-surface) 100%); }
+body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
+
+@media (prefers-reduced-motion: reduce) {
+  .dg-sphere { will-change: auto; }
+  .dg-item,
+  .dg-image,
+  .dg-scrim,
+  .dg-enlarge { transition-duration: 0ms !important; }
+}
+
+  </style>
 </head>
 <body>
 <!-- ===== 底层 ferrofluid 铁磁流体背景（z-index:-1，非交互，纯氛围层）===== -->
@@ -5683,6 +5880,309 @@
 <!-- Supabase：账号认证、数据库与私有照片云存储（原生浏览器客户端，无需 npm 构建） -->
 <script src="supabase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- React Bits DomeGallery JS-CSS 的原生单页适配 -->
+<script>
+(function () {
+  'use strict';
+
+  const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+  const wrapAngle = deg => {
+    const angle = (((deg + 180) % 360) + 360) % 360;
+    return angle - 180;
+  };
+
+  function buildItems(images, segments) {
+    const xColumns = Array.from({ length: segments }, (_, index) => -37 + index * 2);
+    const evenRows = [-4, -2, 0, 2, 4];
+    const oddRows = [-3, -1, 1, 3, 5];
+    const coordinates = xColumns.flatMap((x, column) =>
+      (column % 2 === 0 ? evenRows : oddRows).map(y => ({ x, y, sizeX: 2, sizeY: 2 }))
+    );
+    if (!images.length) return [];
+    const normalized = images.map(image => typeof image === 'string'
+      ? { src: image, alt: '' }
+      : { src: image.src || '', alt: image.alt || '' });
+    const used = Array.from({ length: coordinates.length }, (_, index) => normalized[index % normalized.length]);
+    for (let index = 1; index < used.length; index++) {
+      if (used[index].src !== used[index - 1].src) continue;
+      const replacement = used.findIndex((image, nextIndex) => nextIndex > index && image.src !== used[index].src);
+      if (replacement > -1) [used[index], used[replacement]] = [used[replacement], used[index]];
+    }
+    return coordinates.map((coordinate, index) => ({ ...coordinate, ...used[index] }));
+  }
+
+  class DomeGallery {
+    constructor(container, options) {
+      if (!container) throw new Error('DomeGallery requires a container element.');
+      this.container = container;
+      this.options = Object.assign({
+        images: [], fit: .5, fitBasis: 'auto', minRadius: 600, maxRadius: Infinity,
+        padFactor: .18, overlayBlurColor: '#08182a', maxVerticalRotationDeg: 5,
+        dragSensitivity: 20, enlargeTransitionMs: 300, segments: 24,
+        dragDampening: .72, openedImageWidth: 460, openedImageHeight: 460,
+        imageBorderRadius: '12px', openedImageBorderRadius: '24px', grayscale: true,
+        autoRotateSpeed: 1.8
+      }, options || {});
+      this.rotation = { x: 0, y: 0 };
+      this.startRotation = { x: 0, y: 0 };
+      this.pointerStart = null;
+      this.pointerTile = null;
+      this.lastPointer = null;
+      this.dragging = false;
+      this.moved = false;
+      this.inertiaFrame = 0;
+      this.dragFrame = 0;
+      this.autoRotateFrame = 0;
+      this.lastAutoRotateAt = performance.now();
+      this.openTile = null;
+      this.enlarged = null;
+      this.reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      this.onPointerDown = this.onPointerDown.bind(this);
+      this.onPointerMove = this.onPointerMove.bind(this);
+      this.onPointerUp = this.onPointerUp.bind(this);
+      this.onKeyDown = this.onKeyDown.bind(this);
+      this.render();
+      this.observe();
+      this.startAutoRotate();
+    }
+
+    render() {
+      const items = buildItems(this.options.images, this.options.segments);
+      this.container.className = (this.container.className + ' dg-root').trim();
+      this.container.style.setProperty('--dg-segments-x', this.options.segments);
+      this.container.style.setProperty('--dg-segments-y', this.options.segments);
+      this.container.style.setProperty('--dg-surface', this.options.overlayBlurColor);
+      this.container.style.setProperty('--dg-tile-radius', this.options.imageBorderRadius);
+      this.container.style.setProperty('--dg-enlarge-radius', this.options.openedImageBorderRadius);
+      this.container.style.setProperty('--dg-image-filter', this.options.grayscale ? 'grayscale(1)' : 'none');
+      this.container.innerHTML = '<main class="dg-main"><div class="dg-stage"><div class="dg-sphere">' +
+        items.map(item => '<div class="dg-item" data-src="' + this.escapeAttribute(item.src) + '" style="--dg-offset-x:' + item.x + ';--dg-offset-y:' + item.y + ';--dg-size-x:' + item.sizeX + ';--dg-size-y:' + item.sizeY + '"><div class="dg-image" role="button" tabindex="0" aria-label="' + this.escapeAttribute(item.alt || '查看照片') + '"><img src="' + this.escapeAttribute(item.src) + '" alt="' + this.escapeAttribute(item.alt) + '" draggable="false"></div></div>').join('') +
+        '</div></div><div class="dg-overlay"></div><div class="dg-overlay-blur"></div><div class="dg-edge-fade top"></div><div class="dg-edge-fade bottom"></div><div class="dg-viewer"><div class="dg-scrim"></div></div></main>';
+      this.main = this.container.querySelector('.dg-main');
+      this.sphere = this.container.querySelector('.dg-sphere');
+      this.viewer = this.container.querySelector('.dg-viewer');
+      this.scrim = this.container.querySelector('.dg-scrim');
+      this.main.addEventListener('pointerdown', this.onPointerDown);
+      this.main.addEventListener('pointermove', this.onPointerMove);
+      this.main.addEventListener('pointerup', this.onPointerUp);
+      this.main.addEventListener('pointercancel', this.onPointerUp);
+      this.main.addEventListener('keydown', this.onKeyDown);
+      this.scrim.addEventListener('click', () => this.close());
+      this.applyTransform();
+    }
+
+    escapeAttribute(value) {
+      return String(value || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    observe() {
+      this.resizeObserver = new ResizeObserver(entries => {
+        const rect = entries[0].contentRect;
+        const width = Math.max(1, rect.width);
+        const height = Math.max(1, rect.height);
+        const minDimension = Math.min(width, height);
+        const maxDimension = Math.max(width, height);
+        let basis = minDimension;
+        if (this.options.fitBasis === 'max') basis = maxDimension;
+        else if (this.options.fitBasis === 'width') basis = width;
+        else if (this.options.fitBasis === 'height') basis = height;
+        else if (this.options.fitBasis === 'auto') basis = width / height >= 1.3 ? width : minDimension;
+        let radius = Math.min(basis * this.options.fit, height * 1.35);
+        radius = clamp(radius, this.options.minRadius, this.options.maxRadius);
+        this.container.style.setProperty('--dg-radius', Math.round(radius) + 'px');
+        this.container.style.setProperty('--dg-viewer-pad', Math.max(12, Math.round(minDimension * this.options.padFactor)) + 'px');
+        this.applyTransform();
+      });
+      this.resizeObserver.observe(this.container);
+      document.addEventListener('keydown', this.onKeyDown, true);
+    }
+
+    applyTransform() {
+      if (!this.sphere) return;
+      this.sphere.style.transform = 'translateZ(calc(var(--dg-radius) * -1)) rotateX(' + this.rotation.x + 'deg) rotateY(' + this.rotation.y + 'deg)';
+    }
+
+    scheduleDragTransform() {
+      if (this.dragFrame) return;
+      this.dragFrame = requestAnimationFrame(() => {
+        this.dragFrame = 0;
+        this.applyTransform();
+      });
+    }
+
+    stopInertia() {
+      if (this.inertiaFrame) cancelAnimationFrame(this.inertiaFrame);
+      this.inertiaFrame = 0;
+    }
+
+    startAutoRotate() {
+      if (this.reduceMotion || !this.options.autoRotateSpeed) return;
+      const step = now => {
+        const elapsed = Math.min(50, Math.max(0, now - this.lastAutoRotateAt));
+        this.lastAutoRotateAt = now;
+        if (!this.dragging && !this.openTile && !this.inertiaFrame && !document.hidden) {
+          this.rotation.y = wrapAngle(this.rotation.y + this.options.autoRotateSpeed * elapsed / 1000);
+          this.applyTransform();
+        }
+        this.autoRotateFrame = requestAnimationFrame(step);
+      };
+      this.autoRotateFrame = requestAnimationFrame(step);
+    }
+
+    onPointerDown(event) {
+      if (this.openTile || event.button > 0) return;
+      this.stopInertia();
+      this.dragging = true;
+      this.moved = false;
+      this.startRotation = { ...this.rotation };
+      this.pointerStart = { x: event.clientX, y: event.clientY };
+      this.pointerTile = event.target.closest?.('.dg-image') || null;
+      this.lastPointer = { x: event.clientX, y: event.clientY, time: performance.now(), vx: 0, vy: 0 };
+      this.main.setPointerCapture?.(event.pointerId);
+    }
+
+    onPointerMove(event) {
+      if (!this.dragging || !this.pointerStart || this.openTile) return;
+      const dx = event.clientX - this.pointerStart.x;
+      const dy = event.clientY - this.pointerStart.y;
+      if (dx * dx + dy * dy > 16) this.moved = true;
+      this.rotation.x = clamp(this.startRotation.x - dy / this.options.dragSensitivity, -this.options.maxVerticalRotationDeg, this.options.maxVerticalRotationDeg);
+      this.rotation.y = wrapAngle(this.startRotation.y + dx / this.options.dragSensitivity);
+      const now = performance.now();
+      const elapsed = Math.max(8, now - this.lastPointer.time);
+      this.lastPointer = { x: event.clientX, y: event.clientY, time: now, vx: (event.clientX - this.lastPointer.x) / elapsed, vy: (event.clientY - this.lastPointer.y) / elapsed };
+      this.scheduleDragTransform();
+    }
+
+    onPointerUp(event) {
+      if (!this.dragging) return;
+      this.dragging = false;
+      const wasMoved = this.moved;
+      if (this.dragFrame) {
+        cancelAnimationFrame(this.dragFrame);
+        this.dragFrame = 0;
+        this.applyTransform();
+      }
+      this.main.releasePointerCapture?.(event.pointerId);
+      const tile = this.pointerTile;
+      if (event.type !== 'pointercancel' && !wasMoved && tile) this.open(tile);
+      else if (!this.reduceMotion && this.lastPointer) this.startInertia(this.lastPointer.vx, this.lastPointer.vy);
+      this.pointerStart = null;
+      this.pointerTile = null;
+      this.moved = false;
+    }
+
+    startInertia(vx, vy) {
+      let speedX = clamp(vx, -1.4, 1.4) * 80;
+      let speedY = clamp(vy, -1.4, 1.4) * 80;
+      let frames = 0;
+      const dampening = clamp(this.options.dragDampening, 0, 1);
+      const friction = .94 + .055 * dampening;
+      const step = () => {
+        speedX *= friction;
+        speedY *= friction;
+        if (++frames > 280 || Math.abs(speedX) + Math.abs(speedY) < .025) {
+          this.inertiaFrame = 0;
+          return;
+        }
+        this.rotation.x = clamp(this.rotation.x - speedY / 200, -this.options.maxVerticalRotationDeg, this.options.maxVerticalRotationDeg);
+        this.rotation.y = wrapAngle(this.rotation.y + speedX / 200);
+        this.applyTransform();
+        this.inertiaFrame = requestAnimationFrame(step);
+      };
+      this.inertiaFrame = requestAnimationFrame(step);
+    }
+
+    onKeyDown(event) {
+      if (event.key === 'Escape' && this.openTile) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        this.close();
+        return;
+      }
+      if ((event.key === 'Enter' || event.key === ' ') && event.target.classList?.contains('dg-image')) {
+        event.preventDefault();
+        this.open(event.target);
+      }
+    }
+
+    open(tile) {
+      if (this.openTile || this.moved) return;
+      this.openTile = tile;
+      const tileRect = tile.getBoundingClientRect();
+      const mainRect = this.main.getBoundingClientRect();
+      const maxWidth = Math.max(220, mainRect.width - 48);
+      const maxHeight = Math.max(220, mainRect.height - 48);
+      const targetWidth = Math.min(this.options.openedImageWidth, maxWidth);
+      const targetHeight = Math.min(this.options.openedImageHeight, maxHeight);
+      const startLeft = tileRect.left - mainRect.left;
+      const startTop = tileRect.top - mainRect.top;
+      const targetLeft = (mainRect.width - targetWidth) / 2;
+      const targetTop = (mainRect.height - targetHeight) / 2;
+      const enlarged = document.createElement('div');
+      enlarged.className = 'dg-enlarge';
+      enlarged.style.cssText = 'left:' + startLeft + 'px;top:' + startTop + 'px;width:' + tileRect.width + 'px;height:' + tileRect.height + 'px;opacity:0;transition:left ' + this.options.enlargeTransitionMs + 'ms ease,top ' + this.options.enlargeTransitionMs + 'ms ease,width ' + this.options.enlargeTransitionMs + 'ms ease,height ' + this.options.enlargeTransitionMs + 'ms ease,opacity ' + this.options.enlargeTransitionMs + 'ms ease;';
+      const image = document.createElement('img');
+      image.src = tile.parentElement.dataset.src || tile.querySelector('img').src;
+      image.alt = tile.querySelector('img').alt || '';
+      enlarged.appendChild(image);
+      this.viewer.appendChild(enlarged);
+      this.enlarged = enlarged;
+      tile.style.visibility = 'hidden';
+      this.container.dataset.enlarging = 'true';
+      requestAnimationFrame(() => {
+        enlarged.style.left = targetLeft + 'px';
+        enlarged.style.top = targetTop + 'px';
+        enlarged.style.width = targetWidth + 'px';
+        enlarged.style.height = targetHeight + 'px';
+        enlarged.style.opacity = '1';
+      });
+    }
+
+    close() {
+      if (!this.openTile || !this.enlarged) return;
+      const tile = this.openTile;
+      const enlarged = this.enlarged;
+      const tileRect = tile.getBoundingClientRect();
+      const mainRect = this.main.getBoundingClientRect();
+      this.container.removeAttribute('data-enlarging');
+      enlarged.style.left = tileRect.left - mainRect.left + 'px';
+      enlarged.style.top = tileRect.top - mainRect.top + 'px';
+      enlarged.style.width = tileRect.width + 'px';
+      enlarged.style.height = tileRect.height + 'px';
+      enlarged.style.opacity = '0';
+      const finish = () => {
+        enlarged.remove();
+        tile.style.visibility = '';
+        this.enlarged = null;
+        this.openTile = null;
+      };
+      if (this.reduceMotion) finish();
+      else enlarged.addEventListener('transitionend', finish, { once: true });
+    }
+
+    destroy() {
+      this.stopInertia();
+      if (this.dragFrame) cancelAnimationFrame(this.dragFrame);
+      this.dragFrame = 0;
+      if (this.autoRotateFrame) cancelAnimationFrame(this.autoRotateFrame);
+      this.autoRotateFrame = 0;
+      this.resizeObserver?.disconnect();
+      document.removeEventListener('keydown', this.onKeyDown, true);
+      this.main?.removeEventListener('pointerdown', this.onPointerDown);
+      this.main?.removeEventListener('pointermove', this.onPointerMove);
+      this.main?.removeEventListener('pointerup', this.onPointerUp);
+      this.main?.removeEventListener('pointercancel', this.onPointerUp);
+      this.container.innerHTML = '';
+      this.container.classList.remove('dg-root');
+    }
+  }
+
+  window.DomeGallery = DomeGallery;
+})();
+
+</script>
 
 <script>/* cobe 点阵地球库（内嵌版）：esm.sh/jsdelivr 在国内网络经常被墙导致地球永不显示，
      故将 cobe v0.6.4 + phenomenon v1.6.0 源码直接内嵌，零网络依赖，file:// 也可用 */
@@ -15158,8 +15658,16 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         journeyArchiveTitleEl=$('journeyArchiveTitle'),journeyArchiveKickerEl=$('journeyArchiveKicker'),
         journeyArchiveIntroEl=$('journeyArchiveIntro'),journeyArchiveBodyEl=$('journeyArchiveBody');
 
+  let lifeDomeGalleryInstance=null;
+  function destroyLifeDomeGallery(){
+    if(!lifeDomeGalleryInstance) return;
+    lifeDomeGalleryInstance.destroy();
+    lifeDomeGalleryInstance=null;
+  }
+
   function closeJourneyArchive(){
     if(!journeyArchiveOverlayEl) return;
+    destroyLifeDomeGallery();
     journeyArchiveOverlayEl.classList.remove('show');
     document.body.classList.remove('modal-open');
   }
@@ -15168,30 +15676,45 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     const cities=await collectTimelineCities();
     const entries=[];
     let attractionCount=0;
-    const exactDays=new Set();
     for(const city of cities){
       const meta=await getCityMeta(city.cityKey);
       const months=getVisitMonths(meta);
       const visits=months.length?months:[city.visitMonth||''];
       const attractions=meta.attractions||[];
       attractionCount+=attractions.length;
-      attractions.forEach(att=>{if(att&&att.visitDate) exactDays.add(att.visitDate);});
       visits.forEach((month,visitIndex)=>{
         const exactDate=attractions.map(att=>att&&att.visitDate||'').filter(date=>date&&(!month||date.startsWith(month))).sort()[0]||'';
         entries.push({city,month:month||'',date:exactDate,visitOrder:visitIndex+1,meta});
       });
     }
     entries.sort((a,b)=>(b.month||'0000-00').localeCompare(a.month||'0000-00'));
-    return {cities,entries,attractionCount,days:exactDays.size||entries.length};
+    return {cities,entries,attractionCount};
   }
 
   function archiveEmptyHtml(){
     return '<div class="journey-empty"><strong>还没有人生足迹</strong><span>先在地图上点亮城市并填写游玩年月。</span></div>';
   }
 
+  async function collectLifeDomePhotos(entries){
+    const orderedCities=[];
+    const seenCities=new Set();
+    entries.forEach(entry=>{
+      const key=entry.city.cityKey;
+      if(seenCities.has(key)) return;
+      seenCities.add(key);
+      orderedCities.push(entry.city);
+    });
+    const cityPhotos=await Promise.all(orderedCities.map(city=>getPhotosByCity(city.cityKey)));
+    return cityPhotos.flatMap((photos,cityIndex)=>photos.map((photo,photoIndex)=>({
+      src:photo.dataUrl,
+      alt:orderedCities[cityIndex].name+'旅行照片 '+(photoIndex+1)
+    })).filter(photo=>photo.src));
+  }
+
   async function renderLifeJourneyArchive(){
     const data=await collectJourneyArchiveData();
     if(!data.entries.length){journeyArchiveBodyEl.innerHTML=archiveEmptyHtml();return;}
+    const galleryPhotos=await collectLifeDomePhotos(data.entries);
     const years=new Map();
     data.entries.forEach(entry=>{
       const year=entry.month?entry.month.slice(0,4):'未记录';
@@ -15200,7 +15723,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     });
     let entryIndex=0;
     const indexedEntries=[];
-    journeyArchiveBodyEl.innerHTML='<div class="life-year-list">'+[...years].map(([year,entries])=>{
+    const timelineHtml='<div class="life-year-list">'+[...years].map(([year,entries])=>{
       const cityCount=new Set(entries.map(entry=>entry.city.cityKey)).size;
       const yearNote=year==='未记录'
         ?'这些城市已经点亮，旅途时间还等待补充。'
@@ -15215,6 +15738,20 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
           ).join('')+'</div></div>'+
       '</section>';
     }).join('')+'</div>';
+    journeyArchiveBodyEl.innerHTML='<div class="life-archive-layout">'+
+      '<div class="life-timeline-pane" aria-label="人生足迹时间轴">'+timelineHtml+'</div>'+
+      '<section class="life-photo-dome" aria-label="旅途照片穹顶">'+
+        '<div class="life-photo-dome-head"><div><b>旅途影像</b><span>按时间轴城市顺序汇集</span></div><em>'+(galleryPhotos.length?galleryPhotos.length+' 张照片 · 拖动浏览':'暂无照片')+'</em></div>'+
+        '<div id="lifePhotoDome" class="life-photo-dome-stage">'+(galleryPhotos.length?'':'<div class="life-photo-dome-empty"><strong>还没有旅途照片</strong><span>在城市详情中保存照片后，这里会自动汇集。</span></div>')+'</div>'+
+      '</section></div>';
+    if(galleryPhotos.length&&window.DomeGallery){
+      lifeDomeGalleryInstance=new window.DomeGallery($('lifePhotoDome'),{
+        images:galleryPhotos,
+        minRadius:400,
+        grayscale:false,
+        overlayBlurColor:document.body.classList.contains('light-theme')?'#e8f1f8':'#08182a'
+      });
+    }
     journeyArchiveBodyEl.querySelectorAll('[data-life-entry]').forEach(button=>{
       button.addEventListener('click',()=>{
         const entry=indexedEntries[Number(button.dataset.lifeEntry)];
@@ -15228,7 +15765,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   async function renderJourneyStatsArchive(){
     const [data,profileStats]=await Promise.all([collectJourneyArchiveData(),getProfileTravelStats()]);
     if(!data.cities.length){journeyArchiveBodyEl.innerHTML=archiveEmptyHtml();return;}
-    const yearCounts=new Map(),monthCounts=Array(12).fill(0),cityCounts=new Map();
+    const yearCounts=new Map(),monthCounts=Array(12).fill(0),cityCounts=new Map(),cityRatings=new Map();
     data.entries.forEach(entry=>{
       if(entry.month){
         const year=entry.month.slice(0,4),month=Number(entry.month.slice(5,7));
@@ -15236,31 +15773,36 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         if(month>=1&&month<=12) monthCounts[month-1]++;
       }
       cityCounts.set(entry.city.name,(cityCounts.get(entry.city.name)||0)+1);
+      if(!cityRatings.has(entry.city.cityKey)){
+        cityRatings.set(entry.city.cityKey,{name:entry.city.name,rating:Math.max(0,Math.min(5,Math.round(Number(entry.meta&&entry.meta.rating)||0)))});
+      }
     });
     const years=[...yearCounts].sort((a,b)=>a[0].localeCompare(b[0]));
     const maxYear=Math.max(1,...years.map(x=>x[1])),maxMonth=Math.max(1,...monthCounts);
-    const ranking=[...cityCounts].sort((a,b)=>b[1]-a[1]).slice(0,5),maxRank=Math.max(1,ranking[0]?.[1]||1);
+    const ranking=[...cityCounts].sort((a,b)=>b[1]-a[1]||a[0].localeCompare(b[0],'zh-CN')).slice(0,10),maxRank=Math.max(1,ranking[0]?.[1]||1);
+    const ratingRanking=[...cityRatings.values()].sort((a,b)=>b.rating-a.rating||a.name.localeCompare(b.name,'zh-CN')).slice(0,10);
     const coverage=Math.round(profileStats.provinces/34*100);
     const metrics=[
       ['已去城市',profileStats.cities,'座','按城市名称计算'],
-      ['已去省份',profileStats.provinces,'个','按省份名称计算'],
+      ['已去省份',profileStats.provinces,'个','按省份名称计算',coverage],
       ['旅途次数',data.entries.length,'次','每次游玩年月计一次'],
-      ['记录天数',data.days,'天','按景点日期估算'],
+      ['总计行程',Math.round(profileStats.totalKm),'km','按旅行路线估算'],
       ['珍藏照片',totalPhotoCount,'张','汇总全部城市照片'],
       ['记录景点',data.attractionCount,'处','汇总全部城市景点']
     ];
     journeyArchiveBodyEl.innerHTML=
-      '<div class="journey-stat-strip">'+metrics.map(m=>'<article class="journey-stat-tile"><span>'+m[0]+'</span><strong>'+Number(m[1]).toLocaleString('zh-CN')+'<em>'+m[2]+'</em></strong><small>'+m[3]+'</small></article>').join('')+'</div>'+
+      '<div class="journey-stat-strip">'+metrics.map(m=>'<article class="journey-stat-tile"><span>'+m[0]+'</span>'+(m[4]===undefined?'<strong>'+Number(m[1]).toLocaleString('zh-CN')+'<em>'+m[2]+'</em></strong>':'<div class="journey-stat-main"><strong>'+Number(m[1]).toLocaleString('zh-CN')+'<em>'+m[2]+'</em></strong><div class="journey-stat-coverage" role="img" aria-label="全国省份覆盖率 '+m[4]+'%" style="--coverage:'+m[4]*3.6+'deg"><div><b>'+m[4]+'%</b><span>'+m[1]+'/34</span></div></div></div>')+'<small>'+m[3]+'</small></article>').join('')+'</div>'+
       '<div class="journey-insight-grid">'+
         '<section class="journey-chart"><h3>年度足迹趋势</h3><p>每年记录的抵达次数</p><div class="year-bars">'+(years.length?years.map(y=>'<div class="year-bar"><span>'+y[1]+'次</span><i style="height:'+Math.max(8,y[1]/maxYear*100)+'%"></i><b>'+y[0]+'</b></div>').join(''):'<div class="journey-empty">暂无年份数据</div>')+'</div></section>'+
-        '<section class="journey-chart"><h3>城市到访排行</h3><p>按游玩年月记录数量排序</p><div class="city-rank-list">'+ranking.map((r,i)=>'<div class="city-rank-row"><b>'+String(i+1).padStart(2,'0')+'</b><span>'+escapeHtml(r[0])+'</span><i><em style="width:'+r[1]/maxRank*100+'%"></em></i><strong>'+r[1]+'次</strong></div>').join('')+'</div></section>'+
+        '<section class="journey-chart"><h3>城市到访排行</h3><p>按游玩年月记录数量排序</p><div class="city-rank-list is-scrollable" tabindex="0" aria-label="城市到访排行前十名">'+ranking.map((r,i)=>'<div class="city-rank-row"><b>'+String(i+1).padStart(2,'0')+'</b><span title="'+escapeHtml(r[0])+'">'+escapeHtml(r[0])+'</span><i><em style="width:'+r[1]/maxRank*100+'%"></em></i><strong>'+r[1]+'次</strong></div>').join('')+'</div></section>'+
         '<section class="journey-chart"><h3>月份出行频率</h3><p>历年各月份抵达次数</p><div class="month-bars-archive">'+monthCounts.map((count,i)=>'<div class="month-bar-archive"><span>'+(count||'')+'</span><i style="height:'+Math.max(4,count/maxMonth*100)+'%"></i><b>'+(i+1)+'月</b></div>').join('')+'</div></section>'+
-        '<section class="journey-chart coverage-archive"><h3>省份覆盖率</h3><p>已记录省份占全国 34 个省级行政区的比例</p><div class="coverage-ring-archive" style="--coverage:'+coverage*3.6+'deg"><div><strong>'+coverage+'%</strong><span>'+profileStats.provinces+' / 34</span></div></div></section>'+
+        '<section class="journey-chart"><h3>推荐指数排行</h3><p>按城市推荐指数由高到低排序</p><div class="city-rank-list is-scrollable" tabindex="0" aria-label="城市推荐指数排行前十名">'+ratingRanking.map((r,i)=>'<div class="city-rank-row"><b>'+String(i+1).padStart(2,'0')+'</b><span title="'+escapeHtml(r.name)+'">'+escapeHtml(r.name)+'</span><i><em style="width:'+r.rating/5*100+'%"></em></i><strong>'+(r.rating?r.rating+'星':'未评分')+'</strong></div>').join('')+'</div></section>'+
       '</div>';
   }
 
   async function openJourneyArchive(mode){
     if(!journeyArchiveOverlayEl) return;
+    destroyLifeDomeGallery();
     const stats=mode==='stats';
     journeyArchiveOverlayEl.classList.toggle('life-mode',!stats);
     journeyArchiveKickerEl.textContent=stats?'旅行洞察':'时光旅程';
