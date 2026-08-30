@@ -474,6 +474,11 @@
   body.footprint-cinematic .fp-status b{max-width:320px;font-size:14px;}body.footprint-cinematic .fp-status span{max-width:320px;font-size:11px;}
   body.light-theme.footprint-cinematic .fp-memory-card{background:rgba(255,255,255,.94);border-color:rgba(79,70,229,.28);box-shadow:0 24px 60px rgba(31,42,55,.22);}
   body.light-theme.footprint-cinematic .fp-memory-name{color:#1f2a37;}body.light-theme.footprint-cinematic .fp-memory-meta,body.light-theme.footprint-cinematic .fp-memory-note{color:#62768a;}
+  /* 沉浸回放期间：到站卡片/卡片连线/当前城市大卡片变浅变透明，让航线与飞机成为视觉焦点
+     opacity 必须带 !important：卡片入场动画（provinceCardIn/fpMemoryIn）fill:both 会把 opacity 永久锁在关键帧终值，普通声明会被动画填充覆盖 */
+  body.footprint-cinematic .province-map-card.fp-arrival-card{opacity:.5!important;filter:saturate(.75) brightness(1.06);}
+  body.footprint-cinematic .fp-card-link,body.footprint-cinematic .fp-card-link-dot{opacity:.35;}
+  body.footprint-cinematic .fp-memory-card{opacity:.75!important;filter:saturate(.8) brightness(1.05);}
   @media(max-width:1200px){.fp-memory-card{left:auto;right:18px;width:290px}.fp-memory-cover{height:174px}body.footprint-cinematic .footprint-panel{width:min(940px,calc(100% - 36px));grid-template-columns:auto auto auto minmax(200px,260px) minmax(220px,1fr) auto auto;}}
   @media(max-width:900px){body.footprint-cinematic .footprint-panel{grid-template-columns:auto auto auto 1fr auto auto}.fp-journey-progress{grid-column:1/-1;grid-row:2}.fp-memory-card{left:auto;right:14px;top:14px;translate:none;width:220px}.fp-memory-cover{height:128px}}
   @media(max-width:640px){
@@ -4238,15 +4243,15 @@
     right:0;
     bottom:6vh;
     margin:0;
-    font-size:clamp(0.78rem,1.3vw,0.92rem);
-    font-weight:300;
+    font-size:clamp(1.02rem,1.9vw,1.4rem);
+    font-weight:600;
     letter-spacing:0.22em;
     text-indent:0.22em;                                /* 抵消末字符字距，保持视觉居中 */
-    background-image:linear-gradient(90deg,#38bdf8,#7dd3fc 30%,#e0f2fe 50%,#7dd3fc 70%,#38bdf8);
+    background-image:linear-gradient(90deg,#0ea5e9,#22d3ee 28%,#a5f3fc 50%,#7dd3fc 68%,#0ea5e9);
     -webkit-background-clip:text;
     background-clip:text;
     color:transparent;
-    filter:drop-shadow(0 0 12px rgba(56,189,248,.45)); /* 青蓝辉光（渐变字用 drop-shadow，避免 text-shadow 透底）*/
+    filter:drop-shadow(0 0 8px rgba(34,211,238,.55)) drop-shadow(0 0 22px rgba(14,165,233,.4)); /* 双层青蓝辉光（渐变字用 drop-shadow，避免 text-shadow 透底）*/
     text-align:center;
     white-space:nowrap;                                /* 单行呈现，禁止折行 */
     will-change:transform,opacity;
@@ -10786,6 +10791,24 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     currentZoom=zoom;
     myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_labels',zoom:1.0001,originX:mapWrapEl.clientWidth/2,originY:mapWrapEl.clientHeight/2});
   }
+  // 沉浸回放期间调淡地图上的城市标记与城市名（结束恢复 opacity:1），让航线与飞机更突出
+  function fpDimCityMarkers(dim){
+    if(!myChart) return;
+    try{
+      const opt=myChart.getOption();
+      if(!opt||!opt.series) return;
+      const series=opt.series.map(s=>{
+        if(!s||!s.name) return s;
+        if(s.name==='已记录'||s.name==='家乡'){
+          s.itemStyle=Object.assign({},s.itemStyle,{opacity:dim?0.38:1});
+        }else if(s.name==='已记录城市名'){
+          s.label=Object.assign({},s.label,{opacity:dim?0.38:1});
+        }
+        return s;
+      });
+      myChart.setOption({series});
+    }catch(e){ /* ECharts 内部结构变化时静默回退，不影响播放 */ }
+  }
   function fpStopAll(){
     if(fpState&&fpState.raf) cancelAnimationFrame(fpState.raf);
     const restoreView=fpState&&fpState.restoreView;
@@ -10795,6 +10818,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     fpPanelEl.hidden=true;
     fpBtnEl.classList.remove('active');
     document.body.classList.remove('footprint-cinematic');
+    fpDimCityMarkers(false);
     fpSetMapView(restoreView);
   }
   async function fpStart(){
@@ -10836,6 +10860,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     };
     fpStatusDistEl.hidden=false;
     document.body.classList.add('footprint-cinematic');
+    fpDimCityMarkers(true);
     fpLayerEl.hidden=false; fpPanelEl.hidden=false;
     fpBtnEl.classList.add('active');
     fpPlayBtnEl.textContent='⏸'; fpSpeedBtnEl.textContent='1x';
