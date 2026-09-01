@@ -6224,7 +6224,7 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
       this.options = Object.assign({
         images: [], fit: .5, fitBasis: 'auto', minRadius: 600, maxRadius: Infinity,
         padFactor: .18, overlayBlurColor: '#08182a', maxVerticalRotationDeg: 5,
-        dragSensitivity: 20, enlargeTransitionMs: 300, segments: 24,
+        dragSensitivity: 20, enlargeTransitionMs: 300, segments: 24, segmentsY: 24,
         dragDampening: .72, openedImageWidth: 460, openedImageHeight: 460,
         imageBorderRadius: '12px', openedImageBorderRadius: '24px', grayscale: true,
         autoRotateSpeed: 1.8
@@ -6256,7 +6256,7 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
       const items = buildItems(this.options.images, this.options.segments);
       this.container.className = (this.container.className + ' dg-root').trim();
       this.container.style.setProperty('--dg-segments-x', this.options.segments);
-      this.container.style.setProperty('--dg-segments-y', this.options.segments);
+      this.container.style.setProperty('--dg-segments-y', this.options.segmentsY);
       this.container.style.setProperty('--dg-surface', this.options.overlayBlurColor);
       this.container.style.setProperty('--dg-tile-radius', this.options.imageBorderRadius);
       this.container.style.setProperty('--dg-enlarge-radius', this.options.openedImageBorderRadius);
@@ -15068,7 +15068,28 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   async function onDeletePhoto(id){
     if(!confirm('确定删除这张照片吗？此操作不可恢复。')) return;
     try{
+      const photo=currentCityPhotos.find(p=>p.id===id);
       await deletePhoto(id);
+      // 景点照片与相册照片双份存储（上传景点照片时同步写入相册），删除时需同步清理景点侧副本
+      // 匹配规则与云同步一致：dataUrl 相同或 storagePath 相同即同一张照片
+      if(photo&&currentCity){
+        const meta=await getCityMeta(currentCity.cityKey);
+        let removed=false;
+        (meta.attractions||[]).forEach(att=>{
+          const arr=att.photos||[];
+          for(let i=arr.length-1;i>=0;i--){
+            const ph=arr[i];
+            if((photo.dataUrl&&ph.dataUrl===photo.dataUrl)||(photo.storagePath&&ph.storagePath===photo.storagePath)){
+              arr.splice(i,1); removed=true;
+            }
+          }
+        });
+        if(removed){
+          await saveCityMeta(meta);
+          renderAttractions(meta.attractions||[]);
+          renderCityCards();
+        }
+      }
       await loadCityPhotos(currentCity.cityKey);
       await refreshState();
       toast('已删除照片');
@@ -16103,6 +16124,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     if(galleryPhotos.length&&window.DomeGallery){
       lifeDomeGalleryInstance=new window.DomeGallery($('lifePhotoDome'),{
         images:galleryPhotos,
+        segments:Math.max(24,Math.ceil(galleryPhotos.length/5)),
         minRadius:400,
         grayscale:false,
         overlayBlurColor:document.body.classList.contains('light-theme')?'#e8f1f8':'#08182a'
