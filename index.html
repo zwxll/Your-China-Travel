@@ -5008,9 +5008,9 @@
   @media(prefers-reduced-motion:reduce){.memory-shelf-overlay.show,.memory-chapter-book,.memory-page-turner,.memory-shelf-viewport.switching .memory-book.active .memory-book-object,.memory-book.opening .memory-book-cover,.memory-book.opening .memory-book-cover-inside{animation:none}.memory-book,.memory-book-object,.memory-book-cover,.memory-book-cover-inside,.memory-province-info,.memory-album-photo,.memory-shelf-more{transition:none}.memory-album-book{transform:none}}
 
   /* 添加城市：右栏入口 + 搜索选择弹窗 */
-  .city-add-trigger{min-width:92px;height:36px;padding:0 14px;border:1px solid rgba(56,189,248,.48);border-radius:10px;background:rgba(8,28,42,.82);color:#60d5ff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 0 16px rgba(14,165,233,.12);transition:border-color .18s ease,background .18s ease,transform .18s ease;}
+  .city-add-trigger{min-width:92px;height:36px;padding:0 14px;border:1px solid rgba(56,189,248,.48);border-radius:10px;background:rgba(8,28,42,.82);color:#60d5ff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 0 16px rgba(14,165,233,.12);transition:border-color .18s ease,background .18s ease,transform .18s ease;transform:translateY(-2px);}
   .city-add-trigger:hover{border-color:#38bdf8;background:rgba(11,43,62,.96);}
-  .city-add-trigger:active{transform:translateY(1px);}
+  .city-add-trigger:active{transform:translateY(-1px);}
   .city-add-overlay{position:fixed;inset:0;z-index:10020;display:none;align-items:center;justify-content:center;padding:24px;background:rgba(2,9,18,.78);backdrop-filter:blur(12px);}
   .city-add-overlay.show{display:flex;animation:fade .2s ease;}
   .city-add-dialog{width:min(520px,100%);padding:38px 40px 40px;border:1px solid rgba(96,165,250,.28);border-radius:24px;background:linear-gradient(145deg,#0b1729,#07111f);box-shadow:0 28px 80px rgba(0,0,0,.46),inset 0 1px 0 rgba(255,255,255,.04);position:relative;}
@@ -9064,14 +9064,89 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     if(valid) provinceFocusLastPoints=points;
   }
 
+  // 【重叠自愈】缩放聚拢、缓存还原或兜底摆放都可能让卡片叠成一堆：检测到真实重叠时，
+  // 仅移动「未固定(非图钉)且正与他人重叠」的卡片，围绕其城市就近寻找空位；
+  // 用户图钉卡片与其余未重叠卡片一律视为障碍不动。纯平移整体等量位移不产生新重叠，
+  // 检测零命中时立即返回，常态零开销。
+  function resolveProvinceCardOverlaps(cards){
+    if(!myChart||provinceFocusLayer.hidden||!provinceFocusCities.length) return false;
+    cards=cards||Array.from(provinceFocusCards.querySelectorAll('.province-map-card'));
+    if(cards.length<2) return false;
+    const width=mapWrapEl.clientWidth,height=mapWrapEl.clientHeight;
+    if(!width||!height) return false;
+    const rects=[];
+    cards.forEach((card,index)=>{
+      const item=provinceFocusCities[index];
+      if(!item) return;
+      const l=parseFloat(card.style.left),t=parseFloat(card.style.top);
+      if(!Number.isFinite(l)||!Number.isFinite(t)) return;
+      const point=myChart.convertToPixel({geoIndex:2},item.city.value);
+      if(!point||!Number.isFinite(point[0])||!Number.isFinite(point[1])) return;
+      rects.push({item,pinned:!!cardPins[item.city.cityKey],point,card,x:l,y:t,w:card.offsetWidth||154,h:card.offsetHeight||70});
+    });
+    if(rects.length<2) return false;
+    const ins=provinceCardInsets();
+    const minX=ins.left,maxX=Math.max(ins.left,width-ins.right-ins.w);
+    const minY=ins.top,maxY=Math.max(ins.top,height-ins.bottom-ins.h);
+    const clampRect=(x,y)=>({x:Math.max(minX,Math.min(maxX,x)),y:Math.max(minY,Math.min(maxY,y)),w:ins.w,h:ins.h});
+    const hitAny=(rect,padding,exclude)=>rects.some(o=>o!==exclude&&
+      rect.x<o.x+o.w+padding&&rect.x+rect.w+padding>o.x&&
+      rect.y<o.y+o.h+padding&&rect.y+rect.h+padding>o.y);
+    if(!rects.some(r=>hitAny(r,4,r))) return false;   // 无重叠：零成本退出
+    const mobile=window.innerWidth<=640;
+    const radii=mobile?[48,86,128,170]:[96,138,184,232,284];
+    const angles=[-35,35,-145,145,-75,75,-105,105,0,180];
+    let moved=false;
+    for(let round=0;round<3;round++){
+      let roundMoved=false;
+      // 逆序处理：照片数少的卡片（列表靠后）先让位，重点城市尽量留在原地
+      for(let i=rects.length-1;i>=0;i--){
+        const r=rects[i];
+        if(r.pinned||!hitAny(r,4,r)) continue;
+        const candidates=[];
+        radii.forEach(radius=>angles.forEach(angle=>{
+          const rad=angle*Math.PI/180;
+          candidates.push(clampRect(
+            r.point[0]+Math.cos(rad)*radius-(Math.cos(rad)<0?r.w:0),
+            r.point[1]+Math.sin(rad)*radius-r.h/2
+          ));
+        }));
+        const dist=rect=>{
+          const ax=Math.max(rect.x,Math.min(r.point[0],rect.x+rect.w));
+          const ay=Math.max(rect.y,Math.min(r.point[1],rect.y+rect.h));
+          return Math.hypot(ax-r.point[0],ay-r.point[1]);
+        };
+        const best=candidates
+          .filter(rect=>!hitAny(rect,8,r))
+          .sort((a,b)=>dist(a)-dist(b))[0];
+        if(best){
+          r.x=best.x;r.y=best.y;
+          r.card.style.left=best.x+'px';r.card.style.top=best.y+'px';
+          moved=true;roundMoved=true;
+        }
+      }
+      if(!roundMoved) break;
+    }
+    if(moved){
+      // 治愈后的位置写回缓存，堆叠状态不再被还原
+      rects.forEach(r=>{
+        cardPosCache[r.item.city.cityKey]={xPct:+(r.x/width).toFixed(4),yPct:+(r.y/height).toFixed(4)};
+      });
+      saveCardPosCache();
+    }
+    return moved;
+  }
+
   function layoutProvinceFocusCards(){
     if(!myChart||(!selectedProvinceName&&currentView!=='province'&&currentView!=='city')||provinceFocusLayer.hidden||!provinceFocusCities.length) return;
     const cards=Array.from(provinceFocusCards.querySelectorAll('.province-map-card'));
     if(!cards.length) return;
     // 【卡片冻结·逐卡判定】已有像素位置的卡片绝不再被布局移动——唯一移动方式 = 鼠标拖动卡片
-    // 全部卡片均已摆放时：先跟随城市（平移/缩放各自城市位移→连线长短固定），再按城市最新像素位置重绘连线
+    // 全部卡片均已摆放时：先跟随城市（平移/缩放各自城市位移→连线长短固定），
+    // 再做重叠自愈（缩放聚拢/缓存还原造成的堆叠只移动未固定卡片），最后重绘连线
     if(cards.every(c=>Number.isFinite(parseFloat(c.style.left))&&Number.isFinite(parseFloat(c.style.top)))){
       panFollowCards(cards);
+      resolveProvinceCardOverlaps(cards);
       updateProvinceCardLines();
       return;
     }
@@ -9206,6 +9281,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     });
     saveCardPosCache();
     provinceFocusLastPoints=points;   // 建立平移检测基线：此后纯平移 → 卡片整体跟随
+    // 摆放过密时兜底位可能与既有卡片重叠：自愈一次并重绘连线
+    if(resolveProvinceCardOverlaps(cards)) updateProvinceCardLines();
     // 卡片位置确定后重算城市名标签（卡片异步渲染晚于标签计算，需按卡片矩形避让一次）
     if(recomputeLabelPositions&&placed.length) recomputeLabelPositions();
   }
