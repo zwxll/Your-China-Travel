@@ -8622,6 +8622,26 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       r.onerror=()=>reject(r.error);
     }),8000,'读取全部点评超时');
   }
+  // 修改昵称/头像后，刷新已发布点评中的身份快照（本地 IndexedDB + 云端 city_reviews），
+  // 否则点评页会一直显示发布时的旧昵称/旧头像
+  async function refreshReviewsIdentity(){
+    try{
+      const profileNow=getUserProfile();
+      const nextNickname=profileNow.nickname||'';
+      const nextAvatar=profileNow.avatarUrl||'';
+      if(!nextNickname&&!nextAvatar) return;
+      const userId=cloudUser?cloudUser.id:'guest';
+      const reviews=await getAllMyReviews();
+      for(const r of reviews){
+        if(!r||r.userId!==userId) continue;
+        if((nextNickname&&r.nickname===nextNickname)&&(nextAvatar&&r.avatarUrl===nextAvatar)) continue;
+        if(nextNickname) r.nickname=nextNickname;
+        if(nextAvatar) r.avatarUrl=nextAvatar;
+        await saveMyReview(r);
+        if(cloudUser&&cloudUser.id) syncPublicReviewToCloud(r).catch(()=>{});
+      }
+    }catch(e){ console.warn('刷新点评身份快照失败',e); }
+  }
 
   /* ---------- 云端公开点评（city_reviews 表，best-effort；表未创建时静默降级为本地） ---------- */
   async function syncPublicReviewToCloud(review){
@@ -9765,6 +9785,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     }
     saveUserProfile({avatarUrl});
     renderProfileAvatar(dataUrl);
+    refreshReviewsIdentity();
     toast('✓ 头像更新成功');
   }
 
@@ -10349,8 +10370,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     const err=validateNickname(cleaned);
     if(err){setNicknameMessage(err,'error');return;}
     try{
-      saveUserProfile({nickname:cleaned,email:cloudUser?(cloudUser.email||''):''});
-      profileNickname.textContent=cleaned;
+        saveUserProfile({nickname:cleaned,email:cloudUser?(cloudUser.email||''):''});
+        refreshReviewsIdentity();
+        profileNickname.textContent=cleaned;
       closeNicknameEdit();
       toast('✓ 昵称修改成功');
     }catch(e){
@@ -14173,9 +14195,13 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       if(myReview){
         const metaUpdated=meta?meta.updatedAt:0;
         const reviewUpdated=myReview.updatedAt||0;
-        const resolvedMyAvatarUrl=await resolveAvatarUrl(myReview.avatarUrl||identity.avatarUrl);
+        // 身份优先取当前资料（修改昵称/头像后立即生效），点评内旧快照仅作回退
+        const profileNow=getUserProfile();
+        const myNickname=profileNow.nickname||myReview.nickname||identity.nickname;
+        const myAvatarUrl=profileNow.avatarUrl||myReview.avatarUrl||identity.avatarUrl;
+        const resolvedMyAvatarUrl=await resolveAvatarUrl(myAvatarUrl);
         allCards.push({html:renderReviewCardHTML({
-          nickname:myReview.nickname||identity.nickname,
+          nickname:myNickname,
           avatarUrl:resolvedMyAvatarUrl,
           rating:myReview.rating||0,
           intro:myReview.intro||'',
