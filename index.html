@@ -8832,15 +8832,14 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
 
   /* ---------- 卡片拖拽固定位置 ---------- */
-  // V2：废弃 V1 旧缓存——旧位置被"左右避让面板 398px"规则钳在面板边缘竖线上，
-  // 解除该规则后需重新自动布局，避免还原出旧的贴边堆叠
-  const CARD_PINS_KEY='travelCardPinsV2';
+  // V3：废弃 V2 旧缓存——V2 位置无「避让地图陆地」原则，新原则生效后需重新自动布局一次
+  const CARD_PINS_KEY='travelCardPinsV3';
   let cardPins=(function(){try{return JSON.parse(localStorage.getItem(CARD_PINS_KEY))||{}}catch(e){return{}}})();
   function saveCardPins(){try{localStorage.setItem(CARD_PINS_KEY,JSON.stringify(cardPins))}catch(e){}}
   // 卡片位置缓存（按城市 cityKey 记忆百分比位置）：视图切换/省份点击/空白点击会销毁重建卡片 DOM，
   // 重建时从缓存直接落回历史位置并跳过入场动画——配合"布局永不移动已摆放卡片"，
   // 实现卡片唯一移动方式 = 鼠标拖动卡片
-  const CARD_POS_CACHE_KEY='travelCardPosCacheV2';
+  const CARD_POS_CACHE_KEY='travelCardPosCacheV3';
   let cardPosCache=(function(){try{return JSON.parse(localStorage.getItem(CARD_POS_CACHE_KEY))||{}}catch(e){return{}}})();
   function saveCardPosCache(){try{localStorage.setItem(CARD_POS_CACHE_KEY,JSON.stringify(cardPosCache))}catch(e){}}
   // 平移跟随期间位置持续变化，localStorage 持久化做防抖，避免拖动中高频写盘
@@ -9194,11 +9193,40 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     provinceFocusLines.setAttribute('viewBox','0 0 '+width+' '+height);
     provinceFocusLines.innerHTML='';
     const mobile=window.innerWidth<=640;
-    // 左右不再避让面板：卡片层浮于面板之上，可自由延伸到面板区域（与 provinceCardInsets 一致）
+    // 左右不再避让面板：卡片可延伸到面板区域下方（被面板盖住），不再被钳成竖线
     const leftInset=mobile?10:18;
     const rightInset=mobile?10:18;
     const topInset=mobile?12:18,bottomInset=mobile?12:58;
     const cardW=154,cardH=70;
+    // 【避让地图陆地】containPixel 采样一次性构建陆地覆盖网格，候选位评分按矩形压盖
+    // 陆地的比例分桶优先选不压陆地的位置——沿海/边缘城市卡片被推向海面与屏幕边缘，
+    // 内陆城市无离陆候选时按原规则就近摆放（尽力避让）。构建失败时静默退回原行为。
+    const landGrid=(function(){
+      const cols=28,rows=Math.max(10,Math.round(cols*height/width));
+      const grid=new Uint8Array(cols*rows);
+      let any=false;
+      for(let r=0;r<rows;r++){
+        for(let c=0;c<cols;c++){
+          const px=(c+0.5)*width/cols,py=(r+0.5)*height/rows;
+          let inside=false;
+          try{inside=!!myChart.containPixel({geoIndex:0},[px,py]);}catch(e){}
+          if(inside){grid[r*cols+c]=1;any=true;}
+        }
+      }
+      return any?{grid,cols,rows}:null;
+    })();
+    const landBucket=rect=>{
+      if(!landGrid) return 1;
+      const {grid,cols,rows}=landGrid;
+      const c0=Math.max(0,Math.floor(rect.x/width*cols));
+      const c1=Math.min(cols-1,Math.ceil((rect.x+rect.w)/width*cols)-1);
+      const r0=Math.max(0,Math.floor(rect.y/height*rows));
+      const r1=Math.min(rows-1,Math.ceil((rect.y+rect.h)/height*rows)-1);
+      if(c1<c0||r1<r0) return 0;
+      let hit=0,total=0;
+      for(let r=r0;r<=r1;r++)for(let c=c0;c<=c1;c++){total++;if(grid[r*cols+c])hit++;}
+      return total?Math.min(2,Math.round(hit/total*3)):0;   // 0=不压陆地 1=部分压盖 2=基本在陆地上
+    };
     const placed=[];
     const minX=leftInset,maxX=Math.max(leftInset,width-rightInset-cardW);
     const minY=topInset,maxY=Math.max(topInset,height-bottomInset-cardH);
@@ -9249,7 +9277,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       // 已摆放卡片：位置冻结（初始摆放与鼠标拖动是仅有的两种定位来源），布局绝不改写
       const prevX=parseFloat(card.style.left),prevY=parseFloat(card.style.top);
       const hasPrev=Number.isFinite(prevX)&&Number.isFinite(prevY);
-      const radii=mobile?[48,86,128,170]:[96,138,184,232,284];
+      const radii=mobile?[48,86,128,170]:[96,138,184,232,284,344,410];
       const angles=[-35,35,-145,145,-75,75,-105,105,0,180];
       const anchorOf=rect=>({
         x:Math.max(rect.x,Math.min(point[0],rect.x+rect.w)),
@@ -9258,6 +9286,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       const scoreRect=rect=>{
         const a=anchorOf(rect);
         return {rect,cross:crossesExisting(point[0],point[1],a.x,a.y),
+          land:landBucket(rect),
           dist:Math.hypot(a.x-point[0],a.y-point[1]),
           move:hasPrev?Math.hypot(rect.x-prevX,rect.y-prevY):0};
       };
@@ -9276,16 +9305,17 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
             point[1]+Math.sin(rad)*radius-cardH/2
           ));
         }));
+        // 优先不压地图陆地（land 分桶），其次连线不交叉、离城市近
         best=candidates
           .filter(rect=>!placed.some(other=>overlaps(rect,other)))
           .map(scoreRect)
-          .sort((a,b)=>(a.cross?1:0)-(b.cross?1:0)||a.move-b.move||a.dist-b.dist)[0];
+          .sort((a,b)=>a.land-b.land||(a.cross?1:0)-(b.cross?1:0)||a.move-b.move||a.dist-b.dist)[0];
         if(best) best=best.rect;
         if(!best){
           const rankedSlots=gridSlots
             .map((rect,slotIndex)=>Object.assign(scoreRect(rect),{slotIndex}))
             .filter(slot=>!usedGridSlots.has(slot.slotIndex)&&!placed.some(other=>overlaps(slot.rect,other)))
-            .sort((a,b)=>(a.cross?1:0)-(b.cross?1:0)||a.move-b.move||a.dist-b.dist);
+            .sort((a,b)=>a.land-b.land||(a.cross?1:0)-(b.cross?1:0)||a.move-b.move||a.dist-b.dist);
           if(rankedSlots.length){
             best=rankedSlots[0].rect;
             usedGridSlots.add(rankedSlots[0].slotIndex);
