@@ -784,7 +784,8 @@
     overflow:hidden;
   }
   #map{position:absolute;inset:0;}
-  /* 省份聚焦层：地图负责省份高亮，DOM 层负责城市照片卡片与连接线 */
+  /* 省份聚焦层：地图负责省份高亮，DOM 层负责城市照片卡片与连接线
+     z-index:4 低于左右面板(6)：城市视图卡片可自由延伸到面板区域下方（被面板盖住），不被钳成一条线 */
   .province-focus-layer{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden;}
   .province-focus-layer[hidden]{display:none;}
   .province-focus-lines{position:absolute;inset:0;width:100%;height:100%;overflow:visible;}
@@ -3402,6 +3403,18 @@
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
     text-shadow:0 1px 6px rgba(0,0,0,.85);
   }
+  /* 景点网格上方操作提示：单击编辑 / 双击看照片（独立行，不参与网格布局） */
+  .att-grid-hint{
+    width:100%;
+    text-align:center;
+    margin:6px 0 14px;
+    font-size:12.5px;font-weight:500;letter-spacing:.4px;
+    color:rgba(190,205,225,.62);
+    text-shadow:0 1px 4px rgba(0,0,0,.5);
+  }
+  .att-grid-hint b{font-weight:600;color:rgba(140,200,255,.8);}
+  body.light-theme .att-grid-hint{color:rgba(70,90,115,.72);text-shadow:none;}
+  body.light-theme .att-grid-hint b{color:rgba(2,110,190,.78);}
   /* 卡片无照片占位 */
   .att-card-empty{
     position:absolute;inset:0;display:grid;place-items:center;
@@ -5878,6 +5891,9 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
 
       <!-- 隐藏占位（保留原ID避免JS报错） -->
       <div class="att-grid-title" id="attGridTitle" style="display:none;"></div>
+
+      <!-- 操作提示：位于景点卡片上方（仅有景点时显示） -->
+      <div class="att-grid-hint" id="attGridHint" style="display:none;">单击景点卡片，编辑该景点信息；双击查看该景点照片</div>
 
       <!-- 景点网格（去除玻璃包装边框，直接展示） -->
       <div class="att-grid" id="attDetailBody"></div>
@@ -8816,13 +8832,15 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
 
   /* ---------- 卡片拖拽固定位置 ---------- */
-  const CARD_PINS_KEY='travelCardPins';
+  // V2：废弃 V1 旧缓存——旧位置被"左右避让面板 398px"规则钳在面板边缘竖线上，
+  // 解除该规则后需重新自动布局，避免还原出旧的贴边堆叠
+  const CARD_PINS_KEY='travelCardPinsV2';
   let cardPins=(function(){try{return JSON.parse(localStorage.getItem(CARD_PINS_KEY))||{}}catch(e){return{}}})();
   function saveCardPins(){try{localStorage.setItem(CARD_PINS_KEY,JSON.stringify(cardPins))}catch(e){}}
   // 卡片位置缓存（按城市 cityKey 记忆百分比位置）：视图切换/省份点击/空白点击会销毁重建卡片 DOM，
   // 重建时从缓存直接落回历史位置并跳过入场动画——配合"布局永不移动已摆放卡片"，
   // 实现卡片唯一移动方式 = 鼠标拖动卡片
-  const CARD_POS_CACHE_KEY='travelCardPosCache';
+  const CARD_POS_CACHE_KEY='travelCardPosCacheV2';
   let cardPosCache=(function(){try{return JSON.parse(localStorage.getItem(CARD_POS_CACHE_KEY))||{}}catch(e){return{}}})();
   function saveCardPosCache(){try{localStorage.setItem(CARD_POS_CACHE_KEY,JSON.stringify(cardPosCache))}catch(e){}}
   // 平移跟随期间位置持续变化，localStorage 持久化做防抖，避免拖动中高频写盘
@@ -8901,11 +8919,12 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
 
   // 卡片可放置区域的边缘留白（与 layoutProvinceFocusCards 保持一致）
+  // 左右不再避让面板（卡片层 z-index 高于面板，可浮于面板上方自由呈现），仅保留贴边小边距
   function provinceCardInsets(){
     const mobile=window.innerWidth<=640;
     return {
-      left:mobile?10:(document.body.classList.contains('left-panel-collapsed')?18:398),
-      right:mobile?10:(document.body.classList.contains('right-panel-collapsed')?18:398),
+      left:mobile?10:18,
+      right:mobile?10:18,
       top:mobile?12:18,bottom:mobile?12:58,
       w:154,h:70
     };
@@ -9175,8 +9194,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     provinceFocusLines.setAttribute('viewBox','0 0 '+width+' '+height);
     provinceFocusLines.innerHTML='';
     const mobile=window.innerWidth<=640;
-    const leftInset=mobile?10:(document.body.classList.contains('left-panel-collapsed')?18:398);
-    const rightInset=mobile?10:(document.body.classList.contains('right-panel-collapsed')?18:398);
+    // 左右不再避让面板：卡片层浮于面板之上，可自由延伸到面板区域（与 provinceCardInsets 一致）
+    const leftInset=mobile?10:18;
+    const rightInset=mobile?10:18;
     const topInset=mobile?12:18,bottomInset=mobile?12:58;
     const cardW=154,cardH=70;
     const placed=[];
@@ -10441,7 +10461,28 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         },0);
       }
     });
-    const {data,error}=await cloudClient.auth.getSession();
+    // getSession 在弱网下可能长时间挂起（SDK 内部无超时），加 6s 竞速：
+    // 超时且本地无已保存会话时直接弹出登录界面，避免刷新后登录弹窗偶发不显示
+    let projectRef='';
+    try{projectRef=new URL(cloudConfig.url).hostname.split('.')[0];}catch(e){}
+    const hasLocalSession=!!(projectRef&&localStorage.getItem('sb-'+projectRef+'-auth-token'));
+    const sessionResult=await Promise.race([
+      cloudClient.auth.getSession(),
+      new Promise(resolve=>setTimeout(()=>resolve({timedOut:true}),6000))
+    ]);
+    if(sessionResult&&sessionResult.timedOut){
+      if(!hasLocalSession&&!isLocalMode()) openAuth();
+      // 本地有会话标记：后台继续确认真实登录状态，确认成功后照常恢复数据
+      cloudClient.auth.getSession().then(res=>{
+        if(res&&res.error){setSyncStatus('云端不可用','error');return;}
+        if(cloudUser) return; // 用户已通过其他途径登录，避免挂起的旧会话结果覆盖当前账号
+        if(res&&res.data&&res.data.session&&!isLocalMode()){
+          prepareUserData(res.data.session.user).catch(()=>{});
+        }
+      }).catch(()=>{});
+      return;
+    }
+    const {data,error}=sessionResult;
     if(error){setSyncStatus('云端不可用','error');openAuth();return;}
     if(data.session&&!isLocalMode()) await prepareUserData(data.session.user);
     else if(!isLocalMode()) openAuth();
@@ -13161,10 +13202,13 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
    */
   function renderAttractionDetailList(attractions){
     attDetailBody.innerHTML='';
+    const hintEl=$('attGridHint');
     if(!attractions.length){
+      if(hintEl) hintEl.style.display='none';
       attDetailBody.innerHTML='<div class="att-detail-empty"><span class="big">暂无景点</span><span class="sub">在城市编辑弹窗中添加景点后，将在此处展示</span></div>';
       return;
     }
+    if(hintEl) hintEl.style.display='';
     // ===== 按景点数量自适应网格列数，所有卡片等高填满视口，一屏可见无需滚动 =====
     // 1 个 → 单列；2 个 → 双列；3 个 → 3 列；4 个 → 4 列；5+ 个 → 最多 4 列自动换行
     const n=attractions.length;
