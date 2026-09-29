@@ -24,8 +24,8 @@
       minHeight: Math.round(height * 0.55),
       maxHeight: height,
       drawShadow: !options.reduceMotion,
-      flippingTime: options.reduceMotion ? 0 : 720,
-      usePortrait: global.innerWidth <= breakpoint,
+      flippingTime: options.reduceMotion ? 1 : 720,
+      usePortrait: true,
       autoSize: true,
       showCover: true,
       mobileScrollSupport: false,
@@ -50,6 +50,16 @@
 
     turnTo(Number.isInteger(options.initialPage) ? options.initialPage : 0);
 
+    function refreshLayout() {
+      if (destroyed) return;
+      if (root.dataset) root.dataset.layout = global.innerWidth <= breakpoint ? 'portrait' : 'landscape';
+      pageFlip.update();
+    }
+
+    function handleResize() { refreshLayout(); }
+    if (typeof global.addEventListener === 'function') global.addEventListener('resize', handleResize);
+    if (root.dataset) root.dataset.layout = global.innerWidth <= breakpoint ? 'portrait' : 'landscape';
+
     return {
       next: function () {
         if (!destroyed && currentPage < pageCount - 1) pageFlip.flipNext('bottom');
@@ -59,9 +69,11 @@
       },
       turnTo,
       getPageIndex: function () { return currentPage; },
+      refreshLayout,
       destroy: function () {
         if (destroyed) return;
         destroyed = true;
+        if (typeof global.removeEventListener === 'function') global.removeEventListener('resize', handleResize);
         pageFlip.destroy();
       },
     };

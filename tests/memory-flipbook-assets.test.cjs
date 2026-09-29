@@ -16,6 +16,7 @@ const requiredAssets = [
   'fonts/LICENSE.md',
   'fonts/SOURCE.txt',
   'memory-flipbook.js',
+  'memory-flipbook.css',
 ];
 
 test('all flipbook runtime assets are local and licensed', () => {
@@ -39,6 +40,7 @@ test('adapter exposes the navigation controller contract', () => {
       this.index = 0;
       this.listeners = {};
       this.destroyCount = 0;
+      this.updateCount = 0;
       FakePageFlip.instance = this;
     }
     on(name, handler) { this.listeners[name] = handler; }
@@ -52,9 +54,18 @@ test('adapter exposes the navigation controller contract', () => {
       if (this.listeners.flip) this.listeners.flip({ data: index });
     }
     destroy() { this.destroyCount += 1; }
+    update() { this.updateCount += 1; }
   }
 
-  const window = { innerWidth: 1200, St: { PageFlip: FakePageFlip } };
+  const listeners = new Map();
+  const window = {
+    innerWidth: 1200,
+    St: { PageFlip: FakePageFlip },
+    addEventListener: (name, handler) => listeners.set(name, handler),
+    removeEventListener: (name, handler) => {
+      if (listeners.get(name) === handler) listeners.delete(name);
+    },
+  };
   vm.runInNewContext(source, { window });
   assert.equal(typeof window.MemoryFlipbook.create, 'function');
 
@@ -67,8 +78,8 @@ test('adapter exposes the navigation controller contract', () => {
   });
 
   assert.deepEqual(
-    ['next', 'prev', 'turnTo', 'getPageIndex', 'destroy'].map(name => typeof controller[name]),
-    ['function', 'function', 'function', 'function', 'function']
+    ['next', 'prev', 'turnTo', 'getPageIndex', 'refreshLayout', 'destroy'].map(name => typeof controller[name]),
+    ['function', 'function', 'function', 'function', 'function', 'function']
   );
   assert.equal(controller.getPageIndex(), 1);
   controller.next();
@@ -78,7 +89,29 @@ test('adapter exposes the navigation controller contract', () => {
   controller.turnTo(-1);
   assert.equal(controller.getPageIndex(), 1, 'invalid pages are ignored');
   assert.deepEqual(flips, [1, 2, 1]);
+  controller.refreshLayout();
+  assert.equal(FakePageFlip.instance.updateCount, 1);
+  assert.ok(listeners.has('resize'), 'adapter owns one resize listener');
   controller.destroy();
   controller.destroy();
   assert.equal(FakePageFlip.instance.destroyCount, 1, 'destroy is idempotent');
+  assert.equal(listeners.has('resize'), false, 'destroy removes the resize listener');
+});
+
+test('stylesheet defines the responsive photobook visual system', () => {
+  const css = fs.readFileSync(path.join(assetRoot, 'memory-flipbook.css'), 'utf8');
+  for (const selector of [
+    '.memory-flipbook-root',
+    '.book-page',
+    '.memory-fb-intro',
+    '.memory-fb-photo',
+    '.memory-fb-ending',
+    '.memory-fb-image-error',
+  ]) assert.match(css, new RegExp(selector.replace('.', '\\.')));
+  assert.match(css, /@font-face[\s\S]*SourceSerif4-Regular\.otf\.woff2/);
+  assert.match(css, /url\(["']?\.\/paper-grain\.svg/);
+  assert.match(css, /url\(["']?\.\/cloth-weave\.svg/);
+  assert.match(css, /@media\s*\([^)]*max-width:\s*760px/);
+  assert.match(css, /:focus-visible/);
+  assert.match(css, /prefers-reduced-motion/);
 });
