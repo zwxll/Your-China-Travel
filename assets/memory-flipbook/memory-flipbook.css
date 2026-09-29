@@ -147,6 +147,42 @@
   outline-offset: 3px;
 }
 
+.memory-fb-image-error[hidden] {
+  display: none;
+}
+
+.memory-chapter-book {
+  border-color: rgba(83, 69, 50, .2);
+  background: #d8cebc;
+  box-shadow: 0 24px 52px rgba(43, 49, 46, .2);
+}
+
+.memory-chapter-page {
+  color: #223f48;
+  background-color: #f4efe3;
+  background-image: url("./paper-grain.svg"), linear-gradient(100deg, rgba(255,255,255,.52), rgba(226,213,190,.28));
+  font-family: "Memory Source Serif", "Songti SC", "Noto Serif CJK SC", serif;
+}
+
+.memory-chapter-page.left {
+  box-shadow: inset -24px 0 32px rgba(74, 60, 44, .14);
+}
+
+.memory-chapter-page.right {
+  box-shadow: inset 24px 0 32px rgba(74, 60, 44, .12);
+}
+
+.memory-chapter-entry {
+  border-bottom-color: rgba(116, 86, 57, .18);
+}
+
+.memory-chapter-entry:hover,
+.memory-chapter-entry:focus-visible {
+  background: rgba(157, 89, 47, .08);
+  outline: 2px solid rgba(157, 89, 47, .62);
+  outline-offset: 3px;
+}
+
 @media (max-width: 760px) {
   .memory-fb-shell {
     gap: 9px;
