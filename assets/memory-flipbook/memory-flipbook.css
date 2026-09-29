@@ -1,0 +1,222 @@
+@font-face {
+  font-family: "Memory Source Serif";
+  src: url("./fonts/SourceSerif4-Regular.otf.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Memory Source Serif";
+  src: url("./fonts/SourceSerif4-It.otf.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+.memory-fb-shell {
+  --memory-paper: #f4efe3;
+  --memory-paper-deep: #e9dfce;
+  --memory-ink: #173743;
+  --memory-accent: #9a4f2b;
+  display: grid;
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr) auto;
+  place-items: center;
+  gap: 14px;
+  color: var(--memory-ink);
+}
+
+.memory-flipbook-root {
+  width: auto !important;
+  height: 100% !important;
+  max-width: min(100%, 1040px);
+  max-height: 680px;
+  aspect-ratio: 3 / 2;
+  min-height: 420px;
+  margin: auto;
+  filter: drop-shadow(0 22px 32px rgba(35, 45, 45, .2));
+}
+
+.book-page {
+  position: relative;
+  box-sizing: border-box;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  padding: clamp(28px, 5vw, 58px);
+  color: var(--memory-ink);
+  background-color: var(--memory-paper);
+  background-image: url("./paper-grain.svg"), linear-gradient(100deg, rgba(255,255,255,.48), rgba(232,220,199,.24));
+  background-blend-mode: multiply, normal;
+  border: 1px solid rgba(55, 67, 63, .12);
+  font-family: "Memory Source Serif", "Songti SC", "Noto Serif CJK SC", serif;
+}
+
+.book-page::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow: inset 0 0 36px rgba(91, 75, 55, .12);
+}
+
+.book-page[data-density="hard"] {
+  background-color: #48605b;
+  background-image: url("./cloth-weave.svg"), linear-gradient(135deg, #60776f, #324a48);
+  color: #f5eee0;
+  border-color: rgba(25, 43, 42, .35);
+}
+
+.memory-fb-intro,
+.memory-fb-ending {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.memory-fb-kicker {
+  color: var(--memory-accent);
+  font: 700 .72rem/1.2 ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: .2em;
+  text-transform: uppercase;
+}
+
+.memory-fb-title {
+  margin: auto 0 16px;
+  font-size: clamp(2.2rem, 6vw, 4.8rem);
+  font-weight: 400;
+  line-height: .98;
+  letter-spacing: -.04em;
+}
+
+.memory-fb-meta,
+.memory-fb-description,
+.memory-fb-caption {
+  line-height: 1.75;
+}
+
+.memory-fb-description {
+  max-width: 28em;
+  margin: 0;
+  color: color-mix(in srgb, currentColor 78%, transparent);
+}
+
+.memory-fb-photo {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 18px;
+}
+
+.memory-fb-photo-button {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #d8d2c6;
+  cursor: zoom-in;
+}
+
+.memory-fb-photo-button img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.memory-fb-image-error {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  color: #6b6258;
+  background: var(--memory-paper-deep);
+  letter-spacing: .08em;
+}
+
+.memory-fb-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 42px;
+}
+
+.memory-fb-controls button:focus-visible,
+.memory-fb-photo-button:focus-visible {
+  outline: 3px solid #bd7047;
+  outline-offset: 3px;
+}
+
+.memory-fb-image-error[hidden] {
+  display: none;
+}
+
+.memory-chapter-book {
+  border-color: rgba(83, 69, 50, .2);
+  background: #d8cebc;
+  box-shadow: 0 24px 52px rgba(43, 49, 46, .2);
+}
+
+.memory-chapter-page {
+  color: #223f48;
+  background-color: #f4efe3;
+  background-image: url("./paper-grain.svg"), linear-gradient(100deg, rgba(255,255,255,.52), rgba(226,213,190,.28));
+  font-family: "Memory Source Serif", "Songti SC", "Noto Serif CJK SC", serif;
+}
+
+.memory-chapter-page.left {
+  box-shadow: inset -24px 0 32px rgba(74, 60, 44, .14);
+}
+
+.memory-chapter-page.right {
+  box-shadow: inset 24px 0 32px rgba(74, 60, 44, .12);
+}
+
+.memory-chapter-entry {
+  border-bottom-color: rgba(116, 86, 57, .18);
+}
+
+.memory-chapter-entry:hover,
+.memory-chapter-entry:focus-visible {
+  background: rgba(157, 89, 47, .08);
+  outline: 2px solid rgba(157, 89, 47, .62);
+  outline-offset: 3px;
+}
+
+@media (max-width: 760px) {
+  .memory-fb-shell {
+    gap: 9px;
+  }
+
+  .memory-flipbook-root {
+    width: min(100%, 430px) !important;
+    height: auto !important;
+    min-height: 0;
+    aspect-ratio: 3 / 4;
+  }
+
+  .book-page {
+    padding: clamp(22px, 8vw, 38px);
+  }
+
+  .memory-fb-title {
+    font-size: clamp(2rem, 13vw, 3.5rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .memory-flipbook-root,
+  .book-page,
+  .memory-fb-controls button {
+    scroll-behavior: auto;
+    transition-duration: .01ms !important;
+    animation-duration: .01ms !important;
+  }
+}

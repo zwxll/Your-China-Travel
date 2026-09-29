@@ -5301,6 +5301,7 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
 }
 
   </style>
+  <link rel="stylesheet" href="assets/memory-flipbook/memory-flipbook.css">
 </head>
 <body>
 <!-- ===== 底层 ferrofluid 铁磁流体背景（z-index:-1，非交互，纯氛围层）===== -->
@@ -7201,6 +7202,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     }
 </script>
 
+<script src="assets/memory-flipbook/vendor/page-flip.browser.js"></script>
+<script src="assets/memory-flipbook/memory-flipbook.js"></script>
 <script>
 /* =========================================================
  * 我的中国旅行地图 —— 单文件应用
@@ -17122,7 +17125,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   const memoryProvinceEditorState={province:null,coverDataUrl:'',coverValue:'',customCover:false};
   // Three.js book rig and deterministic shelf motion adapted with permission from MengTo/complete-shelf.
   // Original cover atlases, wood textures and audio are intentionally not included.
-  let memoryThreeShelf=null,memoryThreePromise=null,memoryShelfResourcesPromise=null;
+  let memoryThreeShelf=null,memoryThreePromise=null,memoryShelfResourcesPromise=null,memoryAlbumFlipbook=null;
 
   function memoryEnsureThree(){
     if(window.THREE) return Promise.resolve(window.THREE);
@@ -17627,6 +17630,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     $('memoryShelfMore')?.addEventListener('click',event=>{event.stopPropagation();memoryPageShelf(Number(event.currentTarget.dataset.step)||1);});
   }
   function renderMemoryShelf(){
+    memoryDestroyAlbumFlipbook();
     clearTimeout(memoryShelfState.pageTimer);memoryShelfState.level='shelf';memoryShelfState.province=null;memoryShelfState.city=null;memoryShelfState.photos=[];memoryShelfState.page=0;memoryShelfState.dragOffset=0;memoryShelfState.pageShift=0;memoryShelfState.paging=false;memoryShelfState.bookRotation=null;memoryShelfState.opening=false;
     memorySetHeader('记忆书架','拖动书架选择省份，长按中心书籍可左右旋转，再次点击即可翻开城市章节。');
     if(!memoryShelfState.provinces.length){
@@ -17652,6 +17656,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
   function memoryOpenChapters(province){
     if(!province) return;
+    memoryDestroyAlbumFlipbook();
     memoryDisposeThreeShelf();
     memoryShelfState.opening=false;memoryShelfState.level='chapters';memoryShelfState.province=province;memoryShelfState.city=null;
     memorySetHeader(province.name+'旅行章节','选择一座到达过的城市，翻开它的旅行相册。');
@@ -17835,20 +17840,51 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       requestAnimationFrame(()=>runPhase(back,finish));
     });
   }
+  function memoryDestroyAlbumFlipbook(){
+    if(!memoryAlbumFlipbook) return;
+    memoryAlbumFlipbook.destroy();memoryAlbumFlipbook=null;
+  }
+  function memoryBuildFlipbookPages(city,photos){
+    const date=city.firstMonth?formatMonth(city.firstMonth):'时间尚未记录';
+    const description=String(city.meta&&city.meta.description||'').trim()||'城市简介尚未记录';
+    const intro='<section class="book-page memory-fb-intro" data-density="hard"><span class="memory-fb-kicker">城市旅行纪念册</span><div><h4 class="memory-fb-title">'+escapeHtml(city.name)+'</h4><p class="memory-fb-description">'+escapeHtml(description)+'</p></div><p class="memory-fb-meta">'+escapeHtml(date)+'　·　'+photos.length+' 张照片</p></section>';
+    const photoPages=photos.map((photo,index)=>'<section class="book-page memory-fb-photo"><button class="memory-fb-photo-button" type="button" data-memory-photo="'+index+'" aria-label="查看第 '+(index+1)+' 张照片"><img src="'+escapeHtml(photo.dataUrl||'')+'" alt="'+escapeHtml(photo.name||city.name+'旅行照片')+'" loading="eager" decoding="async" draggable="false"><span class="memory-fb-image-error" hidden>影像暂无法加载</span></button><div class="memory-fb-caption"><span>'+escapeHtml(photo.name||'')+'</span><span>'+String(index+1).padStart(2,'0')+' / '+String(photos.length).padStart(2,'0')+'</span></div></section>').join('');
+    const ending='<section class="book-page memory-fb-ending" data-density="hard"><span class="memory-fb-kicker">'+escapeHtml(city.name)+'</span><h4 class="memory-fb-title">本章完</h4><p class="memory-fb-meta">旅行记忆</p></section>';
+    return intro+photoPages+ending;
+  }
+  function memoryUpdateFlipbookControls(index,pageCount){
+    memoryShelfState.page=index;
+    const counter=$('memoryAlbumCounter'),prev=$('memoryAlbumPrev'),next=$('memoryAlbumNext');
+    if(counter) counter.textContent=(index+1)+' / '+pageCount;
+    if(prev) prev.disabled=index<=0;
+    if(next) next.disabled=index>=pageCount-1;
+  }
+  function memoryMountAlbumFlipbook(){
+    memoryDestroyAlbumFlipbook();
+    const stage=$('memoryAlbumStage'),city=memoryShelfState.city,photos=memoryShelfState.photos;
+    if(!stage||!city) return;
+    const pageCount=photos.length+2;
+    stage.innerHTML='<div class="memory-fb-shell"><div class="memory-flipbook-root" id="memoryFlipbookRoot" data-page-width="510" data-page-height="680" aria-label="'+escapeHtml(city.name)+'旅行照片书">'+memoryBuildFlipbookPages(city,photos)+'</div></div>';
+    const root=$('memoryFlipbookRoot');
+    root.querySelectorAll('[data-memory-photo]').forEach(button=>button.addEventListener('click',()=>openPhotoViewer(photos,Number(button.dataset.memoryPhoto),false)));
+    root.querySelectorAll('.memory-fb-photo img').forEach(image=>image.addEventListener('error',()=>{const error=image.parentElement.querySelector('.memory-fb-image-error');if(error) error.hidden=false;}));
+    const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    memoryAlbumFlipbook=window.MemoryFlipbook.create({root,initialPage:memoryShelfState.page,mobileBreakpoint:760,reduceMotion,onFlip:index=>memoryUpdateFlipbookControls(index,pageCount)});
+    memoryUpdateFlipbookControls(memoryAlbumFlipbook.getPageIndex(),pageCount);
+  }
   async function memoryOpenAlbum(province,city){
+    memoryDestroyAlbumFlipbook();
     memoryShelfState.level='album';memoryShelfState.province=province;memoryShelfState.city=city;memoryShelfState.page=0;memoryShelfState.albumTurning=false;memoryShelfState.photoPositions=new Map();
-    memorySetHeader(city.name+'旅行相册','单击照片查看原图，按住或直接拖动照片调整构图；使用滚轮、方向键或按钮翻页。');
+    memorySetHeader(city.name+'旅行相册','拖动页角、触摸滑动，或使用方向键与按钮翻页。');
     memoryShelfBodyEl.innerHTML='<div class="memory-album"><div class="memory-view-tools"><button class="memory-back" id="memoryBackChapters" type="button">返回'+escapeHtml(province.name)+'</button><div class="memory-view-title"><span>旅行照片册</span><h3>'+escapeHtml(city.name)+'</h3></div><button class="memory-city-detail" id="memoryCityDetail" type="button">城市详情</button></div><div class="memory-album-frame"><button class="memory-album-side prev" id="memoryAlbumPrev" type="button" aria-label="上一页">‹</button><div class="memory-album-stage" id="memoryAlbumStage"><div class="memory-empty"><span>正在整理旅行照片...</span></div></div><button class="memory-album-side next" id="memoryAlbumNext" type="button" aria-label="下一页">›</button><span class="memory-album-counter" id="memoryAlbumCounter">1 / 1</span></div></div>';
     $('memoryBackChapters').addEventListener('click',()=>memoryOpenChapters(province));
     $('memoryCityDetail').addEventListener('click',()=>{closeMemoryShelf();openAttractionDetail({name:city.name,value:city.value,cityKey:city.cityKey,adcode:city.adcode});});
     const photos=await getPhotosByCity(city.cityKey);
     if(memoryShelfState.city!==city) return;
-    await memoryPrepareAlbumPhotos(photos);
-    if(memoryShelfState.city!==city) return;
     memoryShelfState.photos=photos;
-    $('memoryAlbumPrev').addEventListener('click',()=>memoryTurnAlbum(-1));
-    $('memoryAlbumNext').addEventListener('click',()=>memoryTurnAlbum(1));
-    memoryRenderAlbumSpread();
+    $('memoryAlbumPrev').addEventListener('click',()=>memoryAlbumFlipbook?.prev());
+    $('memoryAlbumNext').addEventListener('click',()=>memoryAlbumFlipbook?.next());
+    memoryMountAlbumFlipbook();
   }
   async function openMemoryShelf(){
     if(!memoryShelfOverlayEl||memoryShelfOverlayEl.classList.contains('show')) return;
@@ -17869,6 +17905,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
   function closeMemoryShelf(){
     if(!memoryShelfOverlayEl) return;
+    memoryDestroyAlbumFlipbook();
     clearTimeout(memoryShelfState.infoTimer);clearTimeout(memoryShelfState.switchTimer);clearTimeout(memoryShelfState.pageTimer);clearTimeout(memoryShelfState.openTimer);
     closeMemoryProvinceEditor();memoryDisposeThreeShelf();memoryShelfOverlayEl.classList.remove('show');document.body.classList.remove('modal-open');
     memoryShelfState.level='shelf';memoryShelfState.province=null;memoryShelfState.city=null;memoryShelfState.photos=[];memoryShelfState.pageShift=0;memoryShelfState.paging=false;memoryShelfState.bookRotation=null;memoryShelfState.albumTurning=false;memoryShelfState.opening=false;memoryShelfState.photoPositions=new Map();
@@ -17912,7 +17949,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       return;
     }
     if(memoryShelfState.level==='album'&&(event.key==='ArrowLeft'||event.key==='ArrowRight')){
-      event.preventDefault();memoryTurnAlbum(event.key==='ArrowRight'?1:-1);
+      event.preventDefault();event.key==='ArrowRight'?memoryAlbumFlipbook?.next():memoryAlbumFlipbook?.prev();
     }
   });
 
