@@ -15,6 +15,28 @@
     let currentPage = 0;
     let destroyed = false;
 
+    function updatePageFocus(index) {
+      const landscape = global.innerWidth > breakpoint;
+      Array.prototype.forEach.call(pages, function (page, pageIndex) {
+        if (!page || typeof page.querySelectorAll !== 'function') return;
+        const visible = pageIndex === index || (landscape && index > 0 && pageIndex === index + 1);
+        if (typeof page.setAttribute === 'function') page.setAttribute('aria-hidden', visible ? 'false' : 'true');
+        page.querySelectorAll('button, a, input, select, textarea, [tabindex]').forEach(function (item) {
+          if (!visible) {
+            if (!item.hasAttribute('data-memory-flipbook-tabindex')) {
+              item.setAttribute('data-memory-flipbook-tabindex', item.getAttribute('tabindex') || '');
+            }
+            item.tabIndex = -1;
+          } else if (item.hasAttribute('data-memory-flipbook-tabindex')) {
+            const original = item.getAttribute('data-memory-flipbook-tabindex');
+            if (original) item.setAttribute('tabindex', original);
+            else item.removeAttribute('tabindex');
+            item.removeAttribute('data-memory-flipbook-tabindex');
+          }
+        });
+      });
+    }
+
     const pageFlip = new PageFlip(root, {
       width,
       height,
@@ -37,6 +59,7 @@
 
     pageFlip.on('flip', function (event) {
       currentPage = Number(event.data) || 0;
+      updatePageFocus(currentPage);
       onFlip(currentPage);
     });
     pageFlip.loadFromHTML(pages);
@@ -46,6 +69,7 @@
       if (destroyed || !Number.isInteger(target) || target < 0 || target >= pageCount) return;
       pageFlip.turnToPage(target);
       currentPage = target;
+      updatePageFocus(currentPage);
     }
 
     turnTo(Number.isInteger(options.initialPage) ? options.initialPage : 0);
@@ -54,6 +78,7 @@
       if (destroyed) return;
       if (root.dataset) root.dataset.layout = global.innerWidth <= breakpoint ? 'portrait' : 'landscape';
       pageFlip.update();
+      updatePageFocus(currentPage);
     }
 
     function handleResize() { refreshLayout(); }

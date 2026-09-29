@@ -20,14 +20,21 @@
   --memory-ink: #173743;
   --memory-accent: #9a4f2b;
   display: grid;
+  width: 100%;
+  height: 100%;
   min-width: 0;
+  min-height: 0;
   grid-template-rows: minmax(0, 1fr) auto;
+  place-items: center;
   gap: 14px;
   color: var(--memory-ink);
 }
 
 .memory-flipbook-root {
-  width: min(100%, 1040px);
+  width: auto !important;
+  height: 100% !important;
+  max-width: min(100%, 1040px);
+  max-height: 680px;
   aspect-ratio: 3 / 2;
   min-height: 420px;
   margin: auto;
@@ -189,7 +196,8 @@
   }
 
   .memory-flipbook-root {
-    width: min(100%, 430px);
+    width: min(100%, 430px) !important;
+    height: auto !important;
     min-height: 0;
     aspect-ratio: 3 / 4;
   }
