@@ -1,5 +1,9 @@
 # 项目记忆交接文档：「记录我的中国行」
 
+> **2026-09-06 目录迁移**：当前根目录为 `F:\03-agent项目\codex\codex-list\projects\Your-China-Travel`。最新功能和验证状态以同目录 `项目交接文档.md` 的 0.27 节为准，旧路径仅供历史参考。
+
+> **2026-09-29 当前交接**：当前开发目录为 `F:\03-agent项目\codex\codex-list\projects\002-Your-China-Travel`。最新本地改动和验证状态以 `项目交接文档.md` 的 0.28 节为准；本轮 `index.html`、交接文档和 `tests/local-folder.spec.cjs` 均为本地未提交改动。
+
 > 本文档供 Agent 间记忆传递使用。包含项目代码结构、各模块功能、本次会话全部修改记录、以及 GitHub 推送全流程。
 
 > **2026-08-14 当前基线**：账号与跨设备照片同步已经完成。若本文后续旧章节与本节冲突，以本节为准。
@@ -16,7 +20,7 @@
 - 云端旅行快照：`public.travel_snapshots`，`user_id` 主键，RLS 限制用户只能操作自己的行。
 - 实际图片：私有阿里云 OSS Bucket `your-china-travel-8877-hk`，中国香港地域。
 - 签名代理：Supabase Edge Function `oss-media`，代码在 `supabase/functions/oss-media/index.ts`。
-- 当前工作目录：`F:\codex\codex-list\projects\Your-China-Travel`。
+- 当前工作目录：`F:\03-agent项目\codex\codex-list\projects\Your-China-Travel`。
 - 云同步安全基线：`9ee1b61`。
 
 ### 权限模型
@@ -103,7 +107,7 @@ a369567 fix: 兼容现有 Supabase 用户令牌
   - Inter 可变字体（self-host）— Variable Proximity 标题动画
   - 中国 GeoJSON — 省份边界数据（geo.datav.aliyun.com）
 - **数据存储**：IndexedDB 本机缓存 + Supabase 用户快照 + 私有阿里云 OSS 图片
-- **工作目录**：`F:\codex\codex-list\projects\Your-China-Travel`
+- **工作目录**：`F:\03-agent项目\codex\codex-list\projects\Your-China-Travel`
 
 ---
 
@@ -408,5 +412,36 @@ npx http-server -p 8765
 
 *初始文档生成时间：2026-07-21*
 *当前基线更新时间：2026-08-14*
-*项目路径：F:\codex\codex-list\projects\Your-China-Travel*
+
+## 十一、2026-09-29 功能交接补充
+
+### 11.1 本地资料文件夹与媒体同步
+
+- 本机模式支持选择资料文件夹、自动同步、从文件夹恢复，以及导出资料文件夹。
+- 资料结构包含 `profile.json`、`index.json`、城市目录、`photos/`、`videos/` 和 `景点/`；视频同时保存原文件和封面图。
+- 使用 IndexedDB `TravelPhotosDB` 保存文件夹句柄、照片 Blob、视频 Blob 与城市/景点元数据；浏览器更换后需要重新选择或从已有资料文件夹恢复。
+- 视频仍限制在“本机模式 + 资料文件夹”，云端快照只同步照片元数据/封面，不上传本地视频原文件。
+
+### 11.2 相册、视频与查看器
+
+- 城市详情中的“相册管理”支持照片/视频分类、视频上传、视频封面、视频播放器和“查看全部相册”。
+- 景点卡片单击查看媒体，右上角“编辑景点”进入编辑；景点视频会同步进入城市媒体库。
+- 景点旋转木马和城市堆叠相册均支持“照片 / 视频”切换；视频弹窗支持上一条/下一条、键盘方向键、全屏、下载和“查看全部视频”缩略条。
+- 图片查看器支持横向浏览与照片墙模式；照片墙中的视频使用封面和播放标记，点击进入视频播放器。
+
+### 11.3 旅行轨迹与记忆书架
+
+- 旅行轨迹预览地球在预览态始终显示；鼠标移入轨迹区域时自转，移出后保持当前角度并暂停，不再淡出隐藏。
+- 记忆书架中心书籍默认显示书脊，长按拖动继续展示旋转后的书脊厚度。
+- 章节页和相册页采用统一暖象牙纸张、低对比度纸纹、中缝阴影和边缘暗角；翻页动画的旋转页使用独立纸张背面与纹理，避免动画中露出默认灰白底色。
+
+### 11.4 验证与接手注意
+
+- 回归命令：`node tests/local-folder.spec.cjs`。
+- 当前回归测试覆盖本机资料夹导出/恢复、视频 Blob 和封面、景点视频归档、云模式限制、相册标签、单击景点查看、照片墙以及最新查看器/地球/书脊/翻页源代码回归检查。
+- 修改集中在单文件 `index.html`；无构建步骤。启动本地页面建议使用 HTTP 服务，不要直接依赖 `file://` 验证 IndexedDB、Blob 和媒体播放。
+- 当前未创建提交，也未推送 GitHub；提交前应检查 `git diff --check`、运行回归测试，并在浏览器实际检查视频弹窗和记忆书架翻页中间帧。
+
+*交接补充更新时间：2026-09-29*
+*项目路径：F:\03-agent项目\codex\codex-list\projects\Your-China-Travel*
 *文档整理前发布基线：9ee1b61*
