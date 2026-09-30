@@ -11071,6 +11071,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     }
   });
   signOutBtn.addEventListener('click',async ()=>{
+    const clearLocalData=confirm('退出账号后，是否清除当前浏览器中的本地旅行资料？\n\n选择“确定”：清除照片、城市记录、景点和点评（保留本机视频及资料文件夹备份）。\n选择“取消”：保留本地旅行资料，只退出账号。');
     signOutBtn.disabled=true;
     try{
       cloudSigningOut=true;
@@ -11089,11 +11090,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         const projectRef=new URL(cloudConfig.url).hostname.split('.')[0];
         localStorage.removeItem(`sb-${projectRef}-auth-token`);
       }
-      // 退出账号时清除全部本地旅行资料（照片/封面图/景点照片/城市记录/点评）。
-      // 云端已有内容不受影响，重新登录后会自动拉回。
+      // 仅在用户确认后清除本地旅行资料；云端内容和资料文件夹备份不受影响。
       cloudSuppressDirty=true;
       try{
-        await clearCloudDataPreservingLocalVideos();
+        if(clearLocalData) await clearCloudDataPreservingLocalVideos();
         cloudUser=null;
         localStorage.removeItem(CLOUD_OWNER_KEY);
         localStorage.removeItem(CLOUD_DIRTY_KEY);
@@ -11104,8 +11104,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       }finally{cloudSuppressDirty=false;}
       closeAuth();
       toast(remoteSignOutFailed
-        ?'已从本机退出；云端暂时无法结束其他设备会话'
-        :'已退出账号，本地资料已清除');
+        ?'已从本机退出；云端暂时无法结束其他设备会话；本地资料已'+(clearLocalData?'清除':'保留')
+        :'已退出账号，本地资料已'+(clearLocalData?'清除':'保留'));
     }catch(error){
       toast('退出失败：'+friendlyAuthError(error),true);
     }
