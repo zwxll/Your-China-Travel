@@ -2,7 +2,7 @@
 
 > **2026-09-06 目录迁移**：当前根目录为 `F:\03-agent项目\codex\codex-list\projects\Your-China-Travel`。最新功能和验证状态以同目录 `项目交接文档.md` 的 0.27 节为准，旧路径仅供历史参考。
 
-> **2026-09-29 当前交接**：当前开发目录为 `F:\03-agent项目\codex\codex-list\projects\002-Your-China-Travel`。最新本地改动和验证状态以 `项目交接文档.md` 的 0.28 节为准；本轮 `index.html`、交接文档和 `tests/local-folder.spec.cjs` 均为本地未提交改动。
+> **2026-09-29 当前交接**：当前开发目录为 `F:\03-agent项目\codex\codex-list\projects\002-Your-China-Travel`。当前目录状态与待处理文件以 `项目交接文档.md` 的 0.29 节为准；`HEAD=bfd1adc`、`origin/main=4bd0ae5`，工作树包含未提交的 `index.html` 修改、若干删除项及本地资料样例。
 
 > 本文档供 Agent 间记忆传递使用。包含项目代码结构、各模块功能、本次会话全部修改记录、以及 GitHub 推送全流程。
 
@@ -443,5 +443,22 @@ npx http-server -p 8765
 - 当前未创建提交，也未推送 GitHub；提交前应检查 `git diff --check`、运行回归测试，并在浏览器实际检查视频弹窗和记忆书架翻页中间帧。
 
 *交接补充更新时间：2026-09-29*
-*项目路径：F:\03-agent项目\codex\codex-list\projects\Your-China-Travel*
+*项目路径：F:\03-agent项目\codex\codex-list\projects\002-Your-China-Travel*
 *文档整理前发布基线：9ee1b61*
+
+## 十二、2026-09-29 当前目录检索校准
+
+- 当前 `HEAD` 为 `bfd1adc`，该提交回退了记忆书架翻页实验；`origin/main` 仍为 `4bd0ae5`。
+- 当前工作树的 `index.html` 有未提交相册布局/纸张视觉调整；不将其描述为已发布功能。
+- `tests/local-folder.spec.cjs`、`vercel.json` 和两份记忆书架实验文档当前在工作树中被删除，交接仅记录现状，不自动恢复。
+- `旅行资料/` 与 `_shelf_shot.png` 为未跟踪本机样例/截图，保留在本地，提交前需单独确认是否纳入版本库。
+- 因本地回归测试文件缺失，不能声称 `node tests/local-folder.spec.cjs` 已通过；后续应先恢复或替换测试入口，再进行完整验证。
+
+*本节更新时间：2026-09-29*
+
+## 十三、2026-09-30 章节页布局微调
+
+- `index.html` 桌面章节页书本恢复由容器自身居中，返回按钮左移、章节标题右移；移动端规则保持不变。
+- 已通过章节布局源码检查与 `git diff --check`；历史回归测试文件当前缺失，未声称其通过。
+
+*本节更新时间：2026-09-30*
