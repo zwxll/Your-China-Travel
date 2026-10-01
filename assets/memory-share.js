@@ -76,14 +76,14 @@ window.MemoryShelfShare=(()=>{
     const ctx=canvas.getContext('2d');ctx.fillStyle='#f4efe4';ctx.fillRect(0,0,1080,1440);
     ctx.fillStyle='#985627';ctx.font='24px sans-serif';ctx.fillText('旅行记忆书库',76,100);
     ctx.fillStyle='#183846';ctx.font='bold 64px serif';ctx.fillText(snapshot.provinces.length===1?snapshot.provinces[0].name+'旅行记忆':'我的旅行记忆',76,198,928);
-    const cities=snapshot.provinces.flatMap(p=>p.cities),count=cities.reduce((sum,c)=>sum+c.photos.length,0);
+    const cities=snapshot.provinces.flatMap(p=>p.cities),count=cities.reduce((sum,c)=>sum+(c.photoCount??c.photos?.length??0),0);
     ctx.font='26px sans-serif';ctx.fillText(snapshot.provinces.length+' 个省份 · '+cities.length+' 座城市 · '+count+' 张照片',76,260);
     if(snapshot.provinces.length>6){ctx.font='22px sans-serif';ctx.fillText('另有 '+(snapshot.provinces.length-6)+' 个省份，扫码查看完整书架',76,1018);}
     const covers=snapshot.provinces.slice(0,6),columns=Math.min(3,covers.length),rows=Math.ceil(covers.length/columns),width=(928-(columns-1)*24)/columns,height=rows===1?625:295;
     for(let i=0;i<covers.length;i++){
       const p=covers[i],x=76+(i%columns)*(width+24),y=330+Math.floor(i/columns)*330;
       ctx.fillStyle=['#3d7285','#a4523a','#67754a'][i%3];ctx.fillRect(x,y,width,height);
-      const src=p.cover||p.cities.flatMap(c=>c.photos)[0]?.dataUrl;
+      const src=p.cover||p.cities.flatMap(c=>c.photos||[])[0]?.dataUrl;
       if(src){const image=await loadImage(src),scale=Math.max((width-24)/image.width,(height-73)/image.height);ctx.save();ctx.beginPath();ctx.rect(x+12,y+58,width-24,height-73);ctx.clip();ctx.drawImage(image,x+12+(width-24-image.width*scale)/2,y+58+(height-73-image.height*scale)/2,image.width*scale,image.height*scale);ctx.restore();}
       ctx.fillStyle='#f5eee0';ctx.font='26px serif';ctx.fillText(p.name,x+16,y+39,width-32);
     }
@@ -106,6 +106,10 @@ window.MemoryShelfShare=(()=>{
     const close=document.createElement('button');close.textContent='关闭';close.onclick=()=>dialog.close();
     controls.append(save,copy,close);dialog.append(heading,note,content,link,controls);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();
     return {content,status,save};
+  }
+  async function renderPreview(snapshot,url,preview){
+    const canvas=await poster(snapshot,url),image=document.createElement('img');image.alt='记忆书架分享海报';image.src=canvas.toDataURL('image/png');preview.content.replaceChildren(image);preview.save.disabled=false;
+    preview.save.onclick=()=>canvas.toBlob(blob=>{if(!blob){preview.status.textContent='海报保存失败，请截图保存';preview.content.append(preview.status);return;}const href=URL.createObjectURL(blob),a=document.createElement('a');a.href=href;a.download='旅行记忆书架.png';a.click();setTimeout(()=>URL.revokeObjectURL(href),30000);},'image/png');
   }
   async function create(provinces,getPhotos,onProgress=()=>{},options={}){
     if(!Array.isArray(provinces)||!provinces.length||provinces.length>34)throw new Error('请选择 1–34 个省份进行分享');
@@ -188,8 +192,7 @@ window.MemoryShelfShare=(()=>{
         const fileId=p.coverId||p.cities.flatMap(c=>c.photos)[0]?.fileId;
         const cover=fileId?URL.createObjectURL(blobs.get(fileId)):'';if(cover)urls.push(cover);return {...p,cover};
       })};
-      const canvas=await poster(snapshot,url.href),image=document.createElement('img');image.alt='记忆书架分享海报';image.src=canvas.toDataURL('image/png');preview.content.replaceChildren(image);preview.save.disabled=false;
-      preview.save.onclick=()=>canvas.toBlob(blob=>{if(!blob){preview.status.textContent='海报保存失败，请截图保存';preview.content.append(preview.status);return;}const href=URL.createObjectURL(blob),a=document.createElement('a');a.href=href;a.download='旅行记忆书架.png';a.click();setTimeout(()=>URL.revokeObjectURL(href),30000);},'image/png');
+      await renderPreview(snapshot,url.href,preview);
       onProgress('分享海报已生成，可保存后发送到微信。'+(result.cleanupPending?'旧文件待清理，容量暂时保留。':''));
     }catch(error){preview.status.textContent=error.message;onProgress('分享链接已生成，海报生成失败：'+error.message);}
     finally{urls.forEach(url=>URL.revokeObjectURL(url));}
@@ -246,7 +249,19 @@ window.MemoryShelfShare=(()=>{
         const heading=document.createElement('h3');heading.textContent=share.provinces.join('、');
         const details=document.createElement('p');details.textContent=(share.kind==='draft'?'未完成草稿':'已发布')+' · '+share.photoCount+' 张照片 · '+new Date(share.updatedAt).toLocaleString();
         const remove=document.createElement('button');remove.textContent='删除这份分享';remove.onclick=()=>operate('revoke',share.shareId);
-        row.append(heading,details,remove);list.append(row);
+        const actions=document.createElement('div');actions.className='memory-share-actions';
+        if(share.kind==='published'){
+          const view=document.createElement('button');view.textContent='查看海报';
+          view.onclick=async()=>{
+            const url=new URL('memory-share.html',config.shareBaseUrl||'https://zwxll.github.io/Your-China-Travel/');url.searchParams.set('s',share.shareId);
+            const preview=showPreview(url.href,share.provinces.length===1?share.provinces[0]:'我的旅行记忆');view.disabled=true;
+            try{const result=await request({action:'read',shareId:share.shareId});await renderPreview(result.snapshot,url.href,preview);}
+            catch(error){preview.status.textContent=error.message;preview.content.replaceChildren(preview.status);}
+            finally{view.disabled=busy;}
+          };
+          actions.append(view);
+        }
+        actions.append(remove);row.append(heading,details,actions);list.append(row);
       }
       if(!result.shares.length){const empty=document.createElement('p');empty.textContent='此浏览器没有可管理的分享';list.append(empty);}
       clear.disabled=busy||(!result.shares.length&&!result.cleanupPending&&!result.quota.clearing);retry.disabled=busy||(!result.cleanupPending&&!result.quota.clearing);
