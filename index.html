@@ -6000,6 +6000,7 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
           <p id="memoryShelfIntro">一省一卷，一城一章，翻阅属于自己的旅行故事。</p>
         </div>
       </div>
+      <button id="memoryShelfShare" class="memory-share-button" type="button">分享书架</button>
       <button id="memoryShelfClose" class="memory-shelf-close" type="button" aria-label="关闭">×</button>
       <div id="memoryShelfBody" class="memory-shelf-body"></div>
     </section>
@@ -6421,6 +6422,8 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
 
 <!-- Supabase：账号认证、数据库与私有照片云存储（原生浏览器客户端，无需 npm 构建） -->
 <script src="supabase-config.js"></script>
+<link rel="stylesheet" href="assets/memory-share.css">
+<script src="assets/memory-share.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <!-- React Bits DomeGallery JS-CSS 的原生单页适配 -->
@@ -18033,6 +18036,16 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       memoryShelfBodyEl.innerHTML='<div class="memory-empty"><strong>旅行记忆加载失败</strong><span>请关闭后重试。</span></div>';
     }
   }
+  $('memoryShelfShare').addEventListener('click',async()=>{
+    const button=$('memoryShelfShare');if(button.disabled)return;
+    if(!confirm('生成海报会上传记忆书架中全部照片的压缩副本。任何拿到二维码或链接的人都能查看。是否继续？'))return;
+    button.disabled=true;
+    try{
+      button.textContent='正在生成…';
+      await MemoryShelfShare.create(memoryShelfState.provinces,city=>getPhotosByCity(city.cityKey),message=>button.title=message);
+    }catch(error){toast(error.message||'生成分享海报失败，请重试');}
+    finally{button.disabled=false;button.textContent='分享书架';button.title='';}
+  });
   function closeMemoryShelf(){
     if(!memoryShelfOverlayEl) return;
     clearTimeout(memoryShelfState.infoTimer);clearTimeout(memoryShelfState.switchTimer);clearTimeout(memoryShelfState.pageTimer);clearTimeout(memoryShelfState.openTimer);

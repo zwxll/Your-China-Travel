@@ -1,5 +1,7 @@
 # 记忆书架海报分享 Implementation Plan
 
+> 此计划已由匿名分享实现替代，请勿按旧计划设置登录限制。当前说明见 `docs/superpowers/specs/2026-10-01-anonymous-memory-sharing.md`。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** 为已登录用户生成包含二维码的记忆书架海报，并让任何扫码访客无需登录即可浏览生成时的只读照片书架快照。
