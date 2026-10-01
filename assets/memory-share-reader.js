@@ -25,12 +25,35 @@
     const rig=el('div','','shared-book-rig'),book=el('div','','shared-book');book.id='book';
     const cover=el('article','','book-page shared-cover');cover.dataset.density='hard';
     cover.append(el('small','旅行照片册'),el('h2',chapter.name),el('p',chapter.firstMonth||'时间未记录'),el('span',photos.length+' 张照片'));book.append(cover);
-    for(const [i,photo]of photos.entries()){
-      const leaf=el('article','','book-page'),head=el('div','','shared-page-head'),button=el('button','','shared-photo'),image=el('img');
-      head.append(el('strong',chapter.name),el('span','旅行影像'));image.src=photo.dataUrl;image.alt=photo.name||chapter.name+'旅行照片';image.draggable=false;
-      button.type='button';button.setAttribute('aria-label','查看第 '+(i+1)+' 张照片');button.append(image);
-      button.onclick=()=>{if(reader?.getState()!=='read')return;showPhoto(i);viewer.showModal();};
-      leaf.append(head,button,el('div',String(i+1).padStart(2,'0'),'shared-page-foot'));book.append(leaf);
+    // 与原记忆相册一致：简介与首图成对，后续跨页通常三张，末组最多五张。
+    const entries=photos.map((photo,index)=>({photo,index})),spreads=[[null,entries.shift()]];
+    while(entries.length)spreads.push(entries.splice(0,entries.length<=5?entries.length:3));
+    for(const [page,spread]of spreads.entries()){
+      let sides;
+      if(page===0)sides=[[null],[spread[1]]];
+      else if(spread.length===1)sides=page%2===0?[spread,[]]:[[],spread];
+      else if(spread.length===2)sides=[[spread[0]],[spread[1]]];
+      else if(spread.length===3)sides=page%2===0?[[spread[0]],spread.slice(1)]:[spread.slice(0,2),[spread[2]]];
+      else if(spread.length===4)sides=[spread.slice(0,2),spread.slice(2)];
+      else sides=page%2===0?[[spread[0]],spread.slice(1)]:[spread.slice(0,4),[spread[4]]];
+      for(const side of sides){
+        const leaf=el('article','','book-page'),head=el('div','','shared-page-head'),grid=el('div','','shared-photo-grid');
+        head.append(el('strong',chapter.name),el('span',side[0]===null?'城市简介':'旅行影像'));
+        if(side[0]===null){grid.classList.add('shared-intro');grid.append(el('h3',chapter.name),el('p',chapter.description||'这座城市的简介尚未填写。'),el('small',(chapter.firstMonth||'时间未记录')+' · '+photos.length+' 张照片'));}
+        else if(!side.length){grid.classList.add('shared-intro');grid.append(el('h3',chapter.name),el('p','这一页留给下一段影像。'));}
+        else{
+          grid.dataset.layout=side.length===1?'single':side.length===2?'two-landscape':'four';
+          for(const {photo,index:i}of side){
+            const button=el('button','','shared-photo'),image=el('img');
+            image.onload=()=>{if(side.length===2)grid.dataset.layout=[...grid.querySelectorAll('img')].every(img=>img.naturalWidth/img.naturalHeight<.86)?'two-portrait':'two-landscape';};
+            image.src=photo.dataUrl;image.alt=photo.name||chapter.name+'旅行照片';image.draggable=false;
+            button.type='button';button.setAttribute('aria-label','查看第 '+(i+1)+' 张照片');button.append(image);
+            button.onclick=()=>{if(reader?.getState()!=='read')return;showPhoto(i);viewer.showModal();};grid.append(button);
+          }
+        }
+        const pageContent=el('div','','shared-page-content');
+        pageContent.append(head,grid,el('div',String(book.children.length).padStart(2,'0'),'shared-page-foot'));leaf.append(pageContent);book.append(leaf);
+      }
     }
     const back=el('article','','book-page shared-cover');back.dataset.density='hard';back.append(el('h2','旅行记忆'),el('p',chapter.name),el('small','记录一座城，也记录那时的自己。'));book.append(back);
     const controls=el('div','','shared-book-controls'),previous=el('button','‹ 上一页','back'),next=el('button','下一页 ›','back'),status=el('span');

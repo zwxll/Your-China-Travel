@@ -55,6 +55,8 @@ const server=http.createServer((request,response)=>{
     assert.equal(publications,3);assert.equal(published.shareId,firstId,'分享其他省份后再次生成仍沿用本省二维码');
     await page.goto(base+'/memory-share.html?s='+firstId);
     await page.getByRole('button',{name:/湖北省/}).click();
+    await page.getByRole('button',{name:'下一页',exact:true}).click();
+    await page.waitForFunction(()=>document.querySelector('#page-status').textContent.startsWith('3 /')&&document.querySelector('#book').getAttribute('aria-busy')==='false');
     await page.getByRole('button',{name:'查看第 1 张照片'}).click();
     assert.equal(await page.locator('#count').innerText(),'1 / 1');
     assert.equal(await page.getByRole('button',{name:'上一张',exact:true}).isDisabled(),true);
