@@ -197,7 +197,7 @@ export class StoryView {
       el.style.width = `${w}px`;
       el.innerHTML = `
         <button class="shot" type="button" data-i="${c.i}" style="height:${h}px" aria-label="放大查看${esc(c.caption || '旅行照片')}">
-          <span class="frame"><img alt="" decoding="async" src="${esc(c.src)}"></span>
+          <span class="frame"><img alt="" loading="lazy" decoding="async" src="${esc(c.src)}"></span>
         </button>
         ${c.text || c.date ? `<div class="entry ${c.i % 2 ? 'right' : 'left'}">
           ${c.date ? `<span class="date">${esc(c.date)}</span>` : ''}

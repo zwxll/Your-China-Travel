@@ -1,0 +1,16 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+assert.match(html,/<span id="videoStat">0<\/span><label>个视频<\/label>/,'主页应有独立的视频统计');
+const start=html.indexOf('const all=await getAllPhotos();',html.indexOf('async function refreshState()'));
+const end=html.indexOf('// 按城市分组',start);
+const calculate=new Function('countMedia','all','let citiesWithPhotos,photoCountByCity,totalPhotoCount,totalVideoCount;const thumbCacheByCity=new Map();'+html.slice(start,end).replace('const all=await getAllPhotos();','')+'return {photos:totalPhotoCount,videos:totalVideoCount};');
+const countStart=html.indexOf('  function countMedia(items){');
+const countEnd=html.indexOf('  function formatMediaCounts',countStart);
+const countMedia=new Function(html.slice(countStart,countEnd)+'return countMedia;')();
+assert.deepEqual(calculate(countMedia,[...Array.from({length:157},()=>({kind:'image'})),{kind:'video'},{kind:'video'}]),{photos:157,videos:2});
+assert.deepEqual(calculate(countMedia,[]),{photos:0,videos:0});
+assert.deepEqual(calculate(countMedia,[{}, {kind:'video'}]),{photos:1,videos:1},'兼容未标记kind的历史照片');
+assert.match(html,/animateCount\(videoStatEl,totalVideoCount\)/,'视频数量应在状态刷新时更新');
+console.log('PASS: 主页照片与视频独立统计、159条记录拆分157张照片/2个视频、空相册和历史照片');

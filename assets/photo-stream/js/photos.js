@@ -1,14 +1,16 @@
-export const LAYER = 512;
+export const LAYER = 128;
+export const ATLAS_GRID = 4;
 
 function decode(src) {
   return new Promise((res, rej) => { const img = new Image(); img.decoding = 'async'; img.onload = () => res(img); img.onerror = () => rej(new Error(`Could not load photo: ${src}`)); img.src = src; });
 }
 export async function loadTextures(gl, photos, onProgress) {
   const limit = gl.getParameter(gl.MAX_ARRAY_TEXTURE_LAYERS);
-  if (photos.length > limit) throw new Error(`This device supports at most ${limit} photos; the catalog has ${photos.length}.`);
+  const perSheet = ATLAS_GRID * ATLAS_GRID, sheets = Math.ceil(photos.length / perSheet);
+  if (sheets > limit) throw new Error('照片数量超过当前设备的纹理容量，请通过照片目录浏览原图。');
   const arrTex = gl.createTexture();
   gl.bindTexture(gl.TEXTURE_2D_ARRAY, arrTex);
-  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1 + Math.log2(LAYER), gl.RGBA8, LAYER, LAYER, photos.length);
+  gl.texStorage3D(gl.TEXTURE_2D_ARRAY, 1 + Math.log2(LAYER*ATLAS_GRID), gl.RGBA8, LAYER*ATLAS_GRID, LAYER*ATLAS_GRID, sheets);
   const scratch = document.createElement('canvas'); scratch.width = scratch.height = LAYER;
   const ctx = scratch.getContext('2d');
   ctx.imageSmoothingQuality = 'high';
@@ -28,7 +30,8 @@ export async function loadTextures(gl, photos, onProgress) {
       for (let j = 0; j < px.length; j += 4) { r += px[j]; g += px[j + 1]; b += px[j + 2]; }
       photos[i].avg = [r / 64 / 255, g / 64 / 255, b / 64 / 255];
       gl.bindTexture(gl.TEXTURE_2D_ARRAY, arrTex);
-      gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, 0, 0, i, LAYER, LAYER, 1, gl.RGBA, gl.UNSIGNED_BYTE, scratch);
+      const tile = i % perSheet;
+      gl.texSubImage3D(gl.TEXTURE_2D_ARRAY, 0, (tile % ATLAS_GRID)*LAYER, Math.floor(tile/ATLAS_GRID)*LAYER, Math.floor(i/perSheet), LAYER, LAYER, 1, gl.RGBA, gl.UNSIGNED_BYTE, scratch);
       onProgress(++done / photos.length);
     }
   };

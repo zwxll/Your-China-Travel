@@ -5476,6 +5476,7 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
       <div class="stats">
         <div class="stat"><span id="cityStat">0</span><label>座城市</label></div>
         <div class="stat"><span id="photoStat">0</span><label>张照片</label></div>
+        <div class="stat"><span id="videoStat">0</span><label>个视频</label></div>
         <div class="stat"><span id="provinceStat">0</span><label>覆盖省份</label></div>
         <div class="stat"><span id="distanceStat">0<span class="stat-unit">km</span></span><label>总计行程</label></div>
       </div>
@@ -7395,7 +7396,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         mapError=$('mapError'), mapWrapEl=$('mapWrap'),
         provinceFocusLayer=$('provinceFocusLayer'), provinceFocusLines=$('provinceFocusLines'),
         provinceFocusCards=$('provinceFocusCards'), provinceFocusMore=$('provinceFocusMore');
-  const cityStatEl=$('cityStat'), photoStatEl=$('photoStat'),
+  const cityStatEl=$('cityStat'), photoStatEl=$('photoStat'), videoStatEl=$('videoStat'),
         provinceStatEl=$('provinceStat'), distanceStatEl=$('distanceStat');
   // 数字自增动画：从当前值平滑过渡到目标值
   function animateCount(el,target){
@@ -7624,7 +7625,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   let cityPoints=[];                       // 所有地级市散点 [{name,value:[lng,lat],cityKey,adcode}]
   let citiesWithPhotos=new Set();          // 有照片的城市 cityKey
   let photoCountByCity=new Map();          // cityKey -> 照片数量
-  let totalPhotoCount=0;
+  let totalPhotoCount=0,totalVideoCount=0;
   let currentCity=null;                    // 当前打开的城市点
   let geoLoaded=false;
   let selectedProvinceName='';             // 当前点击聚焦的省份
@@ -13742,7 +13743,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       citiesWithPhotos=new Set();
       photoCountByCity=new Map();
       thumbCacheByCity.clear();
-      totalPhotoCount=all.length;
+      const mediaCounts=countMedia(all);
+      totalPhotoCount=mediaCounts.photos;
+      totalVideoCount=mediaCounts.videos;
       // 按城市分组，每组取 order 最小的前6张作为 tooltip 预览缩略图
       const photosByCity=new Map();
       for(const p of all){
@@ -13757,6 +13760,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       }
       animateCount(cityStatEl,citiesWithPhotos.size);
       animateCount(photoStatEl,totalPhotoCount);
+      animateCount(videoStatEl,totalVideoCount);
       updateDashboard();
       if(geoLoaded) updateScatterData();
       // 刷新城市卡片列表
@@ -18035,7 +18039,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     closeMemoryProvinceEditor();memoryDisposeThreeShelf();memoryShelfOverlayEl.classList.remove('show');document.body.classList.remove('modal-open');
     memoryShelfState.level='shelf';memoryShelfState.province=null;memoryShelfState.city=null;memoryShelfState.photos=[];memoryShelfState.pageShift=0;memoryShelfState.paging=false;memoryShelfState.bookRotation=null;memoryShelfState.albumTurning=false;memoryShelfState.opening=false;memoryShelfState.photoPositions=new Map();
   }
-  // 照片流只读取现有资料；GPU 每次使用一批照片，退出即销毁 iframe。
+  // 照片流只读取现有资料；每座有照片的城市对应一条光线，退出即销毁 iframe。
   const photoStreamOverlay=$('photoStreamOverlay'),photoStreamStage=$('photoStreamStage');
   let photoStreamItems=[],photoStreamSession=0;
   function closePhotoStream(){
@@ -18051,27 +18055,19 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       await appStartPromise;
       const [photos,metas]=await Promise.all([getAllPhotos(),getAllCityMeta()]);
       if(session!==photoStreamSession) return;
-      const metaByCity=new Map(metas.map(meta=>[meta.cityKey,meta])),seen=new Set(),items=[];
-      const add=(photo,cityKey,attraction)=>{
-        if(typeof photo==='string') photo={dataUrl:photo};
+      const metaByCity=new Map(metas.map(meta=>[meta.cityKey,meta])),items=[];
+      const add=(photo,cityKey)=>{
         if(!photo||photo.kind==='video') return;
         const source=photo.dataUrl||photo.storagePath;
         if(!source) return;
-        const identities=[photo.storagePath,photo.dataUrl].filter(Boolean);
-        if(identities.some(identity=>seen.has(identity))) return;
-        identities.forEach(identity=>seen.add(identity));
         const meta=metaByCity.get(cityKey)||{},city=cityPoints.find(cp=>cp.cityKey===cityKey);
-        const cityName=photo.cityName||city?.name||meta.cityName||'旅行照片';
-        items.push({id:'travel-photo-'+items.length,source,storagePath:photo.storagePath||'',city:cityName,
-          description:[cityName,attraction?.name,photo.name].filter(Boolean).join(' · '),
-          date:attraction?.visitDate||getVisitMonths(meta)[0]||'',text:attraction?.notes||''});
+        const cityName=photo.cityName||city?.name||meta.cityName||cityKey||'旅行照片';
+        items.push({id:'travel-photo-'+items.length,cityKey,source,storagePath:photo.storagePath||'',city:cityName,
+          description:[cityName,photo.name].filter(Boolean).join(' · '),
+          date:getVisitMonths(meta)[0]||'',text:''});
       };
+      // 与主页共用相册记录来源，不补入景点照片/封面，也不按图片内容合并记录。
       photos.sort((a,b)=>(a.order||a.timestamp||0)-(b.order||b.timestamp||0)).forEach(photo=>add(photo,photo.cityKey));
-      metas.forEach(meta=>(meta.attractions||[]).forEach(attraction=>(attraction.photos||[]).forEach(photo=>add(photo,meta.cityKey,attraction))));
-      metas.forEach(meta=>add({dataUrl:meta.coverImage,storagePath:meta.coverStoragePath,name:'城市封面'},meta.cityKey));
-      Object.entries(memoryProvinceBookSettings()).forEach(([province,settings])=>{
-        if(settings?.cover) add({dataUrl:settings.cover,cityName:province,name:'省份书籍封面'},'',{notes:settings.review||''});
-      });
       photoStreamItems=items;
       if(!items.length){photoStreamStage.textContent='还没有旅行照片。在城市或景点中上传照片后，这里会自动汇集。';return;}
       const frame=document.createElement('iframe');frame.title='旅途照片流';frame.src='assets/photo-stream/index.html';
@@ -18083,15 +18079,14 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
   window.TravelPhotoStreamBridge={
     close:closePhotoStream,
-    async readBatch(page=0){
+    async readCatalog(){
       if(photoStreamOverlay.hidden) throw new Error('照片流已关闭');
-      const session=photoStreamSession,size=48,total=photoStreamItems.length;
-      page=Math.max(0,Math.min(Math.floor(Number(page)||0),Math.ceil(total/size)-1));
-      const selected=photoStreamItems.slice(page*size,(page+1)*size),photos=[],queue=selected.slice();
-      let failed=0;
+      const session=photoStreamSession,total=photoStreamItems.length;
+      const selected=photoStreamItems.slice(),photos=[],positions=new Map(selected.map((item,index)=>[item.id,index]));
+      let failed=0,next=0;
       const worker=async()=>{
-        while(queue.length&&session===photoStreamSession){
-          const item=queue.shift();
+        while(next<selected.length&&session===photoStreamSession){
+          const item=selected[next++];
           try{
             const src=/^(data:|blob:|https?:)/.test(item.source)?item.source:await downloadCloudImage(item.storagePath||item.source);
             photos.push({...item,src,avg:[.5,.5,.5],photographer:''});
@@ -18100,8 +18095,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       };
       await Promise.all([worker(),worker(),worker(),worker()]);
       if(session!==photoStreamSession) throw new Error('照片流已关闭');
-      photos.sort((a,b)=>selected.findIndex(item=>item.id===a.id)-selected.findIndex(item=>item.id===b.id));
-      return {photos,page,total,pages:Math.ceil(total/size),failed,start:page*size+1,end:Math.min((page+1)*size,total)};
+      photos.sort((a,b)=>positions.get(a.id)-positions.get(b.id));
+      return {photos,total,failed};
     }
   };
   $('photoStreamBtn').addEventListener('click',openPhotoStream);

@@ -1,7 +1,6 @@
 import { clamp } from './math.js';
-export let NF = 48;
+export let NF = 1;
 export function setThreadCount(count) { NF = count; }
-export const MAX_CHAPTERS = 8;
 
 // Only stories supplied by the user's photo catalog are rendered.
 export function buildStories(photos, authored = [], journal = []) {

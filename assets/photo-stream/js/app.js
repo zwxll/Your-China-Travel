@@ -1,6 +1,6 @@
 // Undertow — a waterfall of light in which every thread is a life.
 //
-// Each fibre is one loaded story (up to six per batch), and its
+// Each fibre is one city, and its
 // photographs flow down it as a stream. Far away the fibres are a curtain of blue light;
 // closer, each thread takes its story's colour; closer still, the threads become a mosaic of
 // tiny moving pictures, and finally single photographs drifting down one line. Point at a
@@ -36,14 +36,12 @@ const rng = mulberry(0x2545f491);
 
 // ────────────────────────────────────────────────────────────── state
 
-let W = innerWidth, H = innerHeight, DPR = Math.min(devicePixelRatio || 1, 2), PW = 1, PH = 1;
+let W = innerWidth, H = innerHeight, DPR = 1, PW = 1, PH = 1;
 let CW = 18, SPACING = CW / NF, PHOTO_W = 0.8 * SPACING, SLOT = 1.9 * PHOTO_W;
 let stories = [], photos = [];
-const fib = {
-  x0: new Float32Array(NF), seed: new Float32Array(NF), speed: new Float32Array(NF),
-  o: new Float32Array(NF), v: new Float32Array(NF), py: new Float32Array(NF).fill(CH * 0.5), phase: new Float64Array(NF),
-  flow: new Float64Array(NF), hold: new Float32Array(NF),   // hold: 1 while a thread is being looked at
-};
+let cityLabels = [];
+let labelView = '', cursorPosition = '';
+const fib = {};
 const P = {}, T = {}, vaos = {};
 let RT = null, arrTex = null;
 let program, dataTexture, updateTexture, target, freeTarget;
@@ -83,6 +81,8 @@ function project(x, y) {
 // ────────────────────────────────────────────────────────────── world
 
 function buildFibres() {
+  for (const key of ['x0','seed','speed','o','v','py','hold']) fib[key] = new Float32Array(NF);
+  fib.py.fill(CH*.5); fib.phase = new Float64Array(NF); fib.flow = new Float64Array(NF);
   CW = clamp(CH * (W / H) * 0.8, 8.5, 22);
   SPACING = CW / NF; PHOTO_W = Math.min(2.8,0.8 * SPACING); SLOT = 1.9 * PHOTO_W;
   const rows = Math.ceil(NF / 1024), fs = new Float32Array(1024 * rows * 4);
@@ -96,14 +96,20 @@ function buildFibres() {
 }
 
 function uploadStories() {
-  const data = new Float32Array(1024 * Math.ceil(NF * 3 / 1024) * 4);
+  const rows = Math.ceil(NF * 2 / 1024), data = new Float32Array(1024 * rows * 4);
+  const layers = stories.flatMap(s=>s.chapters.map(c=>c.layer));
+  const chapterRows = Math.ceil(layers.length/1024), chapters = new Float32Array(1024*chapterRows*4);
+  layers.forEach((layer,i)=>{chapters[i*4]=layer;});
+  let offset = 0;
   stories.forEach((s, i) => {
-    const L = s.chapters.map(c => c.layer);
-    data.set([s.chapters.length, ...s.col], i * 12);
-    data.set([L[0] ?? 0, L[1] ?? 0, L[2] ?? 0, L[3] ?? 0, L[4] ?? 0, L[5] ?? 0, L[6] ?? 0, L[7] ?? 0], i * 12 + 4);
+    data.set([s.chapters.length, ...s.col, offset, 0, 0, 0], i * 8);
+    offset += s.chapters.length;
   });
-  T.story = dataTexture(1024, Math.ceil(NF * 3 / 1024), data);
-  T.layers = dataTexture(photos.length, 1, new Float32Array(photos.flatMap(p => [p.aspect, 0, 0, 0])));
+  T.story = dataTexture(1024, rows, data);
+  T.chapters = dataTexture(1024, chapterRows, chapters);
+  const aspects = new Float32Array(1024*Math.ceil(photos.length/1024)*4);
+  photos.forEach((p,i)=>{aspects[i*4]=p.aspect;});
+  T.layers = dataTexture(1024, Math.ceil(photos.length/1024), aspects);
 }
 
 function disp(i, y) { // mirrors disp() in the shaders, for picking threads
@@ -201,7 +207,6 @@ canvas.addEventListener('pointerdown', e => {
 canvas.addEventListener('pointermove', e => {
   pointer.x = e.clientX; pointer.y = e.clientY; pointer.inside = true;
   body.classList.add('pointer');
-  $cursor.style.transform = `translate3d(${e.clientX}px,${e.clientY}px,0)`;
   kbLine = -1;
   if (!touches.has(e.pointerId)) return;
   touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -255,13 +260,15 @@ addEventListener('keydown', e => {
 });
 
 function resize() {
-  W = innerWidth; H = innerHeight; DPR = Math.min(devicePixelRatio || 1, 2);
+  W = innerWidth; H = innerHeight;
+  // Keep the multi-pass glow affordable on high-DPI and large screens; originals remain unchanged.
+  DPR = Math.min(devicePixelRatio || 1, 1.25, Math.sqrt(1500000 / (W * H)));
   PW = Math.round(W * DPR); PH = Math.round(H * DPR);
   canvas.width = PW; canvas.height = PH;
   if (RT) { freeTarget(RT.scene); RT.refl.forEach(freeTarget); RT.bloom.forEach(freeTarget); }
   RT = {
     scene: target(PW, PH),
-    refl: [target(PW / 2, PH / 2), target(PW / 2, PH / 2)],
+    refl: [target(PW / 4, PH / 4), target(PW / 4, PH / 4)],
     bloom: Array.from({ length: 6 }, (_, i) => target(PW / 2 ** (i + 1), PH / 2 ** (i + 1))),
   };
   if (stories.length) cam.lsT = clamp(cam.lsT, LS_MIN(), LS_MAX());
@@ -385,6 +392,7 @@ function drawWorld(rt, mirror) {
   gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, T.story.t); gl.uniform1i(u.uStory, 2);
   gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, T.layers.t); gl.uniform1i(u.uLayers, 3);
   gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D_ARRAY, arrTex); gl.uniform1i(u.uArr, 4);
+  gl.activeTexture(gl.TEXTURE5); gl.bindTexture(gl.TEXTURE_2D, T.chapters.t); gl.uniform1i(u.uChapters, 5);
   gl.uniform1f(u.uMinPx, mirror ? 1.6 : 1.0);
   gl.uniform1f(u.uSpacing, SPACING); gl.uniform1f(u.uW, PHOTO_W); gl.uniform1f(u.uS, SLOT);
   gl.uniform1f(u.uGain, (mirror ? 0.55 : 0.78) * (1.05 - 0.2 * zt));
@@ -458,6 +466,19 @@ function frame(now) {
   if (sleeping || document.hidden) return;
   step(dt, now);
   render();
+  const cursor = `translate3d(${pointer.x}px,${pointer.y}px,0)`;
+  if (cursor !== cursorPosition) { $cursor.style.transform = cursor; cursorPosition = cursor; }
+  const cameraView = `${W},${H},${cam.x.toFixed(4)},${cam.y.toFixed(4)},${cam.ls.toFixed(4)}`;
+  if (cameraView === labelView) return;
+  labelView = cameraView;
+  const labelSpacing = SPACING * Math.exp(cam.ls);
+  cityLabels.forEach((label, i) => {
+    const pos = project(fib.x0[i], CH);
+    const vertical = labelSpacing < stories[i].title.length * 13 + 12;
+    if (label.classList.contains('vertical') !== vertical) label.classList.toggle('vertical', vertical);
+    const y = Math.max(vertical ? 70 + stories[i].title.length * 13 : 76, pos.y);
+    label.style.transform = `translate3d(${pos.x}px,${y}px,0) translate(-50%,-100%)`;
+  });
 }
 
 // ────────────────────────────────────────────────────────────── boot
@@ -492,6 +513,12 @@ async function boot() {
   arrTex = await loadTextures(gl, photos, progress => $loader.style.setProperty('--p', progress.toFixed(3)));
   buildFibres();
   stories = buildStories(photos, catalog.authored, catalog.journal);
+  cityLabels = stories.map(story => {
+    const label = document.createElement('span');
+    label.textContent = story.title;
+    return label;
+  });
+  $('#city-labels').replaceChildren(...cityLabels);
   uploadStories();
 
   cam.x = 0; cam.y = HOME_Y; cam.lsT = LS_MIN(); cam.ls = cam.lsT - 0.25;

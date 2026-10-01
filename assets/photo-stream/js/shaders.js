@@ -1,4 +1,4 @@
-import { LAYER } from './photos.js';
+import { LAYER, ATLAS_GRID } from './photos.js';
 export const IDLE = 3;
 
 const COMMON = `#version 300 es
@@ -43,11 +43,12 @@ uniform vec3 uCam; uniform float uF, uAspect, uHpx, uMinPx, uMirror, uSpacing;
 uniform vec2 uSelect;                    // line, amount
 uniform float uIdleL[${IDLE}], uIdleA[${IDLE}];
 out float vU, vY, vX0, vSeed, vFlare, vSide, vHalfPx, vQuadPx, vNorm, vCl, vCl2, vSpacePx, vPpu, vXw;
-flat out int vId; flat out float vN, vPhase, vHov, vSel, vFlowT; flat out vec3 vCol;
+flat out int vId; flat out float vN, vOffset, vPhase, vHov, vSel, vFlowT; flat out vec3 vCol;
 void main(){
   int i=gl_InstanceID;
   float fi=float(i);
-  vec4 s=texelFetch(uFibS,at(i),0), dy=texelFetch(uFibD,at(i),0), st=texelFetch(uStory,at(i*3),0);
+  vec4 s=texelFetch(uFibS,at(i),0), dy=texelFetch(uFibD,at(i),0), st=texelFetch(uStory,at(i*2),0);
+  vOffset=texelFetch(uStory,at(i*2+1),0).x;
   const float UV=.86;
   float u=aV.x, flare=0.;
   vec3 p;
@@ -87,11 +88,11 @@ void main(){
 
 export const FIBRE_FS = COMMON + NOISE + `
 uniform sampler2DArray uArr;
-uniform highp sampler2D uStory, uLayers;
+uniform highp sampler2D uChapters, uLayers;
 uniform float uGain, uMirror, uIntro, uW, uS, uDim;
 uniform vec2 uSelect;
 in float vU, vY, vX0, vSeed, vFlare, vSide, vHalfPx, vQuadPx, vNorm, vCl, vCl2, vSpacePx, vPpu, vXw;
-flat in int vId; flat in float vN, vPhase, vHov, vSel, vFlowT; flat in vec3 vCol;
+flat in int vId; flat in float vN, vOffset, vPhase, vHov, vSel, vFlowT; flat in vec3 vCol;
 out vec4 o;
 void main(){
   float dist=abs(vSide)*vQuadPx;
@@ -125,10 +126,8 @@ void main(){
     float slotSize=max(uS,uCH/float(n));
     float slot=floor(sc/slotSize), local=sc-slot*slotSize;
     int ch=int(mod(slot,float(n)));
-    vec4 L=texelFetch(uStory,at(vId*3+1+ch/4),0);
-    int cc=ch-(ch/4)*4;
-    float layer=cc==0?L.x:cc==1?L.y:cc==2?L.z:L.w;
-    float aspect=texelFetch(uLayers,ivec2(int(layer),0),0).x;
+    float layer=texelFetch(uChapters,at(int(vOffset)+ch),0).x;
+    float aspect=texelFetch(uLayers,at(int(layer)),0).x;
     float h=uW/aspect;
     float vp=(local-(slotSize-h)*.5)/h, up=.5+vXw/uW;
     float slotPx=slotSize*vPpu;
@@ -136,8 +135,11 @@ void main(){
     vec3 st=vCol*(.5+.35*cl);
     float inside=0., core=1.;
     if(detail>.001){
-      float lod=log2(max(1.,${LAYER}./(min(uW,h)*vPpu)));
-      vec3 img=textureLod(uArr,vec3(clamp(up,0.,1.),clamp(vp,0.,1.),layer),lod).rgb;
+      float lod=clamp(log2(max(1.,${LAYER}./(min(uW,h)*vPpu))),0.,${Math.log2(LAYER)}.);
+      float sheet=floor(layer/${ATLAS_GRID*ATLAS_GRID}.),tile=mod(layer,${ATLAS_GRID*ATLAS_GRID}.);
+      vec2 uv=clamp(vec2(up,vp),vec2(.5/${LAYER}.),vec2(1.-.5/${LAYER}.));
+      vec2 tilePos=vec2(mod(tile,${ATLAS_GRID}.),floor(tile/${ATLAS_GRID}.));
+      vec3 img=textureLod(uArr,vec3((tilePos+uv)/${ATLAS_GRID}.,sheet),lod).rgb;
       float e=1./max(h*vPpu,1.);
       float edgeFade=min(uS,.45);
       inside=ss(0.,e,vp)*ss(1.,1.-e,vp)*ss(uYB,uYB+edgeFade,y)*ss(uCH,uCH-edgeFade,y);
