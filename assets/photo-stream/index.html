@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#03040a">
+  <meta name="description" content="A waterfall of light. Every strand is a story; every falling glint is a moment.">
+  <title>旅途照片流</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%2303040a'/%3E%3Cpath d='M9 6v19M13 6v21M16 6v22M19 6v21M23 6v19' stroke='%237d8cff' stroke-width='1.2' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <canvas id="stream" tabindex="0" aria-label="旅行照片光瀑。滚轮或双指缩放，拖动浏览，方向键选择光线，回车展开照片，空格暂停。"></canvas>
+  <nav class="stream-toolbar" aria-label="照片浏览">
+    <button id="directory-toggle" type="button" aria-controls="photo-directory" aria-expanded="false">照片目录</button>
+    <span id="batch-count" role="status">正在读取照片…</span>
+    <button id="batch-prev" type="button" disabled>上一批</button>
+    <button id="batch-next" type="button" disabled>下一批</button>
+  </nav>
+  <p class="stream-hint">滚轮 / 双指缩放 · 拖动浏览 · 点击光线展开照片 · 空格暂停</p>
+  <section id="photo-directory" aria-label="本批全部照片" hidden><div class="directory-grid"></div></section>
+  <button id="fallback-preview" type="button" aria-label="关闭照片预览" hidden><img alt=""></button>
+  <p id="error" role="alert" hidden></p>
+  <div id="loader" aria-hidden="true"><i></i></div>
+  <div id="meter" aria-hidden="true"><i></i></div>
+  <div id="cursor" aria-hidden="true"></div>
+  <p id="announce" class="sr-only" aria-live="polite"></p>
+
+  <section id="story" role="dialog" aria-modal="true" aria-labelledby="story-title" hidden>
+    <div class="story-backdrop" aria-hidden="true"></div>
+    <button class="story-side prev" type="button" aria-label="上一条照片流"></button>
+    <button class="story-side next" type="button" aria-label="下一条照片流"></button>
+    <div class="story-thread" aria-hidden="true"></div>
+    <div class="story-flow"><div class="strip"></div></div>
+    <button class="story-back" type="button" aria-label="返回光瀑">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5"/></svg>
+    </button>
+    <p class="story-title" id="story-title"></p>
+    <div class="lightbox" hidden>
+      <img alt="">
+      <p class="lb-cap"></p>
+    </div>
+  </section>
+
+  <script type="module" src="./js/app.js"></script>
+  <script>
+    document.getElementById('fallback-preview').onclick = function(){this.hidden=true;};
+    addEventListener('keydown',function(event){
+      if(event.key==='Escape'&&!document.getElementById('fallback-preview').hidden){
+        event.stopImmediatePropagation();document.getElementById('fallback-preview').hidden=true;
+      }else if(event.key==='Escape'&&!document.getElementById('photo-directory').hidden){
+        event.stopImmediatePropagation();document.getElementById('photo-directory').hidden=true;
+        document.getElementById('directory-toggle').setAttribute('aria-expanded','false');
+        document.getElementById('directory-toggle').focus();
+      }
+    },true);
+  </script>
+</body>
+</html>
