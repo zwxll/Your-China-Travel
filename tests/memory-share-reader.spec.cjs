@@ -31,21 +31,26 @@ test('只读相册支持手机翻页、滑动、城市切换、照片放大和�
     await page.waitForFunction(()=>document.querySelector('#page-status').textContent.startsWith('3 /')&&document.querySelector('#book').getAttribute('aria-busy')==='false');
     const beforeSwipe=await status.innerText();
     await page.locator('#book').evaluate(book=>{
-      const r=book.getBoundingClientRect(),x=r.left+r.width*.7,y=r.top+r.height*.5;
       const surface=book.querySelector('.stf__block');
+      const r=surface.getBoundingClientRect(),x=r.left+r.width*.8,y=r.top+r.height*.5;
       const start=new Touch({identifier:1,target:surface,clientX:x,clientY:y});
+      const end=new Touch({identifier:1,target:surface,clientX:r.left+5,clientY:y});
       surface.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,touches:[start],changedTouches:[start]}));
-      surface.dispatchEvent(new TouchEvent('touchend',{bubbles:true,changedTouches:[new Touch({identifier:1,target:surface,clientX:x-100,clientY:y})]}));
+      surface.dispatchEvent(new TouchEvent('touchmove',{bubbles:true,cancelable:true,touches:[end],changedTouches:[end]}));
+      surface.dispatchEvent(new TouchEvent('touchend',{bubbles:true,changedTouches:[end]}));
     });
     await page.waitForFunction(old=>document.querySelector('#page-status').textContent!==old,beforeSwipe);
     await page.waitForFunction(()=>document.querySelector('#book')?.getAttribute('aria-busy')==='false');
-    // 从照片上起手，400ms 完成且带少量纵向移动，仍能返回上一页。
+    // 从照片上起手，慢速拖至右边缘后松手，仍能返回上一页。
     await page.getByRole('button',{name:'查看第 3 张照片',exact:true}).evaluate(async button=>{
       const target=button.querySelector('img'),r=target.getBoundingClientRect(),x=r.left+r.width/2,y=r.top+r.height/2;
       const start=new Touch({identifier:2,target,clientX:x,clientY:y});
       target.dispatchEvent(new TouchEvent('touchstart',{bubbles:true,cancelable:true,touches:[start],changedTouches:[start]}));
       await new Promise(resolve=>setTimeout(resolve,400));
-      target.dispatchEvent(new TouchEvent('touchend',{bubbles:true,cancelable:true,touches:[],changedTouches:[new Touch({identifier:2,target,clientX:x+100,clientY:y+60})]}));
+      const edge=button.closest('#book').querySelector('.stf__block').getBoundingClientRect().right-5;
+      const end=new Touch({identifier:2,target,clientX:edge,clientY:y+16});
+      target.dispatchEvent(new TouchEvent('touchmove',{bubbles:true,cancelable:true,touches:[end],changedTouches:[end]}));
+      target.dispatchEvent(new TouchEvent('touchend',{bubbles:true,cancelable:true,touches:[],changedTouches:[end]}));
     });
     await page.waitForFunction(()=>document.querySelector('#page-status').textContent.startsWith('3 /')&&document.querySelector('#book').getAttribute('aria-busy')==='false',null,{timeout:2000});
     assert.equal(await page.locator('#viewer').evaluate(viewer=>viewer.open),false,'滑动不误开照片');
@@ -58,6 +63,7 @@ test('只读相册支持手机翻页、滑动、城市切换、照片放大和�
         if(move.defaultPrevented!==gesture.cancel)throw Error('纵向滚动被阻止或横向滑动未接管');
         target.dispatchEvent(new TouchEvent(gesture.cancel?'touchcancel':'touchend',{bubbles:true,cancelable:true,touches:[],changedTouches:[end]}));
       },gesture);
+      await page.waitForFunction(()=>document.querySelector('#book').getAttribute('aria-busy')==='false');
       assert.match(await status.innerText(),/^3 \//);
       assert.equal(await page.locator('#book').getAttribute('aria-busy'),'false','纵向滑动或取消手势不启动翻页');
     }

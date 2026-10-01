@@ -4,7 +4,10 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const source=fs.readFileSync(require('node:path').join(__dirname,'../assets/memory-share.js'),'utf8');
 function runtime(extra={}){
-  const context=vm.createContext({window:{TRAVEL_SUPABASE_CONFIG:{url:'https://example.test'}},AbortController,TextEncoder,URL,
+  const saved=new Map();
+  const context=vm.createContext({window:{TRAVEL_SUPABASE_CONFIG:{url:'https://example.test'}},AbortController,TextEncoder,URL,crypto:require('node:crypto').webcrypto,
+    localStorage:{getItem:key=>saved.get(key)||null,setItem:(key,value)=>saved.set(key,value),removeItem:key=>saved.delete(key)},
+    fetch:async()=>({ok:true,json:async()=>({browserUsed:0,browserReserved:0,browserLimit:50000000,globalUsed:0,globalReserved:0,globalLimit:800000000})}),
     setTimeout:(fn,ms)=>setTimeout(fn,Math.min(ms,10)),clearTimeout,...extra});
   vm.runInContext(source,context);return context.window.MemoryShelfShare;
 }
@@ -34,6 +37,10 @@ test('生成过程在页面显示进度，失败后按钮恢复且错误保留',
   assert.equal(progress,'正在上传分享内容…');assert.equal(button.disabled,false);
   assert.equal(button.textContent,'分享');assert.match(intro.textContent,/上传超时/);
 });
-test('分享接口拒绝一次上传多个省份',async()=>{
-  await assert.rejects(runtime().create([{name:'湖北省'},{name:'浙江省'}],()=>{},()=>{}),/选择一个省份/);
+test('分享接口允许多个省份，但没有照片时不上传',async()=>{
+  await assert.rejects(runtime().create([{name:'湖北省',cities:[]},{name:'浙江省',cities:[]}],async()=>[],()=>{}),/还没有可分享/);
+});
+test('匿名凭证不能持久化时，上传前明确报错',async()=>{
+  let calls=0;const share=runtime({localStorage:{getItem:()=>null,setItem:()=>{throw new Error('denied');}},fetch:()=>{calls++;}});
+  await assert.rejects(share.create([{name:'省份',cities:[]}],async()=>[],()=>{}),/无法保存匿名凭证/);assert.equal(calls,0);
 });

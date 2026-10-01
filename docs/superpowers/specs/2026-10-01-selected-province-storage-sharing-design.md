@@ -1,4 +1,8 @@
-# 自选省份书架分享设计（待用户审阅）
+# 自选省份书架分享设计（已批准，Supabase v2 已部署）
+
+用户已确认实施及部署。2026-10-01 已部署 Supabase v2 函数、配额事务和私有 Storage；既有 5 份 v1 分享保留。真实回滚事务验证配额边界与幂等，独立合成 JPEG 验证在线上传、签名读取、权限拒绝及取消清理；详细结果见交接文档最新上线记录。前端发布至现有 GitHub Pages main，以部署记录为准。独立多连接并发测试、微信真机和来源 IP 可信性仍未验收，不以本地模拟测试代替。
+
+实现调整：统一使用 service_role 独占的 `memory_share_transaction(action,input)` RPC，集中锁顺序、预留、登记、发布和清理，不重复多套事务包装；公开 Edge Function action 名称不变。单次请求限制收紧为 2 MiB，照片总量仍按实际 JPEG 字节计算。旧客户端 `publish` 提示升级。
 
 ## 目标与范围
 
@@ -89,4 +93,4 @@
 - [Storage 权限控制](https://supabase.com/docs/guides/storage/security/access-control)
 - [私有文件与签名地址](https://supabase.com/docs/guides/storage/serving/downloads)
 
-官方 changelog 的 Markdown 地址在本次资料检索中因工具内容类型限制未能读取；实现前需用可用文档工具或受支持网络方式补查相关更新，不能据此声称已核验更新日志。
+实现时已通过受支持的网络读取官方 changelog；相关 Data API 变更强调显式授予权限。本安装脚本仅授予 service_role 表与 RPC 权限，禁止 anon/authenticated/PUBLIC 直接调用。Storage 上传及短期签名方法已对照官方文档核验；实际项目策略仍需部署时检查。

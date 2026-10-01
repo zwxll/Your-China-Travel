@@ -6000,6 +6000,7 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
           <p id="memoryShelfIntro">一省一卷，一城一章，翻阅属于自己的旅行故事。</p>
         </div>
       </div>
+      <button id="memoryShelfShare" type="button">分享书架</button>
       <button id="memoryShelfClose" class="memory-shelf-close" type="button" aria-label="关闭">×</button>
       <div id="memoryShelfBody" class="memory-shelf-body"></div>
     </section>
@@ -17550,6 +17551,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
   async function collectMemoryShelfData(){
     const cities=await collectTimelineCities();
+    const sharePhotoCounts=new Map();
+    for(const photo of await getAllPhotos()) if(photo.kind!=='video') sharePhotoCounts.set(photo.cityKey,(sharePhotoCounts.get(photo.cityKey)||0)+1);
     const groups=new Map();
     for(const city of cities){
       const province=provinceOf(city.adcode);
@@ -17561,7 +17564,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         meta,months,cover,
         firstMonth:months[0]||city.visitMonth||'',
         latestMonth:months[months.length-1]||city.visitMonth||'',
-        photoCount:photoCountByCity.get(city.cityKey)||city.photoCount||0
+        photoCount:photoCountByCity.get(city.cityKey)||city.photoCount||0,
+        sharePhotoCount:sharePhotoCounts.get(city.cityKey)||0
       });
       if(!groups.has(province)) groups.set(province,[]);
       groups.get(province).push(item);
@@ -17573,6 +17577,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       const coverCity=provinceCities.slice().reverse().find(city=>city.cover)||provinceCities.find(city=>city.cover);
       return {
         name,cities:provinceCities,photoCount:provinceCities.reduce((sum,city)=>sum+city.photoCount,0),
+        sharePhotoCount:provinceCities.reduce((sum,city)=>sum+city.sharePhotoCount,0),
         firstMonth:dated[0]||'',latestMonth:dated[dated.length-1]||'',
         cover:(latestCity&&latestCity.cover)||(coverCity&&coverCity.cover)||''
       };
@@ -18125,6 +18130,12 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   if('requestIdleCallback' in window) requestIdleCallback(()=>memoryPrepareShelfResources(),{timeout:900});
   else setTimeout(()=>memoryPrepareShelfResources(),0);
   if(memoryShelfCloseEl) memoryShelfCloseEl.addEventListener('click',closeMemoryShelf);
+  if($('memoryShelfShare')) $('memoryShelfShare').addEventListener('click',()=>{
+    if(memoryProvinceSharing)return;
+    MemoryShelfShare.select(memoryShelfState.provinces,city=>getPhotosByCity(city.cityKey),message=>{
+      memoryShelfIntroEl.textContent=message;memoryShelfIntroEl.setAttribute('role','status');
+    });
+  });
   if(memoryShelfGridEl) memoryShelfGridEl.addEventListener('click',async()=>{closeMemoryShelf();await enterFullscreenGrid();});
   if(memoryShelfBodyEl) memoryShelfBodyEl.addEventListener('click',event=>{
     const shareButton=event.target.closest('[data-memory-province-share]');

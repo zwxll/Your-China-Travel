@@ -2,7 +2,7 @@
 window.MemoryShelfShare=(()=>{
   const config=window.TRAVEL_SUPABASE_CONFIG||{};
   const endpoint=config.url+'/functions/v1/memory-shelf-share';
-  const LIMIT=12*1024*1024;
+  const FILE_LIMIT=300*1024;
   async function timed(promise,ms,message){
     let timer;
     try{return await Promise.race([promise,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error(message)),ms);})]);}
@@ -23,17 +23,30 @@ window.MemoryShelfShare=(()=>{
     const image=await loadImage(src),canvas=document.createElement('canvas'),ratio=Math.min(1,900/Math.max(image.width,image.height));
     canvas.width=Math.max(1,Math.round(image.width*ratio));canvas.height=Math.max(1,Math.round(image.height*ratio));
     const ctx=canvas.getContext('2d');ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);ctx.drawImage(image,0,0,canvas.width,canvas.height);
-    return canvas.toDataURL('image/jpeg',.7);
+    const blob=await timed(new Promise(resolve=>canvas.toBlob(resolve,'image/jpeg',.7)),20000,'照片压缩超时');
+    if(!blob)throw new Error('照片压缩失败');
+    if(blob.size>FILE_LIMIT)throw new Error('压缩后单张照片超过 300KB，请减少照片尺寸后重试');
+    return blob;
+  }
+  const uuid=value=>typeof value==='string'&&/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+  const secret=()=>Array.from(crypto.getRandomValues(new Uint8Array(32)),byte=>byte.toString(16).padStart(2,'0')).join('');
+  function stored(key){try{return JSON.parse(localStorage.getItem(key)||'null');}catch{return null;}}
+  function persist(key,value){try{localStorage.setItem(key,JSON.stringify(value));if(localStorage.getItem(key)!==JSON.stringify(value))throw new Error();}catch{throw new Error('浏览器无法保存匿名凭证，请允许本地存储后重试');}}
+  function identity(){
+    const key='memoryShareBrowserIdentity',previous=stored(key);
+    if(previous&&uuid(previous.browserId)&&/^[a-f0-9]{64}$/.test(previous.browserKey||''))return {browserId:previous.browserId,browserKey:previous.browserKey};
+    const value={browserId:crypto.randomUUID(),browserKey:secret()};persist(key,value);return value;
   }
   function credentials(provinceName){
     const key='memoryProvinceShareManagement:'+provinceName;
-    const stored=localStorage.getItem(key);
-    if(stored){const value=JSON.parse(stored);if(/^[a-f0-9]{64}$/.test(value.managementKey||'')&&/^[a-f0-9-]{36}$/i.test(value.shareId||''))return value;}
-    const bytes=crypto.getRandomValues(new Uint8Array(32));
-    const value={shareId:crypto.randomUUID(),managementKey:Array.from(bytes).map(byte=>byte.toString(16).padStart(2,'0')).join('')};
+    const previous=stored(key);
+    if(previous&&/^[a-f0-9]{64}$/.test(previous.managementKey||'')&&uuid(previous.shareId))return {shareId:previous.shareId,managementKey:previous.managementKey};
+    const value={shareId:crypto.randomUUID(),managementKey:secret()};
     // 上传之前存储，若浏览器无法持久化凭证则不能创建无法管理的分享。
-    localStorage.setItem(key,JSON.stringify(value));return value;
+    persist(key,value);return value;
   }
+  const digest=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
+  const dataUrl=blob=>timed(new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('照片读取失败'));reader.readAsDataURL(blob);}),20000,'照片读取超时');
   let qrReady;
   function ensureQr(){
     if(window.QRCode)return Promise.resolve();
@@ -46,9 +59,10 @@ window.MemoryShelfShare=(()=>{
     const canvas=document.createElement('canvas');canvas.width=1080;canvas.height=1440;
     const ctx=canvas.getContext('2d');ctx.fillStyle='#f4efe4';ctx.fillRect(0,0,1080,1440);
     ctx.fillStyle='#985627';ctx.font='24px sans-serif';ctx.fillText('旅行记忆书库',76,100);
-    ctx.fillStyle='#183846';ctx.font='bold 64px serif';ctx.fillText(snapshot.provinces[0].name+'旅行记忆',76,198,928);
+    ctx.fillStyle='#183846';ctx.font='bold 64px serif';ctx.fillText(snapshot.provinces.length===1?snapshot.provinces[0].name+'旅行记忆':'我的旅行记忆',76,198,928);
     const cities=snapshot.provinces.flatMap(p=>p.cities),count=cities.reduce((sum,c)=>sum+c.photos.length,0);
     ctx.font='26px sans-serif';ctx.fillText(snapshot.provinces.length+' 个省份 · '+cities.length+' 座城市 · '+count+' 张照片',76,260);
+    if(snapshot.provinces.length>6){ctx.font='22px sans-serif';ctx.fillText('另有 '+(snapshot.provinces.length-6)+' 个省份，扫码查看完整书架',76,1018);}
     const covers=snapshot.provinces.slice(0,6),columns=Math.min(3,covers.length),rows=Math.ceil(covers.length/columns),width=(928-(columns-1)*24)/columns,height=rows===1?625:295;
     for(let i=0;i<covers.length;i++){
       const p=covers[i],x=76+(i%columns)*(width+24),y=330+Math.floor(i/columns)*330;
@@ -77,37 +91,132 @@ window.MemoryShelfShare=(()=>{
     controls.append(save,copy,close);dialog.append(heading,note,content,link,controls);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();
     return {content,status,save};
   }
-  async function create(provinces,getPhotos,onProgress){
-    if(!provinces||provinces.length!==1)throw new Error('请选择一个省份进行分享');
-    const snapshot={version:1,provinces:[]};let images=0;
+  async function create(provinces,getPhotos,onProgress=()=>{},options={}){
+    if(!Array.isArray(provinces)||!provinces.length||provinces.length>34)throw new Error('请选择 1–34 个省份进行分享');
+    const checkCancelled=()=>{if(options.signal?.aborted)throw new Error('已取消上传');};
+    const browser=identity(),single=provinces.length===1&&!options.independent;
+    const pendingKey='memorySharePending:'+(options.independent?'selection:':'province:')+provinces.map(p=>p.name).sort().join('|');
+    let pending=stored(pendingKey);
+    if(pending&&(!uuid(pending.shareId)||!uuid(pending.targetId)||!/^[a-f0-9]{64}$/.test(pending.managementKey||'')))pending=null;
+    const target=single?credentials(provinces[0].name):pending?{shareId:pending.targetId,managementKey:pending.managementKey}:{shareId:crypto.randomUUID(),managementKey:secret()};
+    checkCancelled();onProgress('正在检查匿名分享容量…');
+    // Bind all legacy province links held by this browser, not only this selection.
+    const legacy=new Map(single?[[target.shareId,target]]:[]);
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);if(!key?.startsWith('memoryProvinceShareManagement:'))continue;
+      const value=stored(key);if(value&&uuid(value.shareId)&&/^[a-f0-9]{64}$/.test(value.managementKey||''))legacy.set(value.shareId,{shareId:value.shareId,managementKey:value.managementKey});
+    }
+    for(const value of legacy.values()){
+      checkCancelled();await request({action:'claim',...browser,...value});
+    }
+    let quota=await request({action:'quota',...browser});options.onQuota?.(quota);
+    if(!pending&&quota.browserUsed+quota.browserReserved>=quota.browserLimit)throw new Error('此匿名浏览器累计分享达到 50MB 上限');
+    if(!pending&&quota.globalUsed+quota.globalReserved>=quota.globalLimit)throw new Error('全站分享空间达到 800MB 上限');
+    const manifest={version:2,provinces:[],files:[]},blobs=new Map();let images=0,totalBytes=0;
+    async function add(src){
+      checkCancelled();const blob=await compress(src),fileId='photo-'+(blobs.size+1);
+      totalBytes+=blob.size;if(totalBytes>50000000)throw new Error('所选省份压缩后超过 50MB，请减少选择');
+      blobs.set(fileId,blob);manifest.files.push({fileId,bytes:blob.size,sha256:await digest(await blob.arrayBuffer())});return fileId;
+    }
     for(const province of provinces){
-      const book={name:province.name,review:province.review||'',cover:'',cities:[]};
+      const book={name:province.name,review:province.review||'',coverId:'',cities:[]};
       for(const city of province.cities){
-        onProgress('正在读取'+city.name+'的照片…');
+        checkCancelled();onProgress('正在读取'+city.name+'的照片…');
         const chapter={name:city.name,description:city.meta?.description||'',firstMonth:city.firstMonth||'',photos:[]};
-        for(const photo of (await timed(getPhotos(city),10000,'读取'+city.name+'照片超时，请重试')).filter(p=>p.kind!=='video')){
+        const photos=await timed(getPhotos(city),10000,'读取'+city.name+'照片超时，请重试');
+        for(const photo of photos.filter(p=>p.kind!=='video')){
           if(!photo.dataUrl)throw new Error('部分照片尚未加载，请先恢复资料后重试');
-          chapter.photos.push({name:photo.name||'',dataUrl:await compress(photo.dataUrl)});images++;onProgress('正在整理第 '+images+' 张照片…');
+          if(++images>1500)throw new Error('目前单次分享支持最多 1500 张照片');
+          chapter.photos.push({name:photo.name||'',fileId:await add(photo.dataUrl)});onProgress('正在整理第 '+images+' 张照片…');
         }
         book.cities.push(chapter);
       }
-      if(province.cover){onProgress('正在整理'+province.name+'封面…');book.cover=await compress(province.cover);}
-      snapshot.provinces.push(book);
+      if(province.cover){onProgress('正在整理'+province.name+'封面…');book.coverId=await add(province.cover);}
+      manifest.provinces.push(book);
     }
     if(!images)throw new Error('记忆书架中还没有可分享的照片');
-    if(images>1500)throw new Error('目前单次分享支持最多 1500 张照片');
-    const auth=credentials(provinces[0].name),body={action:'publish',...auth,snapshot};
-    if(new TextEncoder().encode(JSON.stringify(body)).length>LIMIT)throw new Error('该省份压缩后的照片超过 12MB，暂时无法生成分享');
-    onProgress('正在上传分享内容…');await request(body);
-    const root=config.shareBaseUrl||'https://zwxll.github.io/Your-China-Travel/';
-    const url=new URL('memory-share.html',root);url.searchParams.set('s',auth.shareId);
-    const preview=showPreview(url.href,provinces[0].name);
-    onProgress('上传完成，正在生成海报…');
+    const manifestHash=await digest(new TextEncoder().encode(JSON.stringify(manifest)));
+    if(pending&&pending.manifestHash!==manifestHash){
+      await request({action:'cancel',shareId:pending.shareId,managementKey:pending.managementKey});
+      localStorage.removeItem(pendingKey);pending=null;quota=await request({action:'quota',...browser});options.onQuota?.(quota);
+    }
+    if(!pending){
+      if(totalBytes>quota.browserLimit-quota.browserUsed-quota.browserReserved)throw new Error('此匿名浏览器累计分享超过 50MB，请减少选择（已用 '+(quota.browserUsed/1000000).toFixed(1)+'MB）');
+      if(totalBytes>quota.globalLimit-quota.globalUsed-quota.globalReserved)throw new Error('全站分享空间达到 800MB 上限，请稍后重试');
+      pending={shareId:crypto.randomUUID(),targetId:target.shareId,managementKey:target.managementKey,manifestHash};
+      if(!single)persist('memorySelectedShareManagement:'+target.shareId,{shareId:target.shareId,managementKey:target.managementKey});
+      persist(pendingKey,pending);
+    }
+    const auth={shareId:pending.shareId,managementKey:pending.managementKey};let started=false,finished=false,result;
     try{
+      checkCancelled();onProgress('正在预留 '+(totalBytes/1000000).toFixed(1)+'MB 分享容量…');
+      // Store before begin. A lost response can be resumed with the same draft ID.
+      started=true;
+      const session=await request({action:'begin',...browser,...auth,targetId:target.shareId,manifest});
+      const uploaded=new Set(session.uploadedIds);
+      for(const file of manifest.files){
+        checkCancelled();if(uploaded.has(file.fileId))continue;
+        onProgress('正在上传 '+(uploaded.size+1)+' / '+manifest.files.length+' 个照片文件…');
+        await request({action:'upload',...auth,fileId:file.fileId,dataUrl:await dataUrl(blobs.get(file.fileId))});uploaded.add(file.fileId);
+      }
+      checkCancelled();onProgress('照片上传完成，正在发布书架…');result=await request({action:'finish',...auth});finished=true;
+      localStorage.removeItem(pendingKey);
+    }catch(error){
+      if(error.message==='上传会话已关闭'){localStorage.removeItem(pendingKey);throw new Error('此前上传会话已关闭，请再次分享；原已发布链接仍可查看。');}
+      if(started&&!finished){
+        try{await request({action:'cancel',...auth});localStorage.removeItem(pendingKey);}
+        catch{throw new Error(error.message+'；草稿容量暂时保留，再次分享相同选择可重试或清理。');}
+      }
+      throw error;
+    }
+    const root=config.shareBaseUrl||'https://zwxll.github.io/Your-China-Travel/';
+    const url=new URL('memory-share.html',root);url.searchParams.set('s',result.shareId);
+    const preview=showPreview(url.href,provinces.length===1?provinces[0].name:'我的旅行记忆');
+    onProgress('上传完成，正在生成海报…');const urls=[];
+    try{
+      const snapshot={provinces:manifest.provinces.map((p,i)=>{
+        if(i>=6)return p;
+        const fileId=p.coverId||p.cities.flatMap(c=>c.photos)[0]?.fileId;
+        const cover=fileId?URL.createObjectURL(blobs.get(fileId)):'';if(cover)urls.push(cover);return {...p,cover};
+      })};
       const canvas=await poster(snapshot,url.href),image=document.createElement('img');image.alt='记忆书架分享海报';image.src=canvas.toDataURL('image/png');preview.content.replaceChildren(image);preview.save.disabled=false;
       preview.save.onclick=()=>canvas.toBlob(blob=>{if(!blob){preview.status.textContent='海报保存失败，请截图保存';preview.content.append(preview.status);return;}const href=URL.createObjectURL(blob),a=document.createElement('a');a.href=href;a.download='旅行记忆书架.png';a.click();setTimeout(()=>URL.revokeObjectURL(href),30000);},'image/png');
-      onProgress('分享海报已生成，可保存后发送到微信。');
+      onProgress('分享海报已生成，可保存后发送到微信。'+(result.cleanupPending?'旧文件待清理，容量暂时保留。':''));
     }catch(error){preview.status.textContent=error.message;onProgress('分享链接已生成，海报生成失败：'+error.message);}
+    finally{urls.forEach(url=>URL.revokeObjectURL(url));}
+    return url.href;
   }
-  return {create,request};
+  function select(provinces,getPhotos,onProgress=()=>{}){
+    const dialog=document.createElement('dialog');dialog.className='memory-share-dialog memory-share-selection';
+    const title=document.createElement('h2');title.textContent='选择要分享的省份';
+    const note=document.createElement('p');note.textContent='可单选、多选或全选。只上传照片压缩副本；任何拿到二维码的人都能查看。此匿名浏览器累计最多 50MB。';
+    const list=document.createElement('div');list.className='memory-share-provinces';
+    const rows=provinces.map(province=>{
+      const label=document.createElement('label'),input=document.createElement('input'),name=document.createElement('span');
+      const count=province.sharePhotoCount??province.photoCount??0;
+      input.type='checkbox';input.disabled=!count;name.textContent=province.name+' · '+province.cities.length+' 座城市 · '+count+' 张照片';
+      label.append(input,name);list.append(label);return {province,input};
+    });
+    const status=document.createElement('p');status.setAttribute('role','status');
+    const capacity=document.createElement('p');capacity.className='memory-share-capacity';
+    const controls=document.createElement('div');controls.className='memory-share-actions';
+    const all=document.createElement('button'),none=document.createElement('button'),submit=document.createElement('button'),cancel=document.createElement('button');
+    all.textContent='全选';none.textContent='取消全选';submit.textContent='上传并生成海报';cancel.textContent='取消';
+    const update=()=>{const selected=rows.filter(r=>r.input.checked);submit.disabled=!selected.length;status.textContent='已选择 '+selected.length+' 个省份 · '+selected.reduce((n,r)=>n+(r.province.sharePhotoCount??r.province.photoCount??0),0)+' 张照片';};
+    rows.forEach(r=>r.input.onchange=update);all.onclick=()=>{rows.forEach(r=>r.input.checked=!r.input.disabled);update();};none.onclick=()=>{rows.forEach(r=>r.input.checked=false);update();};
+    let uploading=false,controller;
+    const stop=()=>{if(uploading){controller.abort();status.textContent='正在取消，等待当前文件上传结束后清理…';cancel.disabled=true;}else dialog.close();};
+    cancel.onclick=stop;dialog.addEventListener('cancel',event=>{event.preventDefault();stop();});
+    submit.onclick=async()=>{
+      if(uploading)return;uploading=true;controller=new AbortController();
+      const chosen=rows.filter(r=>r.input.checked).map(r=>r.province);
+      submit.disabled=all.disabled=none.disabled=true;rows.forEach(r=>r.input.disabled=true);
+      const progress=message=>{status.textContent=message;onProgress(message);};
+      try{await create(chosen,getPhotos,progress,{signal:controller.signal,independent:true,onQuota:q=>{capacity.textContent='匿名浏览器：已用 '+((q.browserUsed+q.browserReserved)/1000000).toFixed(1)+' / 50MB，剩余 '+(Math.max(0,q.browserLimit-q.browserUsed-q.browserReserved)/1000000).toFixed(1)+'MB；全站剩余 '+(Math.max(0,q.globalLimit-q.globalUsed-q.globalReserved)/1000000).toFixed(1)+'MB';}});dialog.close();}
+      catch(error){progress(error.message);}
+      finally{uploading=false;cancel.disabled=false;all.disabled=none.disabled=false;rows.forEach(r=>r.input.disabled=!(r.province.sharePhotoCount??r.province.photoCount));submit.disabled=!rows.some(r=>r.input.checked);}
+    };
+    controls.append(all,none,submit,cancel);dialog.append(title,note,list,capacity,status,controls);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});update();dialog.showModal();
+  }
+  return {create,select,request};
 })();

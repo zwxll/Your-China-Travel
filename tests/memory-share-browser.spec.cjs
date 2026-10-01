@@ -16,11 +16,20 @@ const server=http.createServer((request,response)=>{
     const base='http://127.0.0.1:'+server.address().port;
     const page=await browser.newPage({viewport:{width:390,height:844}});
     const failures=[];page.on('pageerror',error=>failures.push(error.message));
-    let published,publications=0;
+    let published,publications=0;const uploads=new Map(),shares=new Map();
+    const {validateJpeg}=await import(require('node:url').pathToFileURL(path.join(root,'supabase/functions/memory-shelf-share/storage-validation.mjs')));
     await page.route('**/functions/v1/memory-shelf-share',async route=>{
       const data=route.request().postDataJSON();
-      if(data.action==='publish'){published=data;publications++;return route.fulfill({json:{shareId:data.shareId}});}
-      return route.fulfill({json:{snapshot:published.snapshot}});
+      if(data.action==='quota')return route.fulfill({json:{browserUsed:0,browserReserved:0,browserLimit:50000000,globalUsed:0,globalReserved:0,globalLimit:800000000}});
+      if(data.action==='claim')return route.fulfill({json:{claimed:false}});
+      if(data.action==='begin'){published={...data,snapshot:data.manifest};return route.fulfill({json:{shareId:data.shareId,uploadedIds:[]}});}
+      if(data.action==='upload'){await validateJpeg(data.dataUrl);uploads.set(data.shareId+'/'+data.fileId,data.dataUrl);return route.fulfill({json:{fileId:data.fileId}});}
+      if(data.action==='finish'){
+        const snapshot={...published.snapshot,storagePrefix:published.shareId};shares.set(published.targetId,snapshot);published.shareId=published.targetId;publications++;return route.fulfill({json:{shareId:published.shareId}});
+      }
+      const snapshot=shares.get(data.shareId);
+      if(data.action==='read-city'){const c=snapshot.provinces[data.provinceIndex].cities[data.cityIndex];return route.fulfill({json:{chapter:{...c,photos:c.photos.map(p=>({name:p.name,dataUrl:uploads.get(snapshot.storagePrefix+'/'+p.fileId)}))}}});}
+      return route.fulfill({json:{snapshot:{version:2,provinces:snapshot.provinces.map(p=>({...p,cover:uploads.get(snapshot.storagePrefix+'/'+(p.coverId||p.cities[0].photos[0].fileId)),cities:p.cities.map(c=>({...c,photoCount:c.photos.length,photos:undefined}))}))}}});
     });
     await page.goto(base+'/memory-share.html');
     assert.match(await page.locator('main').innerText(),/分享链接无效/);
@@ -64,6 +73,24 @@ const server=http.createServer((request,response)=>{
     assert.equal(await page.locator('button').filter({hasText:/编辑|上传|登录|删除/}).count(),0);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'手机无横向溢出');
     assert.deepEqual(failures,[]);
+    await page.goto(base+'/memory-share.html');
+    await page.evaluate(async()=>{
+      const canvas=document.createElement('canvas');canvas.width=canvas.height=600;
+      const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(600,600);let seed=123456;
+      for(let i=0;i<pixels.data.length;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;pixels.data[i]=i%4===3?255:seed>>>24;}
+      ctx.putImageData(pixels,0,0);const dataUrl=canvas.toDataURL('image/jpeg',.7);
+      await MemoryShelfShare.create(['测试甲省','测试乙省'].map(name=>({name,cover:dataUrl,cities:[{name:name+'城市'}]})),async()=>Array.from({length:40},(_,i)=>({name:'独立测试图'+i,dataUrl})),()=>{});
+    });
+    assert.equal(published.snapshot.provinces.length,2);assert.equal(published.snapshot.files.length,82);
+    const total=published.snapshot.files.reduce((n,f)=>n+f.bytes,0);assert.ok(total>12*1024*1024,'总量超过旧 12MiB 限制仍能生成一个海报');assert.ok(total<50000000);
+    assert.ok(published.snapshot.files.every(f=>f.bytes<=307200));
+    const selectedId=published.shareId;await page.goto(base+'/memory-share.html?s='+selectedId);
+    await page.locator('#shelf .book').first().waitFor();
+    assert.equal(await page.locator('#shelf .book').count(),2,'同一个二维码仅显示选择的两省');
+    for(const provinceName of ['测试甲省','测试乙省']){
+      await page.getByRole('button',{name:new RegExp(provinceName)}).click();await page.locator('#book').waitFor();
+      assert.equal(await page.locator('#book .shared-photo').count(),40);await page.getByRole('button',{name:'返回书架'}).click();
+    }
     const main=fs.readFileSync(path.join(root,'index.html'),'utf8');
     const info=main.slice(main.indexOf('  function memoryInfoHtml('),main.indexOf('  function memoryUpdateProvinceInfo('));
     const sharing=main.slice(main.indexOf('  let memoryProvinceSharing='),main.indexOf('  function closeMemoryShelf()'));
@@ -84,6 +111,6 @@ const server=http.createServer((request,response)=>{
     await page.getByRole('button',{name:'分享新疆维吾尔自治区书架'}).click();
     assert.deepEqual(await page.evaluate(()=>sharedNames),['新疆维吾尔自治区'],'省份按钮只分享对应省份');
     await page.screenshot({path:path.join(require('node:os').tmpdir(),'memory-province-share.png')});
-    console.log('PASS: 单省分享、独立二维码、重复分享、视频排除、海报下载、只读浏览与省份按钮布局');
+    console.log('PASS: 单省独立更新、多省超过12MiB分文件分享、一个二维码浏览两省、视频排除、海报下载、只读浏览与按钮布局');
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

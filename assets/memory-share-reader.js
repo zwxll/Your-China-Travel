@@ -1,9 +1,9 @@
 /* 只读省份相册，沿用相册技能的 PageFlip HTML 运行时。 */
 (()=>{
   const content=document.getElementById('content'),viewer=document.getElementById('viewer');
-  let snapshot,photos=[],index=0,reader=null;
+  let snapshot,photos=[],index=0,reader=null,loadSequence=0;
   const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
-  function dispose(){if(reader){reader.destroy();reader=null;}}
+  function dispose(){loadSequence++;if(reader){reader.destroy();reader=null;}if(viewer.open)viewer.close();}
   function flipBook(previous){
     if(!reader||!['read','fold_corner'].includes(reader.getState()))return;
     // 按钮/手势翻页不是页角点击；仅在调用期间跳过库的页角限制。
@@ -20,9 +20,9 @@
   });
   function shelf(){
     dispose();document.body.classList.remove('reader-open');const grid=el('div');grid.id='shelf';
-    for(const province of snapshot.provinces){const book=el('button','','book'),photo=province.cover||province.cities.flatMap(c=>c.photos)[0]?.dataUrl;
+    for(const province of snapshot.provinces){const book=el('button','','book'),photo=province.cover||province.cities.flatMap(c=>c.photos||[])[0]?.dataUrl;
       if(photo){const image=el('img');image.src=photo;image.alt=province.name+'旅行书籍封面';book.append(image);}
-      book.append(el('strong',province.name),el('span',province.cities.length+' 座城市 · '+province.cities.reduce((n,c)=>n+c.photos.length,0)+' 张照片'));book.onclick=()=>chapters(province);grid.append(book);
+      book.append(el('strong',province.name),el('span',province.cities.length+' 座城市 · '+province.cities.reduce((n,c)=>n+(c.photoCount??c.photos?.length??0),0)+' 张照片'));book.onclick=()=>chapters(province);grid.append(book);
     }content.replaceChildren(grid);
   }
   function album(body,chapter){
@@ -30,8 +30,13 @@
     body.replaceChildren();const info=[chapter.firstMonth,chapter.description].filter(Boolean).join(' · ');if(info)body.append(el('p',info));
     if(!photos.length){body.append(el('p','这个城市暂无照片。'));return;}
     const rig=el('div','','shared-book-rig'),book=el('div','','shared-book');book.id='book';
-    const cover=el('article','','book-page shared-cover');cover.dataset.density='hard';
-    cover.append(el('small','旅行照片册'),el('h2',chapter.name),el('p',chapter.firstMonth||'时间未记录'),el('span',photos.length+' 张照片'));book.append(cover);
+    function cover(back){
+      const leaf=el('article','','book-page shared-cover'+(back?' shared-cover-back':'')),art=el('div','','shared-cover-art'),image=el('img'),top=el('div','','shared-cover-top'),bottom=el('div','','shared-cover-bottom');
+      leaf.dataset.density='hard';image.src=photos[back?photos.length-1:0].dataUrl;image.alt=chapter.name+(back?'旅行封底':'旅行封面');image.draggable=false;
+      top.append(el('small',back?'旅行记忆':'旅行照片册'),el('span',back?'终章':'01'));bottom.append(el('span',back?chapter.name:photos.length+' 张照片'),el('span',back?'未完待续':'旅行记忆'));
+      art.append(image);leaf.append(art,top,el('h2',back?'把时光\n留在这一册':chapter.name),el('p',back?'记录一座城，也记录那时的自己。':chapter.firstMonth||'时间未记录'),bottom);return leaf;
+    }
+    book.append(cover(false));
     // 与原记忆相册一致：简介与首图成对，后续跨页通常三张，末组最多五张。
     const entries=photos.map((photo,index)=>({photo,index})),spreads=[[null,entries.shift()]];
     while(entries.length)spreads.push(entries.splice(0,entries.length<=5?entries.length:3));
@@ -62,11 +67,11 @@
         pageContent.append(head,grid,el('div',String(book.children.length).padStart(2,'0'),'shared-page-foot'));leaf.append(pageContent);book.append(leaf);
       }
     }
-    const back=el('article','','book-page shared-cover');back.dataset.density='hard';back.append(el('h2','旅行记忆'),el('p',chapter.name),el('small','记录一座城，也记录那时的自己。'));book.append(back);
+    book.append(cover(true));
     const controls=el('div','','shared-book-controls'),previous=el('button','‹ 上一页','back'),next=el('button','下一页 ›','back'),status=el('span');
     previous.setAttribute('aria-label','上一页');next.setAttribute('aria-label','下一页');status.id='page-status';status.setAttribute('role','status');
     controls.append(previous,status,next);rig.append(book);body.append(rig,controls,el('p','左右滑动或点击按钮翻页 · 点击照片放大','shared-book-hint'));
-    reader=new St.PageFlip(book,{width:420,height:560,size:'stretch',minWidth:250,maxWidth:420,minHeight:333,maxHeight:560,usePortrait:true,autoSize:true,showCover:true,startPage:1,drawShadow:true,maxShadowOpacity:.3,flippingTime:matchMedia('(prefers-reduced-motion: reduce)').matches?1:450,mobileScrollSupport:false,clickEventForward:true,useMouseEvents:true,swipeDistance:24,showPageCorners:true,disableFlipByClick:true});
+    reader=new St.PageFlip(book,{width:420,height:560,size:'stretch',minWidth:250,maxWidth:420,minHeight:333,maxHeight:560,usePortrait:true,autoSize:true,showCover:true,startPage:1,drawShadow:true,maxShadowOpacity:.3,flippingTime:matchMedia('(prefers-reduced-motion: reduce)').matches?1:550,mobileScrollSupport:false,clickEventForward:true,useMouseEvents:true,swipeDistance:24,showPageCorners:true,disableFlipByClick:true});
     const current=reader;let turning=false;
     function update(){
       if(reader!==current)return;const page=current.getCurrentPageIndex(),busy=turning;
@@ -79,28 +84,64 @@
     current.on('flip',update);current.on('changeState',event=>{turning=event.data==='flipping'||event.data==='user_fold';update();});current.on('init',update);current.on('changeOrientation',update);
     current.loadFromHTML(book.querySelectorAll('.book-page'));update();
     previous.onclick=()=>flipBook(true);next.onclick=()=>flipBook(false);
-    // 接管触摸翻页，避开库的 250ms 限制；保留鼠标拖页和纵向滚动。
+    // 触摸实时驱动现有纸页计算；仅在对侧边缘松手时提交，其他情况回弹。
     let touch=null;
+    function settleTouch(complete){
+      if(!touch?.dragging)return;
+      const controller=current.getFlipController(),calculation=controller.getCalculation();
+      controller.setState('flipping');
+      controller.animateFlippingTo(calculation.getPosition(),{x:complete?-touch.width:touch.width,y:touch.corner==='bottom'?touch.height:0},complete);
+    }
     book.addEventListener('touchstart',event=>{
-      event.stopPropagation();touch=null;
-      if(event.touches.length===1&&['read','fold_corner'].includes(current.getState())){const point=event.touches[0];touch={x:point.clientX,y:point.clientY,time:Date.now()};}
+      event.stopPropagation();
+      if(event.touches.length!==1){settleTouch(false);touch=null;return;}
+      touch=null;
+      if(['read','fold_corner'].includes(current.getState())){const point=event.touches[0];touch={x:point.clientX,y:point.clientY,dragging:false};}
     },{capture:true,passive:true});
     book.addEventListener('touchmove',event=>{
-      event.stopPropagation();if(event.touches.length!==1){touch=null;return;}if(!touch)return;
-      const point=event.touches[0],dx=Math.abs(point.clientX-touch.x),dy=Math.abs(point.clientY-touch.y);
-      if(dx>16&&dx>dy*1.25&&event.cancelable)event.preventDefault();
+      event.stopPropagation();if(event.touches.length!==1){settleTouch(false);touch=null;return;}if(!touch)return;
+      const point=event.touches[0],dx=point.clientX-touch.x,dy=Math.abs(point.clientY-touch.y),controller=current.getFlipController();
+      if(!touch.dragging){
+        if(Math.abs(dx)<8||Math.abs(dx)<=dy*1.25)return;
+        const previous=dx>0,page=current.getCurrentPageIndex();
+        if(previous?page===0:next.disabled)return;
+        current.getRender().finishAnimation();
+        const bounds=current.getBoundsRect(),surface=book.querySelector('.stf__block').getBoundingClientRect();
+        touch.width=bounds.pageWidth;touch.height=bounds.height;touch.previous=previous;
+        touch.left=surface.left+bounds.left+(current.getOrientation()==='portrait'||!previous?bounds.pageWidth:0);touch.right=touch.left+bounds.pageWidth;
+        touch.corner=touch.y-surface.top<bounds.height/2?'top':'bottom';
+        if(!controller.start({x:previous?bounds.left+2:bounds.left+bounds.width-2,y:touch.corner==='bottom'?bounds.height-2:2}))return;
+        touch.dragging=true;controller.setState('user_fold');
+      }
+      if(event.cancelable)event.preventDefault();
+      const distance=touch.previous?touch.right-touch.x:touch.x-touch.left;
+      const progress=Math.max(0,Math.min(.99,(touch.previous?dx:-dx)/Math.max(1,distance)));
+      controller.do({x:touch.width*(1-2*progress),y:touch.corner==='bottom'?touch.height-2:2});
     },{capture:true,passive:false});
     book.addEventListener('touchend',event=>{
-      event.stopPropagation();const start=touch;touch=null;if(!start||!event.changedTouches.length)return;
-      const point=event.changedTouches[0],dx=point.clientX-start.x,dy=Math.abs(point.clientY-start.y);
-      if(Date.now()-start.time<=1200&&Math.abs(dx)>=24&&Math.abs(dx)>dy*1.25){if(event.cancelable)event.preventDefault();flipBook(dx>0);}
+      event.stopPropagation();if(touch?.dragging){
+        const point=event.changedTouches[0],edge=touch.previous?touch.right:touch.left;
+        if(event.cancelable)event.preventDefault();
+        settleTouch(Boolean(point&&(touch.previous?point.clientX>=edge-12:point.clientX<=edge+12)));
+      }touch=null;
     },{capture:true,passive:false});
-    book.addEventListener('touchcancel',event=>{event.stopPropagation();touch=null;},{capture:true,passive:true});
+    book.addEventListener('touchcancel',event=>{event.stopPropagation();settleTouch(false);touch=null;},{capture:true,passive:true});
   }
   function chapters(province){
     dispose();document.body.classList.add('reader-open');const section=el('section','','chapter'),back=el('button','返回书架','back');back.onclick=shelf;section.append(back,el('h2',province.name+'旅行记忆'));if(province.review)section.append(el('p',province.review));
     const tabs=el('div','','cities'),body=el('div');
-    function city(chapter){tabs.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.textContent===chapter.name)));album(body,chapter);}
+    async function city(chapter){
+      tabs.querySelectorAll('button').forEach(button=>button.setAttribute('aria-pressed',String(button.textContent===chapter.name)));
+      if(snapshot.version!==2){album(body,chapter);return;}
+      dispose();photos=[];const sequence=loadSequence;body.replaceChildren(el('p','正在读取城市照片…','notice'));
+      try{
+        const result=await MemoryShelfShare.request({action:'read-city',shareId:id,provinceIndex:snapshot.provinces.indexOf(province),cityIndex:province.cities.indexOf(chapter)});
+        if(sequence===loadSequence)album(body,result.chapter);
+      }catch(error){
+        if(sequence!==loadSequence)return;
+        const retry=el('button','重试读取');retry.onclick=()=>city(chapter);body.replaceChildren(el('p',error.message,'notice'),retry);
+      }
+    }
     for(const chapter of province.cities){const button=el('button',chapter.name);button.onclick=()=>city(chapter);tabs.append(button);}
     section.append(tabs,body);content.replaceChildren(section);city(province.cities[0]);
   }
