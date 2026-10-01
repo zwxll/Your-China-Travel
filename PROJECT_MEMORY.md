@@ -1,5 +1,7 @@
 # 项目记忆交接文档：「记录我的中国行」
 
+> **2026-10-02 当前状态**：开发目录为 `F:\03-agent项目\codex\codex-list\projects\002-Your-China-Travel`，分支 `codex/selected-province-sharing`，已提交基线 `d29c242`。本地已移除省份旁旧分享入口，统一使用顶部“分享书架”单选、多选、全选，保留“管理分享”及历史凭证兼容。Supabase `memory-shelf-share` v4 已部署，写协议 v3；GitHub Pages 新前端未推送，已有二维码仍可读取。本轮已清理缓存、空目录及部署临时文件约 8.75MB，保留两处个人旅行备份、测试依赖和共用资源。后续代码与文档修改仍未提交，禁止混入个人资料直接 git add .。README 和 `项目交接文档.md` 顶部已同步最新目录与清理记录；下方旧路径及上线描述仅为历史。
+
 > **2026-09-06 目录迁移**：当前根目录为 `F:\03-agent项目\codex\codex-list\projects\Your-China-Travel`。最新功能和验证状态以同目录 `项目交接文档.md` 的 0.27 节为准，旧路径仅供历史参考。
 
 > **2026-09-29 当前交接**：当前开发目录为 `F:\03-agent项目\codex\codex-list\projects\002-Your-China-Travel`。当前目录状态与待处理文件以 `项目交接文档.md` 的 0.29 节为准；`HEAD=bfd1adc`、`origin/main=4bd0ae5`，工作树包含未提交的 `index.html` 修改、若干删除项及本地资料样例。

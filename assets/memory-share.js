@@ -11,7 +11,7 @@ window.MemoryShelfShare=(()=>{
   async function request(body){
     const controller=new AbortController();
     try{return await timed((async()=>{
-      const response=await fetch(endpoint,{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json',apikey:config.publishableKey},body:JSON.stringify(body)});
+      const response=await fetch(endpoint,{method:'POST',signal:controller.signal,headers:{'Content-Type':'application/json',apikey:config.publishableKey},body:JSON.stringify({protocolVersion:3,...body})});
       const result=await response.json();
       if(!response.ok) throw new Error(result.error||'分享服务暂时不可用');
       return result;
@@ -37,15 +37,31 @@ window.MemoryShelfShare=(()=>{
     if(previous&&uuid(previous.browserId)&&/^[a-f0-9]{64}$/.test(previous.browserKey||''))return {browserId:previous.browserId,browserKey:previous.browserKey};
     const value={browserId:crypto.randomUUID(),browserKey:secret()};persist(key,value);return value;
   }
-  function credentials(provinceName){
-    const key='memoryProvinceShareManagement:'+provinceName;
-    const previous=stored(key);
-    if(previous&&/^[a-f0-9]{64}$/.test(previous.managementKey||'')&&uuid(previous.shareId))return {shareId:previous.shareId,managementKey:previous.managementKey};
-    const value={shareId:crypto.randomUUID(),managementKey:secret()};
-    // 上传之前存储，若浏览器无法持久化凭证则不能创建无法管理的分享。
-    persist(key,value);return value;
-  }
   const digest=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
+  function forgetRevoked(ids){
+    const revoked=new Set(ids||[]),keys=[];
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);
+      if(!/^(memoryProvinceShareManagement:|memorySelectedShareManagement:|memorySharePending:)/.test(key||''))continue;
+      const value=stored(key);if(value&&(revoked.has(value.shareId)||revoked.has(value.targetId)))keys.push(key);
+    }
+    keys.forEach(key=>localStorage.removeItem(key));
+  }
+  async function claimKnown(browser,migrate=false,onProgress=()=>{}){
+    const entries=new Map();
+    for(let i=0;i<localStorage.length;i++){
+      const key=localStorage.key(i);if(!/^(memoryProvinceShareManagement:|memorySelectedShareManagement:)/.test(key||''))continue;
+      const value=stored(key);if(value&&uuid(value.shareId)&&/^[a-f0-9]{64}$/.test(value.managementKey||''))entries.set(value.shareId,value);
+    }
+    for(const value of entries.values()){
+      const claimed=await request({action:'claim',...browser,...value});
+      if(claimed.revoked){forgetRevoked([value.shareId]);continue;}
+      if(migrate&&claimed.claimed&&[1,2].includes(claimed.version)){
+        let step;
+        do{onProgress('正在复用旧分享照片…');step=await request({action:'migrate',...browser,...value});onProgress('旧分享照片 '+step.processed+' / '+step.total); }while(!step.done);
+      }
+    }
+  }
   const dataUrl=blob=>timed(new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('照片读取失败'));reader.readAsDataURL(blob);}),20000,'照片读取超时');
   let qrReady;
   function ensureQr(){
@@ -94,29 +110,23 @@ window.MemoryShelfShare=(()=>{
   async function create(provinces,getPhotos,onProgress=()=>{},options={}){
     if(!Array.isArray(provinces)||!provinces.length||provinces.length>34)throw new Error('请选择 1–34 个省份进行分享');
     const checkCancelled=()=>{if(options.signal?.aborted)throw new Error('已取消上传');};
-    const browser=identity(),single=provinces.length===1&&!options.independent;
-    const pendingKey='memorySharePending:'+(options.independent?'selection:':'province:')+provinces.map(p=>p.name).sort().join('|');
+    const browser=identity();
+    const pendingKey='memorySharePending:selection:'+provinces.map(p=>p.name).sort().join('|');
     let pending=stored(pendingKey);
     if(pending&&(!uuid(pending.shareId)||!uuid(pending.targetId)||!/^[a-f0-9]{64}$/.test(pending.managementKey||'')))pending=null;
-    const target=single?credentials(provinces[0].name):pending?{shareId:pending.targetId,managementKey:pending.managementKey}:{shareId:crypto.randomUUID(),managementKey:secret()};
     checkCancelled();onProgress('正在检查匿名分享容量…');
-    // Bind all legacy province links held by this browser, not only this selection.
-    const legacy=new Map(single?[[target.shareId,target]]:[]);
-    for(let i=0;i<localStorage.length;i++){
-      const key=localStorage.key(i);if(!key?.startsWith('memoryProvinceShareManagement:'))continue;
-      const value=stored(key);if(value&&uuid(value.shareId)&&/^[a-f0-9]{64}$/.test(value.managementKey||''))legacy.set(value.shareId,{shareId:value.shareId,managementKey:value.managementKey});
-    }
-    for(const value of legacy.values()){
-      checkCancelled();await request({action:'claim',...browser,...value});
-    }
+    await claimKnown(browser,true,onProgress);checkCancelled();
+    pending=stored(pendingKey);
+    if(pending&&(!uuid(pending.shareId)||!uuid(pending.targetId)||!/^[a-f0-9]{64}$/.test(pending.managementKey||'')))pending=null;
+    const target=pending?{shareId:pending.targetId,managementKey:pending.managementKey}:{shareId:crypto.randomUUID(),managementKey:secret()};
     let quota=await request({action:'quota',...browser});options.onQuota?.(quota);
-    if(!pending&&quota.browserUsed+quota.browserReserved>=quota.browserLimit)throw new Error('此匿名浏览器累计分享达到 50MB 上限');
-    if(!pending&&quota.globalUsed+quota.globalReserved>=quota.globalLimit)throw new Error('全站分享空间达到 800MB 上限');
-    const manifest={version:2,provinces:[],files:[]},blobs=new Map();let images=0,totalBytes=0;
+    const manifest={version:3,provinces:[],files:[]},blobs=new Map(),hashes=new Map();let images=0,totalBytes=0;
     async function add(src){
-      checkCancelled();const blob=await compress(src),fileId='photo-'+(blobs.size+1);
+      checkCancelled();const blob=await compress(src),sha256=await digest(await blob.arrayBuffer());
+      if(hashes.has(sha256))return hashes.get(sha256);
+      const fileId='photo-'+(blobs.size+1);hashes.set(sha256,fileId);
       totalBytes+=blob.size;if(totalBytes>50000000)throw new Error('所选省份压缩后超过 50MB，请减少选择');
-      blobs.set(fileId,blob);manifest.files.push({fileId,bytes:blob.size,sha256:await digest(await blob.arrayBuffer())});return fileId;
+      blobs.set(fileId,blob);manifest.files.push({fileId,bytes:blob.size,sha256});return fileId;
     }
     for(const province of provinces){
       const book={name:province.name,review:province.review||'',coverId:'',cities:[]};
@@ -137,23 +147,22 @@ window.MemoryShelfShare=(()=>{
     if(!images)throw new Error('记忆书架中还没有可分享的照片');
     const manifestHash=await digest(new TextEncoder().encode(JSON.stringify(manifest)));
     if(pending&&pending.manifestHash!==manifestHash){
-      await request({action:'cancel',shareId:pending.shareId,managementKey:pending.managementKey});
+      await request({action:'cancel',...browser,shareId:pending.shareId,managementKey:pending.managementKey});
       localStorage.removeItem(pendingKey);pending=null;quota=await request({action:'quota',...browser});options.onQuota?.(quota);
     }
     if(!pending){
-      if(totalBytes>quota.browserLimit-quota.browserUsed-quota.browserReserved)throw new Error('此匿名浏览器累计分享超过 50MB，请减少选择（已用 '+(quota.browserUsed/1000000).toFixed(1)+'MB）');
-      if(totalBytes>quota.globalLimit-quota.globalUsed-quota.globalReserved)throw new Error('全站分享空间达到 800MB 上限，请稍后重试');
       pending={shareId:crypto.randomUUID(),targetId:target.shareId,managementKey:target.managementKey,manifestHash};
-      if(!single)persist('memorySelectedShareManagement:'+target.shareId,{shareId:target.shareId,managementKey:target.managementKey});
+      persist('memorySelectedShareManagement:'+target.shareId,{shareId:target.shareId,managementKey:target.managementKey});
       persist(pendingKey,pending);
     }
-    const auth={shareId:pending.shareId,managementKey:pending.managementKey};let started=false,finished=false,result;
+    const auth={...browser,shareId:pending.shareId,managementKey:pending.managementKey};let started=false,finished=false,result;
     try{
       checkCancelled();onProgress('正在预留 '+(totalBytes/1000000).toFixed(1)+'MB 分享容量…');
       // Store before begin. A lost response can be resumed with the same draft ID.
       started=true;
       const session=await request({action:'begin',...browser,...auth,targetId:target.shareId,manifest});
       const uploaded=new Set(session.uploadedIds);
+      onProgress('复用 '+uploaded.size+' 个文件，本次新增 '+((session.newBytes??totalBytes)/1000000).toFixed(1)+'MB');
       for(const file of manifest.files){
         checkCancelled();if(uploaded.has(file.fileId))continue;
         onProgress('正在上传 '+(uploaded.size+1)+' / '+manifest.files.length+' 个照片文件…');
@@ -212,11 +221,55 @@ window.MemoryShelfShare=(()=>{
       const chosen=rows.filter(r=>r.input.checked).map(r=>r.province);
       submit.disabled=all.disabled=none.disabled=true;rows.forEach(r=>r.input.disabled=true);
       const progress=message=>{status.textContent=message;onProgress(message);};
-      try{await create(chosen,getPhotos,progress,{signal:controller.signal,independent:true,onQuota:q=>{capacity.textContent='匿名浏览器：已用 '+((q.browserUsed+q.browserReserved)/1000000).toFixed(1)+' / 50MB，剩余 '+(Math.max(0,q.browserLimit-q.browserUsed-q.browserReserved)/1000000).toFixed(1)+'MB；全站剩余 '+(Math.max(0,q.globalLimit-q.globalUsed-q.globalReserved)/1000000).toFixed(1)+'MB';}});dialog.close();}
+      try{await create(chosen,getPhotos,progress,{signal:controller.signal,onQuota:q=>{capacity.textContent='匿名浏览器：已用 '+((q.browserUsed+q.browserReserved)/1000000).toFixed(1)+' / 50MB，剩余 '+(Math.max(0,q.browserLimit-q.browserUsed-q.browserReserved)/1000000).toFixed(1)+'MB；全站剩余 '+(Math.max(0,q.globalLimit-q.globalUsed-q.globalReserved)/1000000).toFixed(1)+'MB';}});dialog.close();}
       catch(error){progress(error.message);}
       finally{uploading=false;cancel.disabled=false;all.disabled=none.disabled=false;rows.forEach(r=>r.input.disabled=!(r.province.sharePhotoCount??r.province.photoCount));submit.disabled=!rows.some(r=>r.input.checked);}
     };
     controls.append(all,none,submit,cancel);dialog.append(title,note,list,capacity,status,controls);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});update();dialog.showModal();
   }
-  return {create,select,request};
+  function manage(){
+    const dialog=document.createElement('dialog');dialog.className='memory-share-dialog memory-share-management';
+    const title=document.createElement('h2');title.textContent='管理分享';
+    const note=document.createElement('p');note.textContent='仅管理此浏览器匿名身份的云端分享。照片被其他分享引用时，删除一份不会释放其容量。未保留管理凭证且未归属的旧分享无法纳入管理。';
+    const capacity=document.createElement('p'),list=document.createElement('div'),status=document.createElement('p');status.setAttribute('role','status');
+    const controls=document.createElement('div');controls.className='memory-share-actions';
+    const clear=document.createElement('button'),retry=document.createElement('button'),close=document.createElement('button');
+    clear.textContent='清空我的全部分享';retry.textContent='重试清理';close.textContent='关闭';
+    clear.disabled=retry.disabled=true;close.onclick=()=>dialog.close();
+    controls.append(clear,retry,close);dialog.append(title,note,capacity,list,status,controls);document.body.append(dialog);dialog.addEventListener('close',()=>dialog.remove(),{once:true});dialog.showModal();
+    const browser=stored('memoryShareBrowserIdentity');let busy=false,initialReady=false;
+    const showQuota=q=>{capacity.textContent='已用 '+(q.browserUsed/1000000).toFixed(2)+'MB · 预留 '+(q.browserReserved/1000000).toFixed(2)+'MB · 剩余 '+(Math.max(0,q.browserLimit-q.browserUsed-q.browserReserved)/1000000).toFixed(2)+' / 50MB';};
+    async function refresh(){
+      const result=await request({action:'list',...browser});showQuota(result.quota);list.replaceChildren();
+      for(const share of result.shares){
+        const row=document.createElement('section');row.className='memory-share-management-row';
+        const heading=document.createElement('h3');heading.textContent=share.provinces.join('、');
+        const details=document.createElement('p');details.textContent=(share.kind==='draft'?'未完成草稿':'已发布')+' · '+share.photoCount+' 张照片 · '+new Date(share.updatedAt).toLocaleString();
+        const remove=document.createElement('button');remove.textContent='删除这份分享';remove.onclick=()=>operate('revoke',share.shareId);
+        row.append(heading,details,remove);list.append(row);
+      }
+      if(!result.shares.length){const empty=document.createElement('p');empty.textContent='此浏览器没有可管理的分享';list.append(empty);}
+      clear.disabled=busy||(!result.shares.length&&!result.cleanupPending&&!result.quota.clearing);retry.disabled=busy||(!result.cleanupPending&&!result.quota.clearing);
+    }
+    async function operate(action,shareId){
+      if(busy)return;
+      if(action!=='retry-cleanup'&&!window.confirm((action==='clear'?'清空此匿名身份的全部云端分享和草稿？':'删除这份云端分享？')+'原二维码将失效，只删除云端副本，本地照片不受影响。已下载的照片无法收回。'))return;
+      busy=true;clear.disabled=retry.disabled=true;list.querySelectorAll('button').forEach(b=>b.disabled=true);status.textContent='正在处理云端分享…';
+      try{
+        const result=await request({action,...browser,...(shareId?{shareId}:{})});forgetRevoked(result.revokedIds);
+        status.textContent=result.cleanupPending?'链接已失效，文件待清理，容量暂时保留；请重试清理。':'清理完成，释放 '+(result.freedBytes/1000000).toFixed(2)+'MB。';
+      }catch(error){status.textContent=error.message;}
+      finally{busy=false;try{await refresh();}catch(error){status.textContent=error.message;retry.disabled=false;}}
+    }
+    async function load(){
+      if(busy)return;busy=true;retry.disabled=clear.disabled=true;status.textContent='正在读取分享列表…';
+      try{await claimKnown(browser);busy=false;await refresh();initialReady=true;retry.textContent='重试清理';status.textContent='';}
+      catch(error){initialReady=false;status.textContent=error.message;retry.textContent='重新加载';retry.disabled=false;}
+      finally{busy=false;}
+    }
+    clear.onclick=()=>operate('clear');retry.onclick=()=>initialReady?operate('retry-cleanup'):load();
+    if(!browser||!uuid(browser.browserId)||!/^[a-f0-9]{64}$/.test(browser.browserKey||'')){status.textContent='此浏览器没有可管理的分享';return;}
+    load();
+  }
+  return {create,select,manage,request};
 })();

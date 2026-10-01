@@ -5999,8 +5999,11 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
           <h2 id="memoryShelfTitle">记忆书架</h2>
           <p id="memoryShelfIntro">一省一卷，一城一章，翻阅属于自己的旅行故事。</p>
         </div>
+        <div class="memory-shelf-share-actions">
+          <button id="memoryShelfShare" type="button">分享书架</button>
+          <button id="memoryShelfManage" type="button">管理分享</button>
+        </div>
       </div>
-      <button id="memoryShelfShare" type="button">分享书架</button>
       <button id="memoryShelfClose" class="memory-shelf-close" type="button" aria-label="关闭">×</button>
       <div id="memoryShelfBody" class="memory-shelf-body"></div>
     </section>
@@ -17594,7 +17597,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     const dateText=memoryProvinceDateText(province),review=String(province.review||'').trim();
     return '<aside class="memory-province-info" id="memoryProvinceInfo" aria-live="polite">'+
       '<span class="memory-info-count">记忆 '+String(index+1).padStart(2,'0')+' / '+String(total).padStart(2,'0')+'</span>'+
-      '<div class="memory-info-heading"><h3 class="memory-info-name'+(province.name.length>7?' extra-long':province.name.length>3?' long':'')+'">'+escapeHtml(province.name)+'</h3><div class="memory-province-actions"><button class="memory-province-edit" type="button" data-memory-province-edit aria-label="编辑'+escapeHtml(province.name)+'书籍信息">编辑</button><button class="memory-province-share" type="button" data-memory-province-share="'+index+'" aria-label="分享'+escapeHtml(province.name)+'书架">分享</button></div></div>'+
+      '<div class="memory-info-heading"><h3 class="memory-info-name'+(province.name.length>7?' extra-long':province.name.length>3?' long':'')+'">'+escapeHtml(province.name)+'</h3><div class="memory-province-actions"><button class="memory-province-edit" type="button" data-memory-province-edit aria-label="编辑'+escapeHtml(province.name)+'书籍信息">编辑</button></div></div>'+
       '<div class="memory-info-stats"><span><b>'+province.cities.length+'</b> 座城市</span><span><b>'+province.photoCount+'</b> 张照片</span></div>'+
       '<div class="memory-info-cities">'+province.cities.map(city=>'<span>'+escapeHtml(city.name)+'</span>').join('')+'</div>'+
       '<div class="memory-info-date"><span>旅行时间</span><strong>'+escapeHtml(dateText)+'</strong></div>'+
@@ -18040,20 +18043,6 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       memoryShelfBodyEl.innerHTML='<div class="memory-empty"><strong>旅行记忆加载失败</strong><span>请关闭后重试。</span></div>';
     }
   }
-  let memoryProvinceSharing=false;
-  async function shareMemoryProvince(button,province){
-    if(memoryProvinceSharing||!province)return;
-    if(!confirm('生成海报仅上传'+province.name+'的照片压缩副本，不包含其他省份或视频。任何拿到二维码或链接的人都能查看。是否继续？'))return;
-    const intro=$('memoryShelfIntro');
-    const progress=message=>{intro.textContent=message;intro.setAttribute('role','status');button.title=message;};
-    memoryProvinceSharing=true;button.disabled=true;
-    try{
-      button.textContent='正在生成…';
-      progress('正在读取'+province.name+'的照片…');
-      await MemoryShelfShare.create([province],city=>getPhotosByCity(city.cityKey),progress);
-    }catch(error){const message=error.message||'生成分享海报失败，请重试';progress(message+'（可再次点击该省份“分享”重试）');toast(message,true);}
-    finally{memoryProvinceSharing=false;button.disabled=false;button.textContent='分享';button.title='';}
-  }
   function closeMemoryShelf(){
     if(!memoryShelfOverlayEl) return;
     clearTimeout(memoryShelfState.infoTimer);clearTimeout(memoryShelfState.switchTimer);clearTimeout(memoryShelfState.pageTimer);clearTimeout(memoryShelfState.openTimer);
@@ -18131,15 +18120,13 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   else setTimeout(()=>memoryPrepareShelfResources(),0);
   if(memoryShelfCloseEl) memoryShelfCloseEl.addEventListener('click',closeMemoryShelf);
   if($('memoryShelfShare')) $('memoryShelfShare').addEventListener('click',()=>{
-    if(memoryProvinceSharing)return;
     MemoryShelfShare.select(memoryShelfState.provinces,city=>getPhotosByCity(city.cityKey),message=>{
       memoryShelfIntroEl.textContent=message;memoryShelfIntroEl.setAttribute('role','status');
     });
   });
+  if($('memoryShelfManage')) $('memoryShelfManage').addEventListener('click',()=>MemoryShelfShare.manage());
   if(memoryShelfGridEl) memoryShelfGridEl.addEventListener('click',async()=>{closeMemoryShelf();await enterFullscreenGrid();});
   if(memoryShelfBodyEl) memoryShelfBodyEl.addEventListener('click',event=>{
-    const shareButton=event.target.closest('[data-memory-province-share]');
-    if(shareButton){shareMemoryProvince(shareButton,memoryShelfState.provinces[Number(shareButton.dataset.memoryProvinceShare)]);return;}
     if(event.target.closest('[data-memory-province-edit]')) openMemoryProvinceEditor(memoryShelfState.provinces[memoryShelfState.active]);
   });
   if($('memoryProvinceEditorClose')) $('memoryProvinceEditorClose').addEventListener('click',closeMemoryProvinceEditor);

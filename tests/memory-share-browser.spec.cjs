@@ -61,8 +61,9 @@ const server=http.createServer((request,response)=>{
       const canvas=document.createElement('canvas');canvas.width=canvas.height=24;const dataUrl=canvas.toDataURL('image/jpeg');
       await MemoryShelfShare.create([{name:'湖北省',cities:[{name:'孝感市',cityKey:'test',meta:{}}]}],async()=>[{dataUrl,name:'新照片'}],()=>{});
     });
-    assert.equal(publications,3);assert.equal(published.shareId,firstId,'分享其他省份后再次生成仍沿用本省二维码');
-    await page.goto(base+'/memory-share.html?s='+firstId);
+    assert.equal(publications,3);assert.notEqual(published.shareId,firstId,'单选也使用新的书架分享，不再走旧的省份固定链接分支');
+    assert.equal(await page.evaluate(()=>Object.keys(localStorage).filter(key=>key.startsWith('memoryProvinceShareManagement:')).length),0,'不再创建旧省份专用凭证');
+    await page.goto(base+'/memory-share.html?s='+published.shareId);
     await page.getByRole('button',{name:/湖北省/}).click();
     await page.getByRole('button',{name:'下一页',exact:true}).click();
     await page.waitForFunction(()=>document.querySelector('#page-status').textContent.startsWith('3 /')&&document.querySelector('#book').getAttribute('aria-busy')==='false');
@@ -79,9 +80,12 @@ const server=http.createServer((request,response)=>{
       const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(600,600);let seed=123456;
       for(let i=0;i<pixels.data.length;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;pixels.data[i]=i%4===3?255:seed>>>24;}
       ctx.putImageData(pixels,0,0);const dataUrl=canvas.toDataURL('image/jpeg',.7);
-      await MemoryShelfShare.create(['测试甲省','测试乙省'].map(name=>({name,cover:dataUrl,cities:[{name:name+'城市'}]})),async()=>Array.from({length:40},(_,i)=>({name:'独立测试图'+i,dataUrl})),()=>{});
+      await MemoryShelfShare.create(['测试甲省','测试乙省'].map(name=>({name,cover:dataUrl,cities:[{name:name+'城市'}]})),async()=>Array.from({length:40},(_,i)=>{
+        for(let j=0;j<pixels.data.length;j++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;pixels.data[j]=j%4===3?255:seed>>>24;}
+        ctx.putImageData(pixels,0,0);return {name:'独立测试图'+i,dataUrl:canvas.toDataURL('image/jpeg',.7)};
+      }),()=>{});
     });
-    assert.equal(published.snapshot.provinces.length,2);assert.equal(published.snapshot.files.length,82);
+    assert.equal(published.snapshot.provinces.length,2);assert.equal(published.snapshot.files.length,81,'80 张独立照片与共用的一个封面');
     const total=published.snapshot.files.reduce((n,f)=>n+f.bytes,0);assert.ok(total>12*1024*1024,'总量超过旧 12MiB 限制仍能生成一个海报');assert.ok(total<50000000);
     assert.ok(published.snapshot.files.every(f=>f.bytes<=307200));
     const selectedId=published.shareId;await page.goto(base+'/memory-share.html?s='+selectedId);
@@ -93,24 +97,22 @@ const server=http.createServer((request,response)=>{
     }
     const main=fs.readFileSync(path.join(root,'index.html'),'utf8');
     const info=main.slice(main.indexOf('  function memoryInfoHtml('),main.indexOf('  function memoryUpdateProvinceInfo('));
-    const sharing=main.slice(main.indexOf('  let memoryProvinceSharing='),main.indexOf('  function closeMemoryShelf()'));
     const binding=main.slice(main.indexOf("  if(memoryShelfBodyEl) memoryShelfBodyEl.addEventListener('click'"),main.indexOf("  if($('memoryProvinceEditorClose'))"));
     const styles=[...main.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(match=>match[1]).join('\n')+fs.readFileSync(path.join(root,'assets/memory-share.css'),'utf8');
     await page.setContent('<style>'+styles+'</style><p id="memoryShelfIntro"></p><div id="memoryShelfBody" style="width:320px"></div>');
-    const ui=await page.evaluate(({info,sharing,binding})=>{
+    const ui=await page.evaluate(({info,binding})=>{
       const province={name:'新疆维吾尔自治区',cities:[{name:'吐鲁番市',cityKey:'xinjiang'}],photoCount:1};
       window.$=id=>document.getElementById(id);window.escapeHtml=text=>String(text).replace(/[&<>"']/g,'');window.memoryProvinceDateText=()=>'';
       window.memoryShelfState={provinces:[{name:'湖北省'},province],active:1};window.memoryShelfBodyEl=$('memoryShelfBody');window.confirm=()=>true;window.toast=()=>{};
-      window.getPhotosByCity=()=>[];window.openMemoryProvinceEditor=()=>{};
-      window.MemoryShelfShare={create:async books=>{window.sharedNames=books.map(book=>book.name);}};
-      window.eval(info+sharing+binding+"\nmemoryShelfBodyEl.innerHTML=memoryInfoHtml(memoryShelfState.provinces[1],1,2);");
-      const title=document.querySelector('.memory-info-name').getBoundingClientRect(),button=document.querySelector('[data-memory-province-share]').getBoundingClientRect();
-      return {overlap:button.top<title.bottom,overflow:document.documentElement.scrollWidth>innerWidth};
-    },{info,sharing,binding});
-    assert.equal(ui.overlap,false,'分享按钮在省份标题下方，不重叠');assert.equal(ui.overflow,false);
-    await page.getByRole('button',{name:'分享新疆维吾尔自治区书架'}).click();
-    assert.deepEqual(await page.evaluate(()=>sharedNames),['新疆维吾尔自治区'],'省份按钮只分享对应省份');
-    await page.screenshot({path:path.join(require('node:os').tmpdir(),'memory-province-share.png')});
-    console.log('PASS: 单省独立更新、多省超过12MiB分文件分享、一个二维码浏览两省、视频排除、海报下载、只读浏览与按钮布局');
+      window.getPhotosByCity=()=>[];window.openMemoryProvinceEditor=()=>{window.editorOpened=true;};
+      window.eval(info+binding+"\nmemoryShelfBodyEl.innerHTML=memoryInfoHtml(memoryShelfState.provinces[1],1,2);");
+      const title=document.querySelector('.memory-info-name').getBoundingClientRect(),button=document.querySelector('[data-memory-province-edit]').getBoundingClientRect();
+      return {shareButtons:document.querySelectorAll('[data-memory-province-share]').length,overlap:button.top<title.bottom,overflow:document.documentElement.scrollWidth>innerWidth};
+    },{info,binding});
+    assert.equal(ui.shareButtons,0,'省份信息不再提供旧分享入口');
+    assert.equal(ui.overlap,false,'编辑按钮在省份标题下方，不重叠');assert.equal(ui.overflow,false);
+    await page.getByRole('button',{name:'编辑新疆维吾尔自治区书籍信息'}).click();
+    assert.equal(await page.evaluate(()=>editorOpened),true,'原有省份编辑仍可使用');
+    console.log('PASS: 统一单省和多省书架分享、超过12MiB分文件分享、视频排除、海报下载、只读浏览及省份编辑');
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

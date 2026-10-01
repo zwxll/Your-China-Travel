@@ -84,7 +84,7 @@
     current.on('flip',update);current.on('changeState',event=>{turning=event.data==='flipping'||event.data==='user_fold';update();});current.on('init',update);current.on('changeOrientation',update);
     current.loadFromHTML(book.querySelectorAll('.book-page'));update();
     previous.onclick=()=>flipBook(true);next.onclick=()=>flipBook(false);
-    // 触摸实时驱动现有纸页计算；仅在对侧边缘松手时提交，其他情况回弹。
+    // 触摸实时驱动纸页；划过书页约60%位置后松手提交，未达到则回弹。
     let touch=null;
     function settleTouch(complete){
       if(!touch?.dragging)return;
@@ -120,9 +120,9 @@
     },{capture:true,passive:false});
     book.addEventListener('touchend',event=>{
       event.stopPropagation();if(touch?.dragging){
-        const point=event.changedTouches[0],edge=touch.previous?touch.right:touch.left;
+        const point=event.changedTouches[0],threshold=touch.left+touch.width*(touch.previous?.6:.4);
         if(event.cancelable)event.preventDefault();
-        settleTouch(Boolean(point&&(touch.previous?point.clientX>=edge-12:point.clientX<=edge+12)));
+        settleTouch(Boolean(point&&(touch.previous?point.clientX>=threshold:point.clientX<=threshold)));
       }touch=null;
     },{capture:true,passive:false});
     book.addEventListener('touchcancel',event=>{event.stopPropagation();settleTouch(false);touch=null;},{capture:true,passive:true});

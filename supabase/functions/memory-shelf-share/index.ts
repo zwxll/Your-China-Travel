@@ -1,5 +1,6 @@
 import {createClient} from 'npm:@supabase/supabase-js@2.49.8';
 import {handleStorageAction,ShareError} from './storage-handler.mjs';
+import {handleDedupAction} from './dedup-handler.mjs';
 import {hash} from './storage-validation.mjs';
 
 const headers={'Access-Control-Allow-Origin':'*','Access-Control-Allow-Headers':'content-type, apikey','Access-Control-Allow-Methods':'POST, OPTIONS','Cache-Control':'no-store'};
@@ -18,7 +19,9 @@ Deno.serve(async request=>{
     const db=createClient(Deno.env.get('SUPABASE_URL')||'',secret,{auth:{persistSession:false,autoRefreshToken:false}});
     // Gateway-supplied source, never a source identifier from the request body.
     const sourceHash=await hash(secret+'|'+(request.headers.get('x-forwarded-for')||'unknown').split(',')[0].trim());
-    return reply(await handleStorageAction(input,db,sourceHash));
+    if(['read','read-city'].includes(input.action))return reply(await handleStorageAction(input,db,sourceHash));
+    if(input.protocolVersion!==3)throw new ShareError('请更新网页后重试，新版分享使用共用照片存储');
+    return reply(await handleDedupAction(input,db,sourceHash));
   }catch(error){
     if(error instanceof ShareError)return reply({error:error.message},error.status);
     if(error instanceof Error&&/书架清单|照片清单|城市章节|照片列表|分享暂不|照片数量|JPEG|照片尺寸|照片编码|仅支持/.test(error.message))return reply({error:error.message},400);
