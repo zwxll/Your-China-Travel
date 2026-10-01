@@ -8,19 +8,19 @@
 
 ## 项目特色
 
-### 匿名分享记忆书架（2026-10-01）
+### 匿名分享记忆书架（更新于 2026-10-02）
 
-无需登录，在省份信息的「编辑」旁点击「分享」，或在顶部「分享书架」单选、多选、全选省份，生成海报和二维码；访客扫码只查看选中省份的城市和照片。仅分享照片的压缩副本，不分享视频，不改变本机原始资料。最多 1500 张照片、最长边 900px、JPEG 0.7、单文件不超过 300 KiB；匿名浏览器累计额度为 50MB。
+无需登录，在顶部「分享书架」单选、多选、全选省份，生成海报和二维码；访客扫码只查看选中省份的城市和照片。旧的省份旁「分享」入口已移除。仅分享照片的压缩副本，不分享视频，不改变本机原始资料。最多 1500 张照片、最长边 900px、JPEG 0.7、单文件不超过 300 KiB；匿名浏览器累计额度为 50MB。
 
-每个省份使用独立分享链接，同一浏览器再次分享本省会更新本省链接，不覆盖其他省份；管理凭证保存在本地浏览器，清除浏览器资料后无法继续更新原链接。旧的整架分享链接不会自动删除或转换。拿到链接的人都能查看照片，请勿分享敏感内容。
+每次完成一次新分享都会生成独立链接，单选、多选和全选使用同一套流程，不覆盖此前已发布的分享；未完成上传的相同选择可恢复原草稿。管理凭证保存在本地浏览器，清除浏览器资料后可能失去历史分享管理权。旧分享及其凭证保留，可通过「管理分享」撤销并清理容量。拿到链接的人都能查看照片，请勿分享敏感内容。
 
-本地待部署新版支持同一浏览器相同照片只上传一次，不同分享链接共用；「管理分享」可删除某份分享或清空全部云端分享与草稿。二维码撤销后，仍被其他链接引用的照片不会删除；仅实际清理成功才恢复额度，本地旅行照片不受影响。部署状态和升级说明见 `项目交接文档.md`。
+新版支持同一浏览器相同照片只上传一次，不同分享链接共用；「管理分享」可删除某份分享或清空全部云端分享与草稿。二维码撤销后，仍被其他链接引用的照片不会删除；仅实际清理成功才恢复额度，本地旅行照片不受影响。2026-10-02 后端已部署，GitHub Pages 前端尚未更新，在线使用这些功能仍需发布新版前端；旧二维码读取保持兼容。部署状态和升级说明见 `项目交接文档.md`。
 
 只读分享页采用书本相册：沿用原记忆相册的城市简介、单图、双图和四图分组排版；手机单页滑动翻阅，电脑双页，支持城市切换、页码和点击任意照片放大。旧链接和二维码不变，发布新版后即可使用新阅读方式。
 
-后端 `memory-shelf-share` 已部署；前端采用现有 GitHub Pages，从 `main` 分支根目录自动发布。发布文件包含 `memory-share.html`、`assets/memory-share.js`、`assets/memory-share.css` 和 `assets/vendor/`。二维码默认指向本项目 GitHub Pages 地址；更换域名时需在配置中设置实际的 `shareBaseUrl`。需等待 Pages 部署成功后再生成正式海报。
+后端 `memory-shelf-share` v4 已部署；新版写协议为 v3。前端采用现有 GitHub Pages，从 `main` 分支根目录自动发布，但本地新版前端尚未推送。发布文件包含 `memory-share.html`、`assets/memory-share.js`、`assets/memory-share.css`、`assets/memory-share-reader.js`、`assets/memory-share-reader.css` 和 `assets/vendor/`。二维码默认指向本项目 GitHub Pages 地址；更换域名时需在配置中设置实际的 `shareBaseUrl`。目前线上旧客户端不能生成新分享，需发布新版前端并等待 Pages 部署成功；已有二维码仍可读取。
 
-数据库脚本：`supabase/memory-shelf-share.sql`；实现和验证说明：`docs/superpowers/specs/2026-10-01-anonymous-memory-sharing.md`。
+新安装环境的分享数据库脚本依次为 `supabase/memory-shelf-share.sql` → `supabase/memory-shelf-storage.sql` → `supabase/memory-shelf-dedup.sql`。已有生产环境不要重复初始化或重置容量计数；当前部署与维护限制见 [项目交接文档](./项目交接文档.md)。
 
 - **三种地图视图**：默认视图、城市视图和省份视图各自承担不同的信息密度。
 - **城市边界高亮**：城市视图仅高亮已点亮城市，省份视图展示省内城市边界与跨城市足迹。
@@ -112,22 +112,50 @@
 ```text
 Your-China-Travel/
 ├─ index.html                         # 主应用：HTML、CSS 与 JavaScript
-├─ assets/fonts/                      # 自托管字体
+├─ memory-share.html                  # 扫码访问的只读书本相册
+├─ assets/
+│  ├─ fonts/                          # 自托管字体
+│  ├─ memory-share.js、.css           # 省份选择、分享海报与管理分享
+│  ├─ memory-share-reader.js、.css    # 只读相册、照片放大与触摸翻页
+│  ├─ vendor/                         # 二维码、翻页库及许可证
+│  └─ photo-stream/                   # 照片流运行包及维护源码
 ├─ china-geo.js                       # 中国地图数据本地回退
 ├─ china-geo.json
 ├─ china-provinces-geo.js             # 省份与市级边界数据
 ├─ supabase-config.js                 # 浏览器端 Supabase 公开配置
 ├─ supabase-setup.sql                 # 数据表、约束、索引和 RLS 策略
-├─ supabase/functions/
-│  ├─ oss-media/index.ts              # OSS 临时签名与用户目录鉴权
-│  └─ feedback/index.ts               # 建议反馈接口
+├─ supabase/
+│  ├─ memory-shelf-share.sql          # 分享初始表结构
+│  ├─ memory-shelf-storage.sql        # 分文件上传与容量计量
+│  ├─ memory-shelf-dedup.sql          # 共用照片、引用和清理事务
+│  └─ functions/
+│     ├─ memory-shelf-share/          # 匿名分享及管理接口
+│     ├─ oss-media/index.ts           # OSS 临时签名与用户目录鉴权
+│     └─ feedback/index.ts            # 建议反馈接口
+├─ tests/                            # 自动化回归测试
+├─ docs/superpowers/                  # 历史设计与实施计划
 ├─ vercel.json                        # Vercel 静态部署与缓存头
 ├─ nginx.conf                         # Nginx 配置
 ├─ Dockerfile
 ├─ docker-compose.yml
 ├─ 项目交接文档.md                    # 详细架构、迭代和运维记录
+├─ PROJECT_MEMORY.md                 # 当前状态与交接摘要
 └─ README.md
 ```
+
+### 本地目录清理与维护
+
+2026-10-02 已删除空 `.uploads/`、`.superpowers/npm-cache/`、部署测试脚本及测试身份文件，以及已提交功能的 `index-feature.patch`，释放约 8.75MB；没有删除照片、云端分享或未提交代码。
+
+`1/` 和 `旅行资料/` 是本地旅行备份，合计约 79.6MB，并非程序依赖；核对备份完整后可移到项目外，但不要当缓存删除或混入公开仓库。`.superpowers/test-runtime/` 是可重装的本地数据库测试依赖，当前仍保留；`docs/`、`tests/`、共用资源与许可证也保留。
+
+照片流运行使用 `assets/photo-stream/embedded.js`，其 `js/`、`style.css`、`template.html` 和 `build-embedded.cjs` 用于维护后重新生成，不是可随意删除的重复文件。字体均有页面引用；`china-geo.json` 仍被 Dockerfile 引用。Vercel、Docker/Nginx 配置是可选部署方式，本次没有删除。
+
+### 开发验证
+
+运行 `node --test tests/*.spec.cjs`。浏览器测试当前使用本机 Codex Playwright 路径，其他开发环境需要调整其导入路径并安装对应浏览器。
+
+数据库本地测试使用 PGlite 0.5.8，可执行 `npm install --prefix .superpowers/test-runtime --cache .superpowers/npm-cache --no-audit --no-fund @electric-sql/pglite@0.5.8` 重装，或指定 `MEMORY_SHARE_PGLITE_PATH`；安装会重新生成已清理的 npm 缓存。独立 Supabase 集成测试需可丢弃测试项目及相应环境变量，未配置时跳过，禁止用生产项目代替。最近一次代码全量验证为 48 项：46 通过、0 失败、2 项独立数据库测试跳过；本轮仅更新文档，未重新运行代码测试。
 
 ## 本地运行
 

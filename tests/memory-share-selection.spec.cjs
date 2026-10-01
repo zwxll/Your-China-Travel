@@ -39,9 +39,10 @@ test('选择省份：单选、多选、全选、取消，匿名分文件上传',
     await page.locator('.memory-share-dialog').getByRole('button',{name:'关闭',exact:true}).click();
     await open();await dialog.getByRole('checkbox',{name:/湖北省/}).check();await submit.click();await page.getByAltText('记忆书架分享海报').waitFor();
     const begins=requests.filter(r=>r.action==='begin');assert.equal(begins[0].browserId,begins[1].browserId,'所有分享使用同一匿名身份');assert.notEqual(begins[0].targetId,begins[1].targetId);
+    assert.equal(await page.evaluate(()=>Object.keys(localStorage).filter(key=>key.startsWith('memoryProvinceShareManagement:')).length),0,'顶部单选不创建旧省份分享凭证');
     await page.locator('.memory-share-dialog').getByRole('button',{name:'关闭',exact:true}).click();
     const create=()=>page.evaluate(async()=>{
-      try{await MemoryShelfShare.create(testBooks.slice(0,2),async()=>[{dataUrl:testBooks[0].cover}],()=>{}, {independent:true});return '';}
+      try{await MemoryShelfShare.create(testBooks.slice(0,2),async()=>[{dataUrl:testBooks[0].cover}],()=>{});return '';}
       catch(error){return error.message;}
     });
     loseFinish=true;assert.match(await create(),/草稿容量暂时保留/);
@@ -53,5 +54,12 @@ test('选择省份：单选、多选、全选、取消，匿名分文件上传',
     await page.locator('.memory-share-dialog').getByRole('button',{name:'关闭',exact:true}).click();
     denyQuota=true;const before=requests.filter(r=>r.action==='upload').length;assert.match(await create(),/50MB/);assert.equal(requests.filter(r=>r.action==='upload').length,before,'新增容量由服务端拒绝，不发文件上传');
     reuseFull=true;assert.equal(await create(),'');assert.equal(requests.filter(r=>r.action==='upload').length,before,'满额但全部复用允许生成新链接，无新文件上传');
+    await page.locator('.memory-share-dialog').getByRole('button',{name:'关闭',exact:true}).click();
+    reuseFull=false;await open();await dialog.getByRole('checkbox',{name:/湖北省/}).check();await submit.click();
+    await page.waitForFunction(()=>document.querySelector('.memory-share-selection [role="status"]').textContent.includes('50MB'));
+    assert.equal(await submit.isEnabled(),true,'统一入口失败后恢复按钮，允许重试');
+    await dialog.getByRole('button',{name:'取消',exact:true}).click();
+    denyQuota=false;await open();await dialog.getByRole('button',{name:'全选',exact:true}).click();await submit.click();await page.getByAltText('记忆书架分享海报').waitFor();
+    assert.deepEqual(requests.filter(r=>r.action==='begin').at(-1).manifest.provinces.map(p=>p.name),['河南省','浙江省','湖北省'],'全选实际分享所有有照片的省份');
   }finally{await browser.close();await new Promise(r=>server.close(r));}
 });

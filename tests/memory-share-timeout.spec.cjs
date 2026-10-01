@@ -26,17 +26,6 @@ test('读取城市照片没有响应时结束等待',async()=>{
   const share=runtime();
   await assert.rejects(bounded(share.create([{name:'省份',cities:[{name:'城市'}]}],()=>new Promise(()=>{}),()=>{})),/读取.*超时/);
 });
-test('生成过程在页面显示进度，失败后按钮恢复且错误保留',async()=>{
-  const html=fs.readFileSync(require('node:path').join(__dirname,'../index.html'),'utf8');
-  const handler=html.slice(html.indexOf('  let memoryProvinceSharing='),html.indexOf('  function closeMemoryShelf()'));
-  const button={disabled:false,textContent:'分享书架'},intro={textContent:'原始介绍',setAttribute(){}},nodes={memoryShelfShare:button,memoryShelfIntro:intro};
-  let progress;const province={name:'湖北省',cities:[]};
-  const context={button,province,$:id=>nodes[id],confirm:()=>true,getPhotosByCity:()=>{},toast:()=>{},
-    MemoryShelfShare:{create:async(books,_photos,update)=>{assert.equal(books.length,1);assert.equal(books[0],province);update('正在上传分享内容…');progress=intro.textContent;throw new Error('上传超时，请重试');}}};
-  await vm.runInNewContext(handler+'\nshareMemoryProvince(button,province);',context);
-  assert.equal(progress,'正在上传分享内容…');assert.equal(button.disabled,false);
-  assert.equal(button.textContent,'分享');assert.match(intro.textContent,/上传超时/);
-});
 test('分享接口允许多个省份，但没有照片时不上传',async()=>{
   await assert.rejects(runtime().create([{name:'湖北省',cities:[]},{name:'浙江省',cities:[]}],async()=>[],()=>{}),/还没有可分享/);
 });

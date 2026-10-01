@@ -37,14 +37,6 @@ window.MemoryShelfShare=(()=>{
     if(previous&&uuid(previous.browserId)&&/^[a-f0-9]{64}$/.test(previous.browserKey||''))return {browserId:previous.browserId,browserKey:previous.browserKey};
     const value={browserId:crypto.randomUUID(),browserKey:secret()};persist(key,value);return value;
   }
-  function credentials(provinceName){
-    const key='memoryProvinceShareManagement:'+provinceName;
-    const previous=stored(key);
-    if(previous&&/^[a-f0-9]{64}$/.test(previous.managementKey||'')&&uuid(previous.shareId))return {shareId:previous.shareId,managementKey:previous.managementKey};
-    const value={shareId:crypto.randomUUID(),managementKey:secret()};
-    // 上传之前存储，若浏览器无法持久化凭证则不能创建无法管理的分享。
-    persist(key,value);return value;
-  }
   const digest=async bytes=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
   function forgetRevoked(ids){
     const revoked=new Set(ids||[]),keys=[];
@@ -118,15 +110,15 @@ window.MemoryShelfShare=(()=>{
   async function create(provinces,getPhotos,onProgress=()=>{},options={}){
     if(!Array.isArray(provinces)||!provinces.length||provinces.length>34)throw new Error('请选择 1–34 个省份进行分享');
     const checkCancelled=()=>{if(options.signal?.aborted)throw new Error('已取消上传');};
-    const browser=identity(),single=provinces.length===1&&!options.independent;
-    const pendingKey='memorySharePending:'+(options.independent?'selection:':'province:')+provinces.map(p=>p.name).sort().join('|');
+    const browser=identity();
+    const pendingKey='memorySharePending:selection:'+provinces.map(p=>p.name).sort().join('|');
     let pending=stored(pendingKey);
     if(pending&&(!uuid(pending.shareId)||!uuid(pending.targetId)||!/^[a-f0-9]{64}$/.test(pending.managementKey||'')))pending=null;
     checkCancelled();onProgress('正在检查匿名分享容量…');
     await claimKnown(browser,true,onProgress);checkCancelled();
     pending=stored(pendingKey);
     if(pending&&(!uuid(pending.shareId)||!uuid(pending.targetId)||!/^[a-f0-9]{64}$/.test(pending.managementKey||'')))pending=null;
-    const target=single?credentials(provinces[0].name):pending?{shareId:pending.targetId,managementKey:pending.managementKey}:{shareId:crypto.randomUUID(),managementKey:secret()};
+    const target=pending?{shareId:pending.targetId,managementKey:pending.managementKey}:{shareId:crypto.randomUUID(),managementKey:secret()};
     let quota=await request({action:'quota',...browser});options.onQuota?.(quota);
     const manifest={version:3,provinces:[],files:[]},blobs=new Map(),hashes=new Map();let images=0,totalBytes=0;
     async function add(src){
@@ -160,7 +152,7 @@ window.MemoryShelfShare=(()=>{
     }
     if(!pending){
       pending={shareId:crypto.randomUUID(),targetId:target.shareId,managementKey:target.managementKey,manifestHash};
-      if(!single)persist('memorySelectedShareManagement:'+target.shareId,{shareId:target.shareId,managementKey:target.managementKey});
+      persist('memorySelectedShareManagement:'+target.shareId,{shareId:target.shareId,managementKey:target.managementKey});
       persist(pendingKey,pending);
     }
     const auth={...browser,shareId:pending.shareId,managementKey:pending.managementKey};let started=false,finished=false,result;
@@ -229,7 +221,7 @@ window.MemoryShelfShare=(()=>{
       const chosen=rows.filter(r=>r.input.checked).map(r=>r.province);
       submit.disabled=all.disabled=none.disabled=true;rows.forEach(r=>r.input.disabled=true);
       const progress=message=>{status.textContent=message;onProgress(message);};
-      try{await create(chosen,getPhotos,progress,{signal:controller.signal,independent:true,onQuota:q=>{capacity.textContent='匿名浏览器：已用 '+((q.browserUsed+q.browserReserved)/1000000).toFixed(1)+' / 50MB，剩余 '+(Math.max(0,q.browserLimit-q.browserUsed-q.browserReserved)/1000000).toFixed(1)+'MB；全站剩余 '+(Math.max(0,q.globalLimit-q.globalUsed-q.globalReserved)/1000000).toFixed(1)+'MB';}});dialog.close();}
+      try{await create(chosen,getPhotos,progress,{signal:controller.signal,onQuota:q=>{capacity.textContent='匿名浏览器：已用 '+((q.browserUsed+q.browserReserved)/1000000).toFixed(1)+' / 50MB，剩余 '+(Math.max(0,q.browserLimit-q.browserUsed-q.browserReserved)/1000000).toFixed(1)+'MB；全站剩余 '+(Math.max(0,q.globalLimit-q.globalUsed-q.globalReserved)/1000000).toFixed(1)+'MB';}});dialog.close();}
       catch(error){progress(error.message);}
       finally{uploading=false;cancel.disabled=false;all.disabled=none.disabled=false;rows.forEach(r=>r.input.disabled=!(r.province.sharePhotoCount??r.province.photoCount));submit.disabled=!rows.some(r=>r.input.checked);}
     };

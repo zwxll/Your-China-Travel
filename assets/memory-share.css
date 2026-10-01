@@ -3,7 +3,6 @@
 .memory-share-dialog h2{margin:0 0 12px;}.memory-share-dialog p{font-size:14px;line-height:1.6;}.memory-share-dialog img{display:block;width:100%;height:auto;margin-bottom:18px;}.memory-share-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px;}.memory-share-actions button{padding:10px 14px;border:1px solid #aebfc3;border-radius:9px;background:#fffdf8;color:#183846;cursor:pointer;}.memory-share-actions button:disabled{opacity:.5;}
 .memory-province-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
 .memory-province-actions .memory-province-edit{margin-top:0;}
-.memory-province-share{padding:8px 14px;min-height:38px;border:1px solid #afbec2;border-radius:10px;background:#fffdf8;color:#294b58;cursor:pointer;font-weight:600;}.memory-province-share:disabled{opacity:.6;cursor:wait;}
 .memory-share-provinces{display:grid;gap:10px;margin:20px 0;max-height:42dvh;overflow:auto}
 .memory-share-provinces label{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid #cbd4d4;border-radius:10px;background:#fffdf7;cursor:pointer}
 .memory-share-provinces input{width:20px;height:20px;accent-color:#244957;flex:none}
