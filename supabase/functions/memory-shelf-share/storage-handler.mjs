@@ -18,15 +18,17 @@ export async function handleStorageAction(input,db,sourceHash=''){
     const {data,error}=await db.from('memory_shelf_shares').select('snapshot,updated_at').eq('share_id',input.shareId).maybeSingle();
     if(error)throw new ShareError('分享服务暂时不可用',503);
     if(!data)throw new ShareError('这份记忆书架尚未分享或已失效',404);
-    if(data.snapshot.version!==2){if(input.action==='read-city')throw new ShareError('此城市请求无效');return data;}
+    if(![2,3].includes(data.snapshot.version)){if(input.action==='read-city')throw new ShareError('此城市请求无效');return data;}
     const snapshot=data.snapshot;
+    const pathFor=id=>snapshot.version===3?snapshot.objects[id]:snapshot.storagePrefix+'/'+id+'.jpg';
     const signed=async ids=>{
-      const paths=[...new Set(ids)].map(id=>snapshot.storagePrefix+'/'+id+'.jpg');if(!paths.length)return new Map();
+      const paths=[...new Set(ids.map(pathFor))];if(!paths.length)return new Map();
+      if(paths.some(path=>typeof path!=='string'))throw new ShareError('照片暂时无法读取，请重试',503);
       const {data:urls,error}=await bucket.createSignedUrls(paths,3600);
       if(error||!urls||urls.some(url=>url.error||!url.signedUrl))throw new ShareError('照片暂时无法读取，请重试',503);
       return new Map(urls.map(url=>[url.path,url.signedUrl]));
     };
-    const url=(urls,id)=>urls.get(snapshot.storagePrefix+'/'+id+'.jpg');
+    const url=(urls,id)=>urls.get(pathFor(id));
     if(input.action==='read-city'){
       if(!Number.isInteger(input.provinceIndex)||input.provinceIndex<0||!Number.isInteger(input.cityIndex)||input.cityIndex<0)throw new ShareError('城市请求无效');
       const city=snapshot.provinces[input.provinceIndex]?.cities[input.cityIndex];if(!city)throw new ShareError('城市请求无效');

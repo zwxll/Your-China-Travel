@@ -9,6 +9,9 @@
 .memory-share-provinces input{width:20px;height:20px;accent-color:#244957;flex:none}
 .memory-share-provinces label:has(input:disabled){opacity:.55;cursor:default}
 .memory-share-selection .memory-share-actions{flex-wrap:wrap}
-#memoryShelfShare{position:absolute;right:76px;top:24px;padding:10px 14px;border:1px solid #b8c8cc;border-radius:10px;background:#fffdf7;color:#244957;font:600 13px sans-serif;cursor:pointer}
-.memory-shelf-head{padding-right:195px}
-@media(max-width:600px){#memoryShelfShare{top:20px;right:66px;padding:9px 10px}.memory-shelf-head{padding-right:165px}}
+.memory-shelf-share-actions{display:flex;gap:8px;flex-wrap:wrap;flex:none}
+.memory-shelf-share-actions button,.memory-share-management-row button{padding:10px 14px;border:1px solid #b8c8cc;border-radius:10px;background:#fffdf7;color:#244957;font:600 13px sans-serif;cursor:pointer}
+.memory-shelf-head{display:flex;gap:20px;justify-content:space-between;align-items:flex-start;padding-right:76px}
+.memory-shelf-head>div:first-child{min-width:0}
+.memory-share-management-row{padding:16px 0;border-bottom:1px solid #cbd4d4}.memory-share-management-row h3{margin:0;overflow-wrap:anywhere}.memory-share-management button:disabled{opacity:.5;cursor:wait}
+@media(max-width:760px){.memory-shelf-head{flex-wrap:wrap;padding-right:60px}.memory-shelf-share-actions{width:100%;gap:8px}.memory-shelf-share-actions button{padding:9px 10px}}

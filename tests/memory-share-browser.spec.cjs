@@ -79,9 +79,12 @@ const server=http.createServer((request,response)=>{
       const ctx=canvas.getContext('2d'),pixels=ctx.createImageData(600,600);let seed=123456;
       for(let i=0;i<pixels.data.length;i++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;pixels.data[i]=i%4===3?255:seed>>>24;}
       ctx.putImageData(pixels,0,0);const dataUrl=canvas.toDataURL('image/jpeg',.7);
-      await MemoryShelfShare.create(['测试甲省','测试乙省'].map(name=>({name,cover:dataUrl,cities:[{name:name+'城市'}]})),async()=>Array.from({length:40},(_,i)=>({name:'独立测试图'+i,dataUrl})),()=>{});
+      await MemoryShelfShare.create(['测试甲省','测试乙省'].map(name=>({name,cover:dataUrl,cities:[{name:name+'城市'}]})),async()=>Array.from({length:40},(_,i)=>{
+        for(let j=0;j<pixels.data.length;j++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;pixels.data[j]=j%4===3?255:seed>>>24;}
+        ctx.putImageData(pixels,0,0);return {name:'独立测试图'+i,dataUrl:canvas.toDataURL('image/jpeg',.7)};
+      }),()=>{});
     });
-    assert.equal(published.snapshot.provinces.length,2);assert.equal(published.snapshot.files.length,82);
+    assert.equal(published.snapshot.provinces.length,2);assert.equal(published.snapshot.files.length,81,'80 张独立照片与共用的一个封面');
     const total=published.snapshot.files.reduce((n,f)=>n+f.bytes,0);assert.ok(total>12*1024*1024,'总量超过旧 12MiB 限制仍能生成一个海报');assert.ok(total<50000000);
     assert.ok(published.snapshot.files.every(f=>f.bytes<=307200));
     const selectedId=published.shareId;await page.goto(base+'/memory-share.html?s='+selectedId);

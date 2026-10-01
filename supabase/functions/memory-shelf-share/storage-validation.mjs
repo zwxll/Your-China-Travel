@@ -10,14 +10,18 @@ export async function hash(value){
   const bytes=typeof value==='string'?new TextEncoder().encode(value):value;
   return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),byte=>byte.toString(16).padStart(2,'0')).join('');
 }
-export function sanitizeManifest(value,shareId){
+export function sanitizeManifest(value,shareId,deduplicate=false){
   if(!validId(shareId)||!value||!Array.isArray(value.provinces)||!value.provinces.length||value.provinces.length>34||!Array.isArray(value.files)||!value.files.length||value.files.length>1534)throw new Error('书架清单无效');
-  const ids=new Set(),used=new Set();let totalBytes=0,photos=0,cities=0;
+  const ids=new Set(),used=new Set(),aliases=new Map(),hashes=new Map();let totalBytes=0,photos=0,cities=0;
   const files=value.files.map(file=>{
     if(!fileId(file.fileId)||ids.has(file.fileId)||!Number.isInteger(file.bytes)||file.bytes<1||file.bytes>FILE_LIMIT||!validKey(file.sha256))throw new Error('照片清单无效或单张超过 300KB');
-    ids.add(file.fileId);totalBytes+=file.bytes;return {fileId:file.fileId,bytes:file.bytes,sha256:file.sha256};
-  });
-  const reference=id=>{if(!ids.has(id))throw new Error('照片清单引用无效');used.add(id);return id;};
+    ids.add(file.fileId);
+    const previous=deduplicate&&hashes.get(file.sha256);
+    if(previous){if(previous.bytes!==file.bytes)throw new Error('照片清单相同哈希长度不一致');aliases.set(file.fileId,previous.fileId);return null;}
+    const clean={fileId:file.fileId,bytes:file.bytes,sha256:file.sha256};
+    hashes.set(file.sha256,clean);totalBytes+=file.bytes;return clean;
+  }).filter(Boolean);
+  const reference=id=>{if(!ids.has(id))throw new Error('照片清单引用无效');used.add(id);return aliases.get(id)||id;};
   const provinces=value.provinces.map(province=>{
     if(!province||!Array.isArray(province.cities)||!province.cities.length)throw new Error('城市章节无效');
     return {name:text(province.name,60),review:text(province.review,180),coverId:province.coverId?reference(province.coverId):'',cities:province.cities.map(city=>{
@@ -28,8 +32,9 @@ export function sanitizeManifest(value,shareId){
     })};
   });
   if(!photos||photos>1500||cities>400||used.size!==ids.size||totalBytes>BROWSER_LIMIT)throw new Error('照片数量、引用或 50MB 容量不符合要求');
-  return {version:2,provinces,files,totalBytes};
+  return {version:deduplicate?3:2,provinces,files,totalBytes};
 }
+export const sanitizeDedupManifest=(value,shareId)=>sanitizeManifest(value,shareId,true);
 export async function validateJpeg(dataUrl){
   if(typeof dataUrl!=='string'||dataUrl.length>FILE_LIMIT*4/3+40||!/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(dataUrl))throw new Error('仅支持 300KB 以内的 JPEG 照片');
   let bytes;try{bytes=Uint8Array.from(atob(dataUrl.slice(23)),c=>c.charCodeAt(0));}catch{throw new Error('照片编码无效');}
