@@ -42,9 +42,17 @@ const server=http.createServer((request,response)=>{
     await page.locator('.memory-share-dialog').getByRole('button',{name:'关闭',exact:true}).click();
     await page.evaluate(async()=>{
       const canvas=document.createElement('canvas');canvas.width=canvas.height=24;const dataUrl=canvas.toDataURL('image/jpeg');
+      await MemoryShelfShare.create([{name:'浙江省',cities:[{name:'杭州市'}]}],async()=>[{dataUrl}],()=>{});
+    });
+    assert.notEqual(published.shareId,firstId,'不同省份使用独立二维码');
+    assert.equal(published.snapshot.provinces.length,1);
+    assert.equal(published.snapshot.provinces[0].name,'浙江省');
+    await page.locator('.memory-share-dialog').getByRole('button',{name:'关闭',exact:true}).click();
+    await page.evaluate(async()=>{
+      const canvas=document.createElement('canvas');canvas.width=canvas.height=24;const dataUrl=canvas.toDataURL('image/jpeg');
       await MemoryShelfShare.create([{name:'湖北省',cities:[{name:'孝感市',cityKey:'test',meta:{}}]}],async()=>[{dataUrl,name:'新照片'}],()=>{});
     });
-    assert.equal(publications,2);assert.equal(published.shareId,firstId,'再次生成沿用二维码');
+    assert.equal(publications,3);assert.equal(published.shareId,firstId,'分享其他省份后再次生成仍沿用本省二维码');
     await page.goto(base+'/memory-share.html?s='+firstId);
     await page.getByRole('button',{name:/湖北省/}).click();
     await page.getByRole('button',{name:'查看第 1 张照片'}).click();
@@ -54,6 +62,26 @@ const server=http.createServer((request,response)=>{
     assert.equal(await page.locator('button').filter({hasText:/编辑|上传|登录|删除/}).count(),0);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'手机无横向溢出');
     assert.deepEqual(failures,[]);
-    console.log('PASS: 无登录发布、视频排除、1080×1440海报下载、稳定二维码、手机扫码浏览与只读限制');
+    const main=fs.readFileSync(path.join(root,'index.html'),'utf8');
+    const info=main.slice(main.indexOf('  function memoryInfoHtml('),main.indexOf('  function memoryUpdateProvinceInfo('));
+    const sharing=main.slice(main.indexOf('  let memoryProvinceSharing='),main.indexOf('  function closeMemoryShelf()'));
+    const binding=main.slice(main.indexOf("  if(memoryShelfBodyEl) memoryShelfBodyEl.addEventListener('click'"),main.indexOf("  if($('memoryProvinceEditorClose'))"));
+    const styles=[...main.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(match=>match[1]).join('\n')+fs.readFileSync(path.join(root,'assets/memory-share.css'),'utf8');
+    await page.setContent('<style>'+styles+'</style><p id="memoryShelfIntro"></p><div id="memoryShelfBody" style="width:320px"></div>');
+    const ui=await page.evaluate(({info,sharing,binding})=>{
+      const province={name:'新疆维吾尔自治区',cities:[{name:'吐鲁番市',cityKey:'xinjiang'}],photoCount:1};
+      window.$=id=>document.getElementById(id);window.escapeHtml=text=>String(text).replace(/[&<>"']/g,'');window.memoryProvinceDateText=()=>'';
+      window.memoryShelfState={provinces:[{name:'湖北省'},province],active:1};window.memoryShelfBodyEl=$('memoryShelfBody');window.confirm=()=>true;window.toast=()=>{};
+      window.getPhotosByCity=()=>[];window.openMemoryProvinceEditor=()=>{};
+      window.MemoryShelfShare={create:async books=>{window.sharedNames=books.map(book=>book.name);}};
+      window.eval(info+sharing+binding+"\nmemoryShelfBodyEl.innerHTML=memoryInfoHtml(memoryShelfState.provinces[1],1,2);");
+      const title=document.querySelector('.memory-info-name').getBoundingClientRect(),button=document.querySelector('[data-memory-province-share]').getBoundingClientRect();
+      return {overlap:button.top<title.bottom,overflow:document.documentElement.scrollWidth>innerWidth};
+    },{info,sharing,binding});
+    assert.equal(ui.overlap,false,'分享按钮在省份标题下方，不重叠');assert.equal(ui.overflow,false);
+    await page.getByRole('button',{name:'分享新疆维吾尔自治区书架'}).click();
+    assert.deepEqual(await page.evaluate(()=>sharedNames),['新疆维吾尔自治区'],'省份按钮只分享对应省份');
+    await page.screenshot({path:path.join(require('node:os').tmpdir(),'memory-province-share.png')});
+    console.log('PASS: 单省分享、独立二维码、重复分享、视频排除、海报下载、只读浏览与省份按钮布局');
   }finally{await browser.close();await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});
