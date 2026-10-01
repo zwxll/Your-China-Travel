@@ -4,12 +4,19 @@
   let snapshot,photos=[],index=0,reader=null;
   const el=(tag,text,className)=>{const node=document.createElement(tag);if(text)node.textContent=text;if(className)node.className=className;return node;};
   function dispose(){if(reader){reader.destroy();reader=null;}}
+  function flipBook(previous){
+    if(!reader||!['read','fold_corner'].includes(reader.getState()))return;
+    // 按钮/手势翻页不是页角点击；仅在调用期间跳过库的页角限制。
+    const settings=reader.getSettings(),restricted=settings.disableFlipByClick;
+    settings.disableFlipByClick=false;
+    try{previous?reader.flipPrev('bottom'):reader.flipNext('bottom');}finally{settings.disableFlipByClick=restricted;}
+  }
   function showPhoto(i){index=i;document.getElementById('large').src=photos[i].dataUrl;document.getElementById('count').textContent=(i+1)+' / '+photos.length;document.getElementById('prev').disabled=i===0;document.getElementById('next').disabled=i===photos.length-1;}
   document.getElementById('prev').onclick=()=>showPhoto(index-1);document.getElementById('next').onclick=()=>showPhoto(index+1);document.getElementById('close').onclick=()=>viewer.close();
   document.addEventListener('keydown',event=>{
     if(event.key!=='ArrowLeft'&&event.key!=='ArrowRight')return;
     if(viewer.open){if(event.key==='ArrowLeft'&&index>0)showPhoto(index-1);if(event.key==='ArrowRight'&&index<photos.length-1)showPhoto(index+1);}
-    else if(reader&&reader.getState()==='read'){event.preventDefault();event.key==='ArrowLeft'?reader.flipPrev('bottom'):reader.flipNext('bottom');}
+    else if(reader&&['read','fold_corner'].includes(reader.getState())){event.preventDefault();flipBook(event.key==='ArrowLeft');}
   });
   function shelf(){
     dispose();document.body.classList.remove('reader-open');const grid=el('div');grid.id='shelf';
@@ -48,7 +55,7 @@
             image.onload=()=>{if(side.length===2)grid.dataset.layout=[...grid.querySelectorAll('img')].every(img=>img.naturalWidth/img.naturalHeight<.86)?'two-portrait':'two-landscape';};
             image.src=photo.dataUrl;image.alt=photo.name||chapter.name+'旅行照片';image.draggable=false;
             button.type='button';button.setAttribute('aria-label','查看第 '+(i+1)+' 张照片');button.append(image);
-            button.onclick=()=>{if(reader?.getState()!=='read')return;showPhoto(i);viewer.showModal();};grid.append(button);
+            button.onclick=()=>{if(!['read','fold_corner'].includes(reader?.getState()))return;showPhoto(i);viewer.showModal();};grid.append(button);
           }
         }
         const pageContent=el('div','','shared-page-content');
@@ -59,7 +66,7 @@
     const controls=el('div','','shared-book-controls'),previous=el('button','‹ 上一页','back'),next=el('button','下一页 ›','back'),status=el('span');
     previous.setAttribute('aria-label','上一页');next.setAttribute('aria-label','下一页');status.id='page-status';status.setAttribute('role','status');
     controls.append(previous,status,next);rig.append(book);body.append(rig,controls,el('p','左右滑动或点击按钮翻页 · 点击照片放大','shared-book-hint'));
-    reader=new St.PageFlip(book,{width:420,height:560,size:'stretch',minWidth:250,maxWidth:420,minHeight:333,maxHeight:560,usePortrait:true,autoSize:true,showCover:true,startPage:1,drawShadow:true,maxShadowOpacity:.3,flippingTime:matchMedia('(prefers-reduced-motion: reduce)').matches?1:650,mobileScrollSupport:false,clickEventForward:true,useMouseEvents:true,swipeDistance:24,showPageCorners:true,disableFlipByClick:true});
+    reader=new St.PageFlip(book,{width:420,height:560,size:'stretch',minWidth:250,maxWidth:420,minHeight:333,maxHeight:560,usePortrait:true,autoSize:true,showCover:true,startPage:1,drawShadow:true,maxShadowOpacity:.3,flippingTime:matchMedia('(prefers-reduced-motion: reduce)').matches?1:450,mobileScrollSupport:false,clickEventForward:true,useMouseEvents:true,swipeDistance:24,showPageCorners:true,disableFlipByClick:true});
     const current=reader;let turning=false;
     function update(){
       if(reader!==current)return;const page=current.getCurrentPageIndex(),busy=turning;
@@ -69,9 +76,26 @@
       previous.disabled=page===0||busy;next.disabled=lastVisible>=current.getPageCount()-1||busy;
       status.textContent=(page+1)+' / '+current.getPageCount()+' 页';
     }
-    current.on('flip',update);current.on('changeState',event=>{turning=event.data!=='read';update();});current.on('init',update);current.on('changeOrientation',update);
+    current.on('flip',update);current.on('changeState',event=>{turning=event.data==='flipping'||event.data==='user_fold';update();});current.on('init',update);current.on('changeOrientation',update);
     current.loadFromHTML(book.querySelectorAll('.book-page'));update();
-    previous.onclick=()=>{if(current.getState()==='read')current.flipPrev('bottom');};next.onclick=()=>{if(current.getState()==='read')current.flipNext('bottom');};
+    previous.onclick=()=>flipBook(true);next.onclick=()=>flipBook(false);
+    // 接管触摸翻页，避开库的 250ms 限制；保留鼠标拖页和纵向滚动。
+    let touch=null;
+    book.addEventListener('touchstart',event=>{
+      event.stopPropagation();touch=null;
+      if(event.touches.length===1&&['read','fold_corner'].includes(current.getState())){const point=event.touches[0];touch={x:point.clientX,y:point.clientY,time:Date.now()};}
+    },{capture:true,passive:true});
+    book.addEventListener('touchmove',event=>{
+      event.stopPropagation();if(event.touches.length!==1){touch=null;return;}if(!touch)return;
+      const point=event.touches[0],dx=Math.abs(point.clientX-touch.x),dy=Math.abs(point.clientY-touch.y);
+      if(dx>16&&dx>dy*1.25&&event.cancelable)event.preventDefault();
+    },{capture:true,passive:false});
+    book.addEventListener('touchend',event=>{
+      event.stopPropagation();const start=touch;touch=null;if(!start||!event.changedTouches.length)return;
+      const point=event.changedTouches[0],dx=point.clientX-start.x,dy=Math.abs(point.clientY-start.y);
+      if(Date.now()-start.time<=1200&&Math.abs(dx)>=24&&Math.abs(dx)>dy*1.25){if(event.cancelable)event.preventDefault();flipBook(dx>0);}
+    },{capture:true,passive:false});
+    book.addEventListener('touchcancel',event=>{event.stopPropagation();touch=null;},{capture:true,passive:true});
   }
   function chapters(province){
     dispose();document.body.classList.add('reader-open');const section=el('section','','chapter'),back=el('button','返回书架','back');back.onclick=shelf;section.append(back,el('h2',province.name+'旅行记忆'));if(province.review)section.append(el('p',province.review));
