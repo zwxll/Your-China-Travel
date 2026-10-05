@@ -14,6 +14,16 @@
 
 ## 〇、当前 Agent 快速记忆（优先阅读）
 
+### 2026-10-03：照片册程序化翻页回弹——已获用户确认修复
+
+- 症状：拖动书页正常，按钮和滚轮翻页时旧页先抬起/回弹，再翻目标页。
+- 有效排查：先记录实际浏览器中的输入、目标页、逐帧进度、各纸页角度与曲率，不仅看页码或简化测试是否通过。相册内按 `Alt + Shift + D` 可导出 `album-turn-diagnostics.json`，不包含照片或账号资料。
+- 实证：同一次“下一页”命令，进度先从 `4` 倒退至约 `3.8499` 再前进；上一页首帧也先逆行。没有重复命令，不能继续归因于重复绑定或缓存。
+- 根因：`requestRender()` 以 `performance.now()` 初始化时间，`animate(timestamp)` 却用可能更早的 rAF 帧时间戳计算差值，负 `delta` 导致翻页引擎逆向推进。直接拖动使用指针位置，不受这条计时路径影响。
+- 修复：启动和动画推进统一使用 `performance.now()`；将 `delta` 限制在 `[0, 0.04]`；首帧零时间差但尚未到达目标时仍继续请求下一帧。位置：`assets/vendor/album-3d-src/reader.js`。修改源码后须重建 `assets/vendor/album-3d.js` 并更新 HTML 引用版本。
+- 回归：`tests/album-3d-settled-pages.spec.cjs` 模拟帧时间戳早于启动时间，验证正反向均不逆行、零时间差不停止；Edge 浏览器测试检查逐帧进度单调性，排除主动拖动片段。不要把“测试通过”当作用户实际症状已解决；本次最终由用户确认已修复。
+- 辅助漏洞：`deltaY === 0` 的横向滚轮不得被当作上一页，已在 `memoryAlbumStageWheel()` 过滤。
+
 ### 当前架构
 
 - 前端：`index.html`，无构建流程，部署于 `https://zwxll.github.io/Your-China-Travel/`。

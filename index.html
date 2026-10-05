@@ -517,6 +517,38 @@
     .fp-status span{max-width:132px;font-size:10px;}
     .fp-ctl{width:28px;height:28px;font-size:12px;}
   }
+  .fp-view-controls{grid-column:1;grid-row:1;display:flex;gap:6px;align-items:center;}
+  body.footprint-cinematic .footprint-panel{grid-template-columns:auto auto auto auto minmax(0,320px) minmax(0,1fr) auto auto;}
+  .fp-view-controls button,.fp-year-strip button{min-height:44px;padding:0 16px;border:1px solid rgba(125,211,252,.25);border-radius:12px;background:transparent;color:var(--ink);font:inherit;cursor:pointer;white-space:nowrap;}
+  .fp-view-controls button[aria-pressed="true"],.fp-year-strip button[aria-pressed="true"]{background:rgba(56,189,248,.18);border-color:#38bdf8;color:#38bdf8;}
+  .fp-year-strip{grid-column:1/-1;grid-row:2;display:flex;gap:8px;overflow-x:auto;min-width:0;padding:4px 0;}
+  .fp-year-strip[hidden]{display:none;}
+  body.footprint-year-view .footprint-panel{width:min(680px,calc(100% - 24px));grid-template-columns:auto minmax(0,1fr) auto auto;gap:8px;}
+  body.footprint-year-view #fpPlayBtn,body.footprint-year-view #fpRestartBtn,body.footprint-year-view #fpSpeedBtn,body.footprint-year-view .fp-journey-progress{display:none;}
+  body.footprint-year-view .fp-status{grid-row:1;grid-column:2;}
+  body.footprint-year-view #fpHomeBtn{grid-row:1;grid-column:3;}
+  body.footprint-year-view #fpCloseBtn{grid-row:1;grid-column:4;}
+  .fp-year-route{fill:none;stroke:#a5e6ff;stroke-width:1.8;opacity:.8;}
+  .fp-year-flow{fill:none;stroke:#f3fcff;stroke-width:3;stroke-linecap:round;stroke-dasharray:8 92;filter:drop-shadow(0 0 4px rgba(125,211,252,.8));}
+  .fp-year-label{fill:#e3f6ff;font-size:13px;font-weight:700;paint-order:stroke;stroke:#092032;stroke-width:4px;stroke-linejoin:round;}
+  .fp-city-name{opacity:.6;}
+  body.light-theme .fp-year-route{stroke:#c47632;}
+  body.light-theme .fp-year-flow{stroke:#a85d1e;filter:drop-shadow(0 0 3px rgba(217,122,31,.45));}
+  body.light-theme .fp-year-label{fill:#244d62;stroke:#f5fafc;}
+  @media(max-width:900px){
+    body.footprint-cinematic:not(.footprint-year-view) .footprint-panel{grid-template-columns:auto auto auto auto minmax(0,1fr) auto auto;}
+    body.footprint-cinematic:not(.footprint-year-view) .fp-journey-progress{grid-row:2;}
+  }
+  @media(max-width:640px){
+    .fp-view-controls button{padding:0 8px;font-size:12px;}
+    body.footprint-year-view .footprint-panel{padding:10px;}
+    body.footprint-year-view .fp-status span{display:none;}
+    body.footprint-cinematic:not(.footprint-year-view) .footprint-panel{grid-template-columns:auto minmax(0,1fr) auto auto;gap:6px;padding:10px;}
+    body.footprint-cinematic:not(.footprint-year-view) .fp-status{grid-column:2;grid-row:1;}
+    body.footprint-cinematic:not(.footprint-year-view) #fpHomeBtn{grid-column:3;grid-row:1;}
+    body.footprint-cinematic:not(.footprint-year-view) #fpCloseBtn{grid-column:4;grid-row:1;}
+    body.footprint-cinematic:not(.footprint-year-view) .fp-journey-progress{grid-row:3;min-width:0;}
+  }
   /* 选择家的城市弹窗 */
   .fp-home-overlay{
     position:fixed;inset:0;z-index:10020;background:rgba(2,6,12,.62);
@@ -620,7 +652,8 @@
     box-shadow:0 2px 10px rgba(31,42,55,.04);
     z-index:20;
   }
-  .brand{display:flex;align-items:center;gap:13px;min-width:0;}
+  body>header{position:relative;flex-wrap:nowrap;gap:12px;}
+  .brand{display:flex;align-items:center;gap:13px;min-width:0;flex:0 0 auto;}
   .brand .pin{
     flex:0 0 auto;width:40px;height:40px;border-radius:13px;
     display:grid;place-items:center;color:#fff;
@@ -635,7 +668,7 @@
   }
   .brand-text{display:flex;flex-direction:column;gap:2px;min-width:0;}
   .brand h1{
-    margin:0;font-size:20px;font-weight:800;letter-spacing:1.6px;
+    margin:0;font-size:20px;font-weight:800;letter-spacing:1.6px;white-space:nowrap;
     line-height:1.25;
     /* Shiny Text 闪光效果（参考 reactbits shiny-text: spread=135, speed=1.6s, delay=1.4s, yoyo, pauseOnHover）*/
     background:linear-gradient(135deg,
@@ -672,7 +705,17 @@
     animation-play-state:paused;
   }
   .stats{display:flex;gap:10px;flex:0 0 auto;}
-  .header-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto;}
+  .header-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:1 1 auto;min-width:0;}
+  .header-actions>*{flex-shrink:0;}
+  .header-actions .stats{gap:6px;margin-left:auto;}
+  .header-actions>.footprint-btn .fp-btn-label{display:inline;}
+  .header-menu-container{position:relative;flex:0 0 auto;}
+  .header-menu-panel{position:absolute;z-index:30;top:calc(100% + 16px);left:0;width:440px;max-width:calc(100vw - 28px);max-height:calc(100dvh - 150px);overflow-y:auto;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:16px;border:1px solid rgba(56,189,248,.25);border-radius:18px;background:rgba(8,19,28,.97);box-shadow:0 16px 42px rgba(0,0,0,.35);backdrop-filter:blur(16px);}
+  .header-menu-panel[hidden]{display:none;}
+  .header-menu-panel .footprint-btn .fp-btn-label{display:inline;}
+  .header-menu-panel button{justify-content:flex-start;min-height:46px;max-width:none;border-radius:10px;}
+  body.light-theme .header-menu-panel{background:rgba(250,252,254,.98);border-color:rgba(14,165,233,.25);box-shadow:0 16px 42px rgba(31,42,55,.14);}
+  @media(max-width:720px){body>header{flex-wrap:wrap;}body>header .header-actions{flex-basis:100%;flex-wrap:wrap;justify-content:flex-start;}.header-actions>.footprint-btn{width:44px;padding:0;justify-content:center;}.header-actions>.footprint-btn .fp-btn-label{display:none;}.header-actions .account-btn{padding:0 8px;margin-left:auto;}}
   .account-btn{
     position:relative;overflow:hidden;min-height:38px;max-width:150px;padding:0 13px;
     border:1.5px solid rgba(56,189,248,.45);
@@ -3400,15 +3443,18 @@
     position:absolute;left:0;right:0;bottom:0;z-index:2;
     padding:18px 18px 16px;
   }
-  /* 单景点照片数量小字（卡片底部数据点缀） */
-  .att-card-photo-count{
+  /* 单景点照片 / 视频数量 */
+  .att-card-media-count{
     position:absolute;top:10px;right:10px;z-index:3;
     padding:3px 8px;border-radius:10px;
     background:rgba(14,20,30,.6);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
     border:1px solid rgba(100,170,255,.25);
     font-size:11px;font-weight:600;color:rgba(180,210,255,.85);letter-spacing:.5px;
-    display:flex;align-items:center;gap:3px;
+    display:flex;align-items:center;gap:7px;
   }
+  .att-card-media-item{display:inline-flex;align-items:center;gap:3px;white-space:nowrap;}
+  .att-card-media-item+ .att-card-media-item{padding-left:7px;border-left:1px solid rgba(180,210,255,.22);}
+  .att-card-media-item svg{flex:none;}
   .att-card-edit-btn{
     position:absolute;top:10px;left:10px;z-index:4;
     padding:5px 9px;border:1px solid rgba(255,255,255,.28);border-radius:8px;
@@ -3948,6 +3994,7 @@
     opacity:0;transition:opacity .3s ease;
   }
   .img-viewer.show{display:flex;opacity:1;}
+  .img-viewer.carousel-mode{overflow:clip;}
 
   /* 舞台容器：承载 3D 旋转木马圆环（仅 .carousel-mode 模式）
    * ★ 改造为 3D Carousel（cult-ui 旋转木马）：卡片围成圆环，整体 rotateY 旋转 */
@@ -4792,10 +4839,20 @@
   }
   .journey-archive-head{
     flex:0 0 auto;min-height:92px;padding:22px 72px 18px 30px;border-bottom:1px solid rgba(125,211,252,.12);
-    display:flex;align-items:end;justify-content:space-between;gap:24px;
+    display:flex;align-items:end;justify-content:space-between;gap:24px;flex-wrap:wrap;
     background:linear-gradient(90deg,rgba(14,165,233,.08),transparent 65%);
   }
   .journey-archive-head h2{margin:4px 0 0;font-size:32px;line-height:1.2;color:#e7f6ff;letter-spacing:1px;}
+  .life-image-atlas-btn{position:relative;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;isolation:isolate;padding:10px 16px;border:1px solid rgba(6,182,212,.45);border-radius:12px;background:#050b11 linear-gradient(to top,#0284c7 0%,#06b6d4 52%,#a5f3fc 55%,#050b11 56%);color:#e0faff;font-size:14px;font-weight:600;white-space:nowrap;cursor:pointer;box-shadow:0 8px 20px rgba(4,24,36,.35),0 3px 9px rgba(5,10,15,.4),inset 0 0 0 1px rgba(255,255,255,.05);transition:transform .2s,box-shadow .2s;}
+  .life-image-atlas-btn[hidden]{display:none;}
+  .life-image-atlas-btn canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:-1;}
+  .life-image-atlas-btn .life-atlas-label{display:inline-flex;align-items:center;gap:8px;margin:0;color:inherit;font-size:inherit;text-shadow:0 1px 3px #001219,0 0 8px #001219;pointer-events:none;}
+  .life-image-atlas-btn svg{width:20px;height:20px;flex-shrink:0;}
+  .life-image-atlas-btn:hover{transform:translateY(-2px);box-shadow:0 10px 26px rgba(6,182,212,.25),0 4px 11px rgba(5,10,15,.45);}
+  .life-image-atlas-btn:focus-visible{outline:2px solid #38bdf8;outline-offset:3px;}
+  .life-image-atlas-btn:active{transform:translateY(1px) scale(.985);}
+  @media(max-width:700px){.life-image-atlas-btn{padding:8px 11px;gap:6px;font-size:12px;}.life-image-atlas-btn svg{width:18px;height:18px;}}
+  @media(prefers-reduced-motion:reduce){.life-image-atlas-btn{transition:none;}}
   .journey-archive-head p{margin:7px 0 0;color:#8299ab;font-size:14px;}
   .journey-archive-kicker{font-size:11px;letter-spacing:.22em;color:#55c8f5;}
   .journey-archive-close{
@@ -4847,7 +4904,8 @@
   .life-city-entry em{font-style:normal;font-size:11px;color:#7289a9;white-space:nowrap;justify-self:end;}
   .life-city-entry span{grid-column:1/-1;display:block;font-size:11px;color:#6f86a5;}
   .life-photo-dome{min-width:0;min-height:0;overflow:hidden;display:flex;flex-direction:column;border:1px solid rgba(125,179,255,.14);border-radius:14px;background:#08182a;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
-  .life-photo-dome-head{position:relative;z-index:7;flex:0 0 auto;min-height:54px;padding:12px 16px;border-bottom:1px solid rgba(125,179,255,.12);display:flex;align-items:center;justify-content:space-between;gap:16px;background:rgba(8,24,42,.94);}
+  .life-photo-dome-head{position:relative;z-index:7;flex:0 0 auto;min-height:54px;padding:12px 16px;border-bottom:1px solid rgba(125,179,255,.12);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:rgba(8,24,42,.94);}
+  .life-photo-dome-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-left:auto;}
   .life-photo-dome-head b,.life-photo-dome-head span{display:block}.life-photo-dome-head b{font-size:14px;color:#dbeaff}.life-photo-dome-head span{margin-top:3px;font-size:11px;color:#7892b2}.life-photo-dome-head em{font-style:normal;font-size:11px;color:#82b3fa;white-space:nowrap;}
   .life-photo-dome-stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;}
   .life-photo-dome-empty{height:100%;min-height:340px;display:grid;place-content:center;gap:8px;text-align:center;color:#7892ad}.life-photo-dome-empty strong{font-size:17px;color:#dbeaff}.life-photo-dome-empty span{font-size:13px;}
@@ -5022,6 +5080,16 @@
   .memory-shelf-viewport.opening{pointer-events:none;}.memory-shelf-viewport.opening .memory-book:not(.opening){transform:translate3d(86vw,8px,-260px) rotateY(84deg) scale(.78)!important;opacity:0!important;filter:brightness(.45)!important;}
   .memory-book.opening{z-index:50!important;transform:translate3d(calc(50vw - 50%),-12px,160px) rotateX(4deg) scale(1.06)!important;opacity:1!important;filter:none!important;}
   .memory-book.opening .memory-book-object{--book-tilt-x:0deg;--book-tilt-y:0deg;--book-lift:0px;--book-lift-z:0px;}.memory-book.opening .memory-book-cover{animation:memoryShelfCoverOpen .68s .16s cubic-bezier(.55,.06,.68,.19) both;}.memory-book.opening .memory-book-cover-inside{animation:memoryShelfCoverInsideOpen .68s .16s cubic-bezier(.55,.06,.68,.19) both;}.memory-book.opening .memory-book-opening-page{opacity:1;transition-delay:.18s;}
+  /* 展开时露出的装订与纸边不继承外封皮的布面色；不改变书架几何和动画。 */
+  .memory-book.opening{--book-edge:#eee8dc;}
+  .memory-book.opening .memory-book-back{inset:1px;border-radius:2px;background:#eee8dc;}
+  .memory-book.opening .memory-book-spine-face{background:linear-gradient(90deg,#e7dfd1,#f4efe4 60%);box-shadow:inset 3px 0 9px rgba(91,73,51,.07);}
+  .memory-book.opening .memory-book-spine-copy{opacity:0;}
+  .memory-book.opening .memory-book-page-face,.memory-book.opening .memory-book-page-edge,.memory-book.opening .memory-book-edge-top,.memory-book.opening .memory-book-edge-bottom{background:#eee8dc;box-shadow:inset 5px 0 12px rgba(91,73,51,.05);}
+  .memory-book.opening .memory-book-page-face{inset:2px 2px 2px 3px;border-radius:1px;}
+  .memory-book.opening .memory-book-cover-inside{border-radius:2px;background:linear-gradient(90deg,#f4efe4 94%,#e7dfd1);}
+  .memory-book.opening .memory-book-opening-page{inset:0;background:linear-gradient(90deg,#e7dfd1,#f4efe4 8%);}
+  .memory-book.opening .memory-book-opening-photo{background-color:#eee8dc;}
   .memory-shelf-floor{position:absolute;left:5%;right:4%;bottom:66px;height:28px;border-radius:50%;background:radial-gradient(ellipse,rgba(92,100,97,.24),rgba(92,100,97,.07) 50%,transparent 73%);filter:blur(7px);pointer-events:none;}
   .memory-shelf-hint{position:absolute;left:50%;bottom:24px;translate:-50% 0;color:#536d77;font-size:13px;font-weight:600;white-space:nowrap;pointer-events:none;}
   .memory-shelf-more{position:absolute;z-index:8;left:calc(100% - 30px);top:50%;translate:0 -50%;display:grid;width:28px;min-width:28px;height:36px;padding:0;border:1px solid rgba(70,101,111,.3);border-radius:8px;background:rgba(252,251,246,.92);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);box-shadow:0 8px 22px rgba(55,72,77,.16),inset 0 1px rgba(255,255,255,.95);place-items:center;color:#315665;font:700 18px/1 Arial,sans-serif;cursor:pointer;transition:opacity .24s ease,transform .24s ease,background-color .24s ease,border-color .24s ease;}
@@ -5079,16 +5147,6 @@
   @keyframes memoryOverlayIn{from{opacity:0}to{opacity:1}}
   @keyframes memoryBookOpen{from{opacity:0;transform:translateY(32px) rotateX(12deg) scale(.9)}to{opacity:1;transform:none}}
   .memory-album-book.turning{pointer-events:none;}
-  .memory-page-turner{position:absolute!important;top:0!important;bottom:0!important;width:50%!important;height:100%!important;z-index:12;pointer-events:none;transform-style:preserve-3d;background:#f2eee5!important;backface-visibility:visible;-webkit-backface-visibility:visible;will-change:transform;box-shadow:0 18px 30px rgba(76,58,42,.2);isolation:isolate;}
-  .memory-page-turner::before{content:"";position:absolute;inset:0;z-index:20;pointer-events:none;background:radial-gradient(circle at 16% 12%,rgba(255,255,255,.7) 0 1px,transparent 1.5px),repeating-linear-gradient(0deg,rgba(122,99,74,.05) 0 1px,transparent 1px 5px),linear-gradient(90deg,#d3c7b8,#f5f0e6 12%,#f0eadf 90%,#d5c9ba);background-size:17px 19px,100% 5px,100% 100%;background-blend-mode:multiply,normal,normal;opacity:.96;transform:rotateY(180deg) translateZ(.8px);backface-visibility:hidden;-webkit-backface-visibility:hidden;}
-  .memory-page-turner.front-forward{left:50%!important;right:auto!important;transform-origin:left center;animation:memoryFoldForward .56s cubic-bezier(.55,.06,.85,.45) both;}
-  .memory-page-turner.back-forward{left:0!important;right:auto!important;transform-origin:right center;animation:memoryOpenForward .56s cubic-bezier(.14,.58,.28,1) both;}
-  .memory-page-turner.front-backward{left:0!important;right:auto!important;transform-origin:right center;animation:memoryFoldBackward .56s cubic-bezier(.55,.06,.85,.45) both;}
-  .memory-page-turner.back-backward{left:50%!important;right:auto!important;transform-origin:left center;animation:memoryOpenBackward .56s cubic-bezier(.14,.58,.28,1) both;}
-  @keyframes memoryFoldForward{from{transform:rotateY(0deg)}to{transform:rotateY(-89.5deg)}}
-  @keyframes memoryOpenForward{from{transform:rotateY(89.5deg)}to{transform:rotateY(0deg)}}
-  @keyframes memoryFoldBackward{from{transform:rotateY(0deg)}to{transform:rotateY(89.5deg)}}
-  @keyframes memoryOpenBackward{from{transform:rotateY(-89.5deg)}to{transform:rotateY(0deg)}}
   body.light-theme .memory-shelf-overlay{background:rgba(218,224,224,.82);}
   body.light-theme .memory-shelf-dialog{background:radial-gradient(circle at 70% 12%,rgba(255,255,255,.92),transparent 34%),linear-gradient(145deg,#f5f4ee,#e2eaec);border-color:rgba(77,103,111,.2);box-shadow:0 28px 78px rgba(55,72,77,.24),inset 0 1px #fff;color:#263b45;}
   body.light-theme .memory-shelf-head{background:rgba(248,247,241,.74);border-color:rgba(69,96,105,.14);}.light-theme .memory-shelf-head h2,.light-theme .memory-info-name,.light-theme .memory-empty strong,.light-theme .memory-view-title h3{color:#183846;}.light-theme .memory-shelf-head p,.light-theme .memory-info-note{color:#526b75;}.light-theme .memory-shelf-kicker,.light-theme .memory-info-count,.light-theme .memory-view-title span{color:#985627;}
@@ -5103,21 +5161,21 @@
   @media(max-width:760px){.memory-album-frame{display:grid;grid-template-rows:minmax(0,1fr) auto;grid-template-columns:auto minmax(0,1fr) auto;gap:10px}.memory-album-stage{grid-row:1;grid-column:1/-1;overflow:auto}.memory-album-side{position:static;translate:none;width:42px;height:42px;font-size:20px}.memory-album-side.prev{grid-row:2;grid-column:1;justify-self:start}.memory-album-counter{position:static;translate:none;grid-row:2;grid-column:2;min-width:0}.memory-album-side.next{grid-row:2;grid-column:3;justify-self:end}}
   @media(max-width:760px){.memory-album-intro-label,.memory-album-intro h4,.memory-album-intro p,.memory-album-intro-meta{left:24px;right:24px}.memory-album-intro-label{top:82px}.memory-album-intro h4{top:108px;font-size:30px}.memory-album-intro p{top:166px;bottom:72px;font-size:13px;line-height:1.85}.memory-album-intro-meta{bottom:40px}}
   @media(max-width:760px){.memory-info-heading{margin:7px 0 10px}.memory-info-heading .memory-info-name{font-size:40px}.memory-info-heading .memory-info-name.long{font-size:32px}.memory-info-heading .memory-info-name.extra-long{font-size:22px}.memory-province-edit{min-height:36px;margin-top:2px;padding:6px 10px;font-size:13px}.memory-province-editor{padding:8px}.memory-province-editor-panel{max-height:calc(100dvh - 32px);border-radius:12px}.memory-province-editor-head{padding:18px 62px 16px 18px}.memory-province-editor-head h2{font-size:21px}.memory-province-editor-close{right:14px;top:16px}.memory-province-editor-body{display:block;padding:18px}.memory-province-cover-preview{width:min(260px,100%);margin:auto}.memory-province-editor-form{margin-top:25px}.memory-province-summary{gap:8px}.memory-province-editor-actions{position:sticky;bottom:-18px;padding:12px 0 18px;background:#f8f6ef}}
-  @media(prefers-reduced-motion:reduce){.memory-shelf-overlay.show,.memory-chapter-book,.memory-page-turner,.memory-shelf-viewport.switching .memory-book.active .memory-book-object,.memory-book.opening .memory-book-cover,.memory-book.opening .memory-book-cover-inside{animation:none}.memory-book,.memory-book-object,.memory-book-cover,.memory-book-cover-inside,.memory-province-info,.memory-album-photo,.memory-shelf-more{transition:none}.memory-album-book{transform:none}}
+  @media(prefers-reduced-motion:reduce){.memory-shelf-overlay.show,.memory-chapter-book,.memory-shelf-viewport.switching .memory-book.active .memory-book-object,.memory-book.opening .memory-book-cover,.memory-book.opening .memory-book-cover-inside{animation:none}.memory-book,.memory-book-object,.memory-book-cover,.memory-book-cover-inside,.memory-province-info,.memory-album-photo,.memory-shelf-more{transition:none}.memory-album-book{transform:none}}
 
   /* 城市相册：收紧为摄影书式阅读布局，保留原有翻页与照片交互 */
-  .memory-album{--album-paper:#f3eee4;--album-ink:#183743;--album-muted:#687b80;--album-accent:#a35b38;background:radial-gradient(circle at 50% 12%,rgba(255,255,255,.86),transparent 48%),#e8edef;padding:24px 34px 72px;}
-  .memory-album .memory-view-tools{min-height:48px;margin-bottom:18px;}
+  .memory-album{--album-paper:#f4efe4;--album-ink:#183743;--album-muted:#687b80;--album-accent:#a35b38;background:radial-gradient(circle at 50% 12%,rgba(255,255,255,.86),transparent 48%),#e8edef;padding:12px 60px 48px;}
+  .memory-album .memory-view-tools{min-height:48px;margin-bottom:6px;}
   .memory-album .memory-view-title span{color:var(--album-accent);font-size:10px;letter-spacing:.18em;}
   .memory-album .memory-view-title h3{margin-top:3px;color:var(--album-ink);font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;font-weight:600;letter-spacing:.05em;}
   .memory-album .memory-back,.memory-album .memory-city-detail{border-color:rgba(24,55,67,.2);background:rgba(255,255,255,.46);color:var(--album-ink);box-shadow:none;}
   .memory-album .memory-back:hover,.memory-album .memory-city-detail:hover{border-color:var(--album-accent);background:#fffaf2;color:var(--album-accent);}
-  .memory-album-frame{max-width:1220px;width:100%;margin:0 auto;}
+  .memory-album-frame{max-width:1360px;width:100%;margin:0 auto;}
   .memory-album-stage{perspective:none;}
   .memory-album-book{width:min(1120px,100%);height:min(650px,calc(100vh - 240px));min-height:480px;transform:none;filter:drop-shadow(0 24px 36px rgba(44,61,64,.2));}
-  .memory-album-page{padding:34px 38px;background:var(--album-paper);box-shadow:inset 0 0 0 1px rgba(111,83,56,.12),inset 0 -16px 24px rgba(113,83,51,.06);}
-  .memory-album-page.left{border-radius:14px 2px 2px 14px;background:linear-gradient(90deg,#e2d9ca,#f8f3e9 8%,var(--album-paper) 94%,#d8cdbd);box-shadow:inset -18px 0 25px rgba(76,58,42,.12);}
-  .memory-album-page.right{border-radius:2px 14px 14px 2px;background:linear-gradient(90deg,#d8cdbd,var(--album-paper) 8%,#f1eadf);box-shadow:inset 18px 0 25px rgba(76,58,42,.1);}
+  .memory-album-page{padding:34px 38px;background:var(--album-paper);box-shadow:inset 0 -12px 22px rgba(113,83,51,.035);}
+  .memory-album-page.left{border-radius:14px 2px 2px 14px;background:linear-gradient(90deg,var(--album-paper) 94%,#e7dfd1);box-shadow:inset -12px 0 22px rgba(76,58,42,.06);}
+  .memory-album-page.right{border-radius:2px 14px 14px 2px;background:linear-gradient(90deg,#e7dfd1,var(--album-paper) 6%);box-shadow:inset 12px 0 22px rgba(76,58,42,.06);}
   .memory-album-page::after{opacity:.045;}
   .memory-album-page-head{color:var(--album-muted);font-size:9px;letter-spacing:.16em;}
   .memory-album-page-head strong{color:var(--album-ink);font-size:12px;}
@@ -5137,7 +5195,7 @@
   .memory-album-page-foot{color:var(--album-muted);}
   .memory-album-side{border-color:rgba(24,55,67,.2);background:rgba(255,252,246,.88);color:var(--album-ink);box-shadow:0 8px 18px rgba(55,72,77,.12);}
   .memory-album-side:hover:not(:disabled){border-color:var(--album-accent);background:#fffaf2;color:var(--album-accent);}
-  .memory-album-counter{bottom:-54px;color:var(--album-ink);font-variant-numeric:tabular-nums;letter-spacing:.18em;}
+  .memory-album-counter{bottom:-32px;color:var(--album-ink);font-variant-numeric:tabular-nums;letter-spacing:.18em;}
   @media(max-width:760px){.memory-album{padding:18px 12px 28px}.memory-album .memory-view-tools{margin-bottom:12px}.memory-album-book{min-height:0;height:auto;filter:none}.memory-album-page{min-height:430px;padding:28px 22px;border-radius:10px!important}.memory-album-grid{gap:12px}.memory-album-counter{letter-spacing:.12em}}
 
   /* 章节页与书架：减少信息竞争，保留原有选书与城市入口 */
@@ -5147,7 +5205,10 @@
   .memory-chapters .memory-view-title{justify-self:center;text-align:center;}
   .memory-chapters .memory-view-title h3{font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;font-weight:600;letter-spacing:.04em;}
   .memory-chapter-book{width:min(1120px,100%);margin:0 auto;gap:0;filter:drop-shadow(0 22px 34px rgba(44,61,64,.18));}
-  .memory-chapter-page{padding:32px 40px;}
+  .memory-chapter-page{padding:32px 40px;background:#f4efe4;box-shadow:inset 0 -12px 22px rgba(113,83,51,.035);}
+  .memory-chapter-page.left{background:linear-gradient(90deg,#f4efe4 94%,#e7dfd1);}
+  .memory-chapter-page.right{background:linear-gradient(90deg,#e7dfd1,#f4efe4 6%);}
+  .memory-chapter-page.left::after,.memory-chapter-page.right::before{opacity:.35;}
   .memory-chapter-cover{height:38%;margin:-32px -40px 26px;background-position:center;}
   .memory-chapter-page h4{margin:10px 0 8px;font-family:'Noto Serif SC','Source Han Serif SC','Songti SC',serif;font-weight:500;letter-spacing:.04em;}
   .memory-chapter-page p{max-width:28em;line-height:1.7;}
@@ -5180,16 +5241,10 @@
   /* 翻页：保留现有双页结构，增加摄影书式纸张弯折与书脊光影 */
   .memory-album-stage{perspective:1600px;perspective-origin:50% 48%;}
   .memory-album-book{transform-style:preserve-3d;}
-  .memory-page-turner{background:linear-gradient(90deg,#d8cdbd 0%,#f3eee4 8%,#f8f3e9 92%,#e2d9ca 100%)!important;box-shadow:0 12px 24px rgba(76,58,42,.16),inset 0 0 0 1px rgba(111,83,56,.12);}
-  .memory-page-turner::after{content:"";position:absolute;inset:0;z-index:19;pointer-events:none;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.38) 38%,rgba(104,78,52,.2) 52%,transparent 70%);opacity:.62;mix-blend-mode:multiply;}
-  .memory-page-turner.front-forward{animation:memoryPhotobookFoldForward .54s cubic-bezier(.36,0,.72,.72) both;}
-  .memory-page-turner.back-forward{animation:memoryPhotobookOpenForward .54s cubic-bezier(.28,.28,.64,1) both;}
-  .memory-page-turner.front-backward{animation:memoryPhotobookFoldBackward .54s cubic-bezier(.36,0,.72,.72) both;}
-  .memory-page-turner.back-backward{animation:memoryPhotobookOpenBackward .54s cubic-bezier(.28,.28,.64,1) both;}
-  @keyframes memoryPhotobookFoldForward{0%{transform:rotateY(0deg) translateZ(0)}48%{transform:rotateY(-64deg) translateZ(9px)}100%{transform:rotateY(-89.5deg) translateZ(1px)}}
-  @keyframes memoryPhotobookOpenForward{0%{transform:rotateY(89.5deg) translateZ(1px)}52%{transform:rotateY(55deg) translateZ(8px)}100%{transform:rotateY(0deg) translateZ(0)}}
-  @keyframes memoryPhotobookFoldBackward{0%{transform:rotateY(0deg) translateZ(0)}48%{transform:rotateY(64deg) translateZ(9px)}100%{transform:rotateY(89.5deg) translateZ(1px)}}
-  @keyframes memoryPhotobookOpenBackward{0%{transform:rotateY(-89.5deg) translateZ(1px)}52%{transform:rotateY(-55deg) translateZ(8px)}100%{transform:rotateY(0deg) translateZ(0)}}
+
+  .memory-album-stage{position:relative;perspective:none;}
+  .memory-album-3d-canvas{position:absolute;inset:0;z-index:1;width:100%;height:100%;display:block;touch-action:none;cursor:grab;outline:none;}
+  .memory-album-3d-canvas:active{cursor:grabbing;}
 
   /* 添加城市：右栏入口 + 搜索选择弹窗 */
   .city-add-trigger{min-width:92px;height:36px;padding:0 14px;border:1px solid rgba(56,189,248,.48);border-radius:10px;background:rgba(8,28,42,.82);color:#60d5ff;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 0 16px rgba(14,165,233,.12);transition:border-color .18s ease,background .18s ease,transform .18s ease;transform:translateY(-2px);}
@@ -5478,35 +5533,45 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
         <div class="stat"><span id="photoStat">0</span><label>张照片</label></div>
         <div class="stat"><span id="videoStat">0</span><label>个视频</label></div>
         <div class="stat"><span id="provinceStat">0</span><label>覆盖省份</label></div>
-        <div class="stat"><span id="distanceStat">0<span class="stat-unit">km</span></span><label>总计行程</label></div>
       </div>
-      <button class="theme-toggle-btn footprint-btn" id="cityMemoryBtn" type="button" aria-label="城市记忆" title="查看全部已点亮城市">
-        <span class="fp-btn-ico" aria-hidden="true">▦</span>
-        <span class="fp-btn-label">城市记忆</span>
-      </button>
-      <button class="theme-toggle-btn footprint-btn" id="memoryShelfBtn" type="button" aria-label="记忆书架" aria-haspopup="dialog" aria-controls="memoryShelfOverlay" title="按省份翻阅旅行记忆书籍">
-        <span class="fp-btn-ico" aria-hidden="true">▤</span>
-        <span class="fp-btn-label">记忆书架</span>
-      </button>
-      <button class="theme-toggle-btn footprint-btn" id="photoStreamBtn" type="button" aria-label="照片流" aria-haspopup="dialog" aria-controls="photoStreamOverlay" title="在光瀑中浏览全部旅行照片">
-        <span class="fp-btn-ico" aria-hidden="true">≋</span>
-        <span class="fp-btn-label">照片流</span>
-      </button>
-      <button class="theme-toggle-btn footprint-btn" id="lifeJourneyBtn" type="button" aria-label="时间足迹" aria-haspopup="dialog" title="按年份查看走过的城市">
-        <span class="fp-btn-ico" aria-hidden="true">◷</span>
-        <span class="fp-btn-label">时间足迹</span>
-      </button>
-      <button class="theme-toggle-btn footprint-btn" id="journeyStatsBtn" type="button" aria-label="旅行统计" aria-haspopup="dialog" title="查看旅行数据统计">
-        <span class="fp-btn-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>
-        </span>
-        <span class="fp-btn-label">旅行统计</span>
-      </button>
-      <button class="theme-toggle-btn footprint-btn" id="footprintBtn" type="button" aria-label="查看旅行轨迹" title="旅行轨迹：从家出发，按时间顺序回放航线">
-        <span class="fp-btn-ico" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21.5 15.5l-8.2-3.2V6.8c0-.9-.7-1.6-1.6-1.6s-1.6.7-1.6 1.6v5.5L2.6 15.5v2l7.5-2.3v4.2l-2.4 1.6v1.6l4-1.2 4 1.2v-1.6l-2.4-1.6v-4.2l8.2 2.3v-2z"/></svg>
-        </span>
-        <span class="fp-btn-label">旅行轨迹</span>
+      <div class="header-menu-container">
+        <button class="theme-toggle-btn" id="headerMenuToggle" type="button" aria-expanded="false" aria-controls="headerMenuPanel">
+          <span aria-hidden="true">☰</span><span>功能菜单</span>
+        </button>
+        <div class="header-menu-panel" id="headerMenuPanel" hidden aria-label="更多功能">
+          <button class="theme-toggle-btn footprint-btn" id="cityMemoryBtn" type="button" aria-label="城市记忆" title="查看全部已点亮城市">
+            <span class="fp-btn-ico" aria-hidden="true">▦</span>
+            <span class="fp-btn-label">城市记忆</span>
+          </button>
+          <button class="theme-toggle-btn footprint-btn" id="memoryShelfBtn" type="button" aria-label="记忆书架" aria-haspopup="dialog" aria-controls="memoryShelfOverlay" title="按省份翻阅旅行记忆书籍">
+            <span class="fp-btn-ico" aria-hidden="true">▤</span>
+            <span class="fp-btn-label">记忆书架</span>
+          </button>
+          <button class="theme-toggle-btn footprint-btn" id="photoStreamBtn" type="button" aria-label="照片流" aria-haspopup="dialog" aria-controls="photoStreamOverlay" title="在光瀑中浏览全部旅行照片">
+            <span class="fp-btn-ico" aria-hidden="true">≋</span>
+            <span class="fp-btn-label">照片流</span>
+          </button>
+          <button class="theme-toggle-btn footprint-btn" id="lifeJourneyBtn" type="button" aria-label="时间足迹" aria-haspopup="dialog" title="按年份查看走过的城市">
+            <span class="fp-btn-ico" aria-hidden="true">◷</span>
+            <span class="fp-btn-label">时间足迹</span>
+          </button>
+          <button class="theme-toggle-btn footprint-btn" id="journeyStatsBtn" type="button" aria-label="旅行统计" aria-haspopup="dialog" title="查看旅行数据统计">
+            <span class="fp-btn-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M5 9.2h3V19H5V9.2zM10.6 5h2.8v14h-2.8V5zm5.6 8H19v6h-2.8v-6z"/></svg>
+            </span>
+            <span class="fp-btn-label">旅行统计</span>
+          </button>
+          <button class="theme-toggle-btn footprint-btn" id="footprintBtn" type="button" aria-label="查看旅行轨迹" title="旅行轨迹：从家出发，按时间顺序回放航线">
+            <span class="fp-btn-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M21.5 15.5l-8.2-3.2V6.8c0-.9-.7-1.6-1.6-1.6s-1.6.7-1.6 1.6v5.5L2.6 15.5v2l7.5-2.3v4.2l-2.4 1.6v1.6l4-1.2 4 1.2v-1.6l-2.4-1.6v-4.2l8.2 2.3v-2z"/></svg>
+            </span>
+            <span class="fp-btn-label">旅行轨迹</span>
+          </button>
+        </div>
+      </div>
+      <button class="theme-toggle-btn footprint-btn" id="panelsToggle" type="button" aria-label="收起边栏" aria-controls="leftPanel dashPanel legendContent mottoPanel" aria-expanded="true" title="同时收起左右信息区、图例和人生寄语">
+        <span class="fp-btn-ico" aria-hidden="true">▣</span>
+        <span class="fp-btn-label">收起边栏</span>
       </button>
       <button class="theme-toggle-btn footprint-btn" id="hometownBtn" type="button" aria-label="设置我的家乡" title="我的家乡：设置你出生长大的城市">
         <span class="fp-btn-ico" aria-hidden="true">
@@ -5514,7 +5579,7 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
         </span>
         <span class="fp-btn-label">我的家乡</span>
       </button>
-      <button class="theme-toggle-btn footprint-btn" id="feedbackBtn" type="button" aria-haspopup="dialog" title="建议反馈：哪里不好用、希望增加什么功能">
+      <button class="theme-toggle-btn footprint-btn" id="feedbackBtn" type="button" aria-label="建议反馈" aria-haspopup="dialog" title="建议反馈：哪里不好用、希望增加什么功能">
         <span class="fp-btn-ico" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="15" height="15" fill="currentColor"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>
         </span>
@@ -5570,6 +5635,10 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
     </div>
     <!-- 旅行足迹控制面板：暂停/重播/速度 + 状态 + 设置家 + 关闭 -->
     <div class="footprint-panel" id="footprintPanel" hidden role="status">
+      <div class="fp-view-controls" aria-label="轨迹展示方式">
+        <button id="fpYearModeBtn" type="button" aria-pressed="true">按年份</button>
+        <button id="fpCityModeBtn" type="button" aria-pressed="false">按城市</button>
+      </div>
       <button class="fp-ctl" id="fpPlayBtn" type="button" title="暂停 / 继续">⏸</button>
       <button class="fp-ctl" id="fpRestartBtn" type="button" title="重播">↻</button>
       <button class="fp-ctl fp-speed" id="fpSpeedBtn" type="button" title="播放速度">1x</button>
@@ -5584,6 +5653,7 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
       </div>
       <button class="fp-ctl" id="fpHomeBtn" type="button" title="设置家的城市">🏠</button>
       <button class="fp-ctl" id="fpCloseBtn" type="button" title="关闭足迹回放">✕</button>
+      <div class="fp-year-strip" id="fpYearStrip" hidden aria-label="选择旅行年份"></div>
     </div>
     <div class="legend" id="mapLegend">
       <div class="legend-head">
@@ -5978,10 +6048,15 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
           <p id="journeyArchiveIntro">沿着年份，重新看一遍走过的城市。</p>
         </div>
       </div>
+      <button id="lifeImageAtlasBtn" class="life-image-atlas-btn" type="button" hidden><canvas aria-hidden="true"></canvas><span class="life-atlas-label"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="20" cy="20" rx="17" ry="15"/><ellipse cx="20" cy="20" rx="12" ry="10"/><ellipse cx="20" cy="20" rx="6" ry="5"/></svg>年轮照片</span></button>
       <div id="journeyArchiveBody" class="journey-archive-body"></div>
     </section>
   </div>
 
+  <div id="imageAtlasOverlay" role="dialog" aria-modal="true" aria-label="按年份看照片" hidden style="position:fixed;inset:0;z-index:110;background:#fafcfb;color:#303a36;">
+    <button id="imageAtlasClose" type="button" style="position:absolute;right:20px;top:24px;z-index:3;padding:10px 14px;border:1px solid #aeb8b2;border-radius:24px;background:#fafcfbf0;color:inherit;cursor:pointer;">返回时间轴</button>
+    <div id="imageAtlasHost" style="height:100%;"></div>
+  </div>
   <div id="photoStreamOverlay" role="dialog" aria-modal="true" aria-labelledby="photoStreamTitle" hidden style="position:fixed;inset:0;z-index:100;background:#03040a;color:#e4e7f6;">
     <header style="position:absolute;inset:0 0 auto;z-index:2;display:flex;align-items:center;gap:12px;padding:16px 20px;background:linear-gradient(#03040a,rgba(3,4,10,.75));">
       <h2 id="photoStreamTitle" style="font-size:18px;margin:0;flex:1;color:inherit;">旅途照片流</h2>
@@ -6398,6 +6473,11 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
   </div>
 
 <!-- 【离线部署】中国省级边界 GeoJSON 本地缓存，避免 DataV CDN 不可达时地图加载失败 -->
+<script src="assets/photo-stream/embedded.js"></script>
+<script src="assets/image-atlas/data.js"></script>
+<script src="assets/image-atlas/embedded.js"></script>
+<script src="assets/tactile-button.js"></script>
+<script src="assets/vendor/album-3d.js?v=20261003-monotonic-clock"></script>
 <script src="china-geo.js"></script>
 <!-- 【离线部署】34 省地级市边界 GeoJSON 本地缓存，城市点全量加载（371城），不再依赖 DataV CDN -->
 <script src="china-provinces-geo.js"></script>
@@ -7403,7 +7483,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         provinceFocusLayer=$('provinceFocusLayer'), provinceFocusLines=$('provinceFocusLines'),
         provinceFocusCards=$('provinceFocusCards'), provinceFocusMore=$('provinceFocusMore');
   const cityStatEl=$('cityStat'), photoStatEl=$('photoStat'), videoStatEl=$('videoStat'),
-        provinceStatEl=$('provinceStat'), distanceStatEl=$('distanceStat');
+        provinceStatEl=$('provinceStat');
   // 数字自增动画：从当前值平滑过渡到目标值
   function animateCount(el,target){
     const start=parseInt(el.textContent)||0;
@@ -7984,6 +8064,21 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   refreshThemeToggleBtn();
   const themeToggleBtnEl=document.getElementById('themeToggleBtn');
   if(themeToggleBtnEl) themeToggleBtnEl.addEventListener('click',toggleTheme);
+
+  /* ===== 顶部功能菜单 ===== */
+  (function(){
+    const toggle=document.getElementById('headerMenuToggle'),panel=document.getElementById('headerMenuPanel');
+    function setOpen(open){
+      panel.hidden=!open;
+      toggle.setAttribute('aria-expanded',String(open));
+    }
+    toggle.addEventListener('click',()=>setOpen(panel.hidden));
+    panel.addEventListener('click',e=>{if(e.target.closest('button')) setOpen(false);});
+    document.addEventListener('click',e=>{if(!e.target.closest('.header-menu-container')) setOpen(false);});
+    document.addEventListener('keydown',e=>{
+      if(e.key==='Escape'&&!panel.hidden){setOpen(false);toggle.focus();}
+    });
+  })();
 
   // 霓虹旋转兜底：不支持 @property 动画插值的浏览器（如部分 WebView）用 JS 驱动 --neon-deg
   (function(){
@@ -8608,6 +8703,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   // 按是否有照片拆分系列并刷新：series[0] 未点亮、series[1] 已点亮散点、series[2] 已点亮城市名标注
   function updateScatterData(){
     if(!myChart||!cityPoints.length) return;
+    // 航线自带家乡和到站标记，移除普通散点数据才能同时停止 effectScatter 光圈。
+    if(document.body.classList.contains('footprint-cinematic')){
+      myChart.setOption({series:[{data:[]},{data:[]},{data:[]},{data:[]}]});
+      return;
+    }
     const focus=selectedProvinceName;
     const normal=[],visited=[],nameTags=[];
     const home=getFootprintHome();
@@ -9738,6 +9838,18 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     if(syncButton) syncButton.disabled=!dataDirHandle;
     if(restoreButton) restoreButton.disabled=!dataDirHandle;
   }
+  async function readFolderMedia(cityDir,item){
+    const handle=await fsFileByPath(cityDir,item.file);
+    if(!handle) return null;
+    const sourceFile=await handle.getFile();
+    if(item.kind==='video'||/^videos\//.test(String(item.file||''))){
+      const poster=item.poster?await fsFileByPath(cityDir,item.poster):null;
+      const blob=sourceFile.slice(0,sourceFile.size,sourceFile.type||item.mime||mimeOfVideoName(sourceFile.name));
+      return {kind:'video',mime:item.mime||blob.type||mimeOfVideoName(sourceFile.name),blob,
+        dataUrl:poster?await blobToDataUrl(await poster.getFile()):'',duration:item.duration||0,size:item.size||blob.size||0};
+    }
+    return {kind:'image',dataUrl:await blobToDataUrl(sourceFile)};
+  }
   async function mirrorCityToFolder(root,cityKey,meta,photos){
     meta=meta||{cityKey};photos=photos||[];
     const cityName=folderCityName(cityKey,meta,photos),year=folderYearOf(meta);
@@ -9769,6 +9881,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       for(const entry of await fsList(videoDir)) if(entry.kind==='file'&&!keepVideos.has(entry.name)) await fsRemove(videoDir,entry.name);
     }else if(await fsSubDir(cityDir,'videos')) await fsRemove(cityDir,'videos');
 
+    const albumById=new Map();
+    photoFiles.forEach(item=>{
+      const match=/(?:^|\/)(?:\d+)-(\d+)\./.exec(item.file||'');
+      if(match) albumById.set(match[1],item);
+    });
     const albumByData=new Map();
     photos.forEach((photo,index)=>{
       if(photo&&photo.kind!=='video'&&/^data:/.test(String(photo.dataUrl||''))){
@@ -9786,6 +9903,19 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       const attractionDir=await fsEnsureDir(attractionRoot,dirName);
       for(let photoIndex=0;photoIndex<list.length;photoIndex++){
         const photo=list[photoIndex]||{},dataUrl=String(photo.dataUrl||'');
+        const albumItem=photo.id?albumById.get(String(photo.id)):null;
+        if(albumItem){Object.assign(photo,albumItem);continue;}
+        if(photo.kind==='video'){
+          const original=meta.attractions[index].photos[photoIndex];
+          const sourceName=String(photoIndex+1).padStart(3,'0')+folderVideoExt(original);
+          const posterName=String(photoIndex+1).padStart(3,'0')+'.jpg';
+          if(original.blob instanceof Blob) await fsWriteFile(attractionDir,sourceName,original.blob);
+          if(/^data:image\//.test(dataUrl)) await fsWriteFile(attractionDir,posterName,dataUrlToBlob(dataUrl));
+          photo.file='景点/'+dirName+'/'+sourceName;
+          photo.poster='景点/'+dirName+'/'+posterName;
+          continue;
+        }
+        photo.kind='image';
         if(!/^data:/.test(dataUrl)) continue;
         if(albumByData.has(dataUrl)){photo.file=albumByData.get(dataUrl);continue;}
         const name=String(photoIndex+1).padStart(3,'0')+'.'+folderExtOf(dataUrl);
@@ -9805,7 +9935,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       description:meta.description||'',tags:meta.tags||[],cover:coverName,photos:photoFiles,updatedAt:Date.now(),
       attractions:attractions.map(attraction=>({
         id:attraction.id,name:attraction.name,notes:attraction.notes,visitDate:attraction.visitDate,
-        photos:(attraction.photos||[]).map(photo=>({file:photo.file||'',name:photo.name||'',id:photo.id||''}))
+        photos:(attraction.photos||[]).map(photo=>({file:photo.file||'',name:photo.name||'',id:photo.id||'',
+          kind:photo.kind||'image',poster:photo.poster||'',mime:photo.mime||'',duration:photo.duration||0,size:photo.size||0}))
       }))
     };
     await fsWriteFile(cityDir,'info.json',JSON.stringify(info,null,2));
@@ -9929,7 +10060,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
           saveLocalProfileOnly(patch);
           if(profile.hometownCityKey) localStorage.setItem('footprintHomeCity',profile.hometownCityKey);
         }
-        const stats={cities:0,photos:0};
+        const stats={cities:0,photos:0,missing:0};
         for(const yearEntry of await fsList(root)){
           if(yearEntry.kind!=='directory') continue;
           const yearDir=await fsSubDir(root,yearEntry.name);
@@ -9945,29 +10076,30 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
             if(info.cover) meta.coverImage=await fsReadDataUrl(cityDir,info.cover);
             for(const attraction of meta.attractions){
               for(const photo of attraction.photos||[]){
+                // 旧版景点只保存视频封面；仅用同一城市的媒体编号恢复原视频关联。
+                if(!photo.kind&&photo.id){
+                  const matches=(info.photos||[]).filter(item=>{
+                    const match=/(?:^|\/)(?:\d+)-(\d+)\./.exec(item.file||'');
+                    return match&&match[1]===String(photo.id);
+                  });
+                  if(matches.length===1) Object.assign(photo,matches[0]);
+                }
                 if(!photo.file) continue;
-                const handle=await fsFileByPath(cityDir,photo.file);
-                if(handle) photo.dataUrl=await blobToDataUrl(await handle.getFile());
+                const media=await readFolderMedia(cityDir,photo);
+                if(media) Object.assign(photo,media);
+                else stats.missing+=1;
               }
             }
             await putLocalMeta(meta);
             const files=(info.photos||[]).slice().sort((a,b)=>(a.order||0)-(b.order||0));
             for(let index=0;index<files.length;index++){
               const item=files[index],handle=await fsFileByPath(cityDir,item.file);
-              if(!handle) continue;
+              if(!handle){stats.missing+=1;continue;}
               const sourceFile=await handle.getFile(),record={
                 cityKey:info.cityKey,cityName:info.cityName||meta.cityName,adcode:info.adcode||'',name:item.name||sourceFile.name,
                 timestamp:item.addedAt||Date.now(),order:item.order||index+1
               };
-              if(item.kind==='video'||/^videos\//.test(String(item.file||''))){
-                const poster=item.poster?await fsFileByPath(cityDir,item.poster):null;
-                const videoBlob=sourceFile.slice(0,sourceFile.size,sourceFile.type||item.mime||mimeOfVideoName(sourceFile.name));
-                record.kind='video';record.mime=item.mime||videoBlob.type||mimeOfVideoName(sourceFile.name);record.blob=videoBlob;
-                record.dataUrl=poster?await blobToDataUrl(await poster.getFile()):'';
-                record.duration=item.duration||0;record.size=item.size||videoBlob.size||0;
-              }else{
-                record.kind='image';record.dataUrl=await blobToDataUrl(sourceFile);
-              }
+              Object.assign(record,await readFolderMedia(cityDir,item));
               const match=/(?:^|\/)(?:\d+)-(\d+)\./.exec(item.file||'');
               if(match) record.id=Number(match[1]);
               await addPhoto(record);
@@ -9978,8 +10110,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         }
         await refreshState();
         loadProfileToUI();updateAccountUI();
-        setFolderStatus('已从资料文件夹恢复','ok');
-        toast('已从资料文件夹恢复：'+stats.cities+' 个城市 / '+stats.photos+' 张照片');
+        setFolderStatus(stats.missing?'已恢复，但有媒体原文件缺失':'已从资料文件夹恢复',stats.missing?'error':'ok');
+        toast('已从资料文件夹恢复：'+stats.cities+' 个城市 / '+stats.photos+' 个照片或视频'+
+          (stats.missing?'；部分媒体原文件缺失，请检查资料文件夹':''),!!stats.missing);
       }finally{cloudSuppressDirty=false;}
     }catch(error){
       cloudSuppressDirty=false;
@@ -11293,6 +11426,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     const videos=(items||[]).filter(item=>item.kind==='video').length;
     return {photos:(items||[]).length-videos,videos,total:(items||[]).length};
   }
+  function attractionMediaBadgeHtml(items){
+    const counts=countMedia(items);
+    return '<span class="att-card-media-item" data-media-kind="image" aria-label="'+counts.photos+' 张照片"><svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg><b>'+counts.photos+'</b></span>'+
+      '<span class="att-card-media-item" data-media-kind="video" aria-label="'+counts.videos+' 个视频"><svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M15 6H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-2.2l4 2.7v-9l-4 2.7V8a2 2 0 0 0-2-2z"/></svg><b>'+counts.videos+'</b></span>';
+  }
   function formatMediaCounts(counts){
     return (counts.photos?counts.photos+'张照片':'')+(counts.photos&&counts.videos?' · ':'')+(counts.videos?counts.videos+'个视频':'');
   }
@@ -11305,11 +11443,12 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   function applyProvinceRegionStyles(){
     if(!myChart) return;
     const t=chartThemeColors();
+    const cinematic=document.body.classList.contains('footprint-cinematic');
     const cityBordersVisible=_cityBordersActive&&!_cityBordersHiddenDuringRoam;
     const regions=Object.keys(PROVINCE_MAP).map(code=>{
       const name=PROVINCE_MAP[code];
-      const selected=name===selectedProvinceName;
-      const provinceView=currentView==='province';
+      const selected=!cinematic&&name===selectedProvinceName;
+      const provinceView=!cinematic&&currentView==='province';
       const visited=provinceView&&visitedProvinces.has(name);
       return {
         name,
@@ -11322,10 +11461,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         },
         // 选中省份仅改变标签颜色，字体（fontFamily/fontSize/fontWeight/lineHeight/阴影）完全继承 geo 级配置，
         // 避免 region 级 label 覆盖导致字体回退、字重突变，与城市标签字体保持一致
-        label:selected?{show:true,color:t.selectedLabel}:undefined
+        label:selected?{show:true,color:t.selectedLabel}:{show:false,color:t.label}
       };
     });
-    myChart.setOption({geo:[{regions},{}]});
+    myChart.setOption({geo:[{regions,emphasis:{disabled:cinematic}},{}]});
   }
 
   function updateDashboard(){
@@ -11400,15 +11539,22 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   // 城市视图专用：geo[3] 已到达城市边界层的显隐与样式（默认视图/省份视图隐藏）
   function updateVisitedBorderLayer(){
     if(!myChart) return;
-    const show=currentView==='city'&&!!visitedCityBorders;
+    const cinematic=document.body.classList.contains('footprint-cinematic');
+    let adcodes=visitedCityBorders;
+    if(cinematic){
+      const cities=fpYearState?(fpYearState.year==='all'?fpYearState.cities:fpYearState.arrived.concat(fpYearState.stops||[]))
+        :(fpState?fpState.arrived.map(i=>cityPoints.find(c=>c.cityKey===fpState.route[i].cityKey)):[]);
+      adcodes=new Set(cities.filter(c=>c&&c.adcode).map(c=>String(c.adcode)));
+    }
+    const show=cinematic?(_visitedBorderMapReady&&adcodes.size>0):(currentView==='city'&&!!visitedCityBorders);
     const tc=chartThemeColors();
     const opt=myChart.getOption();
     const zoom=opt.geo[2].zoom||opt.geo[1].zoom||1.18;
     const center=opt.geo[2].center||opt.geo[1].center||[108,35.5];
-    const regions=show?[...visitedCityBorders].map(adcode=>({
+    const regions=show?[...adcodes].map(adcode=>({
       name:adcode,
       itemStyle:{
-        areaColor:'transparent',
+        areaColor:cinematic?tc.visitedArea:'transparent',
         borderColor:tc.visitedCityBorder,
         borderWidth:1.8,
         borderType:'solid',
@@ -11542,6 +11688,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         fpMemoryMetaEl=$('fpMemoryMeta'),fpMemoryNameEl=$('fpMemoryName'),fpMemoryArrivalEl=$('fpMemoryArrival'),
         fpMemoryNoteEl=$('fpMemoryNote');
   let fpState=null, fpRoamHooked=false, fpSyncQueued=false, fpPickerMode='start';
+  let fpMode='year',fpYearState=null,fpRunToken=0;
+  const fpYearModeBtnEl=$('fpYearModeBtn'),fpCityModeBtnEl=$('fpCityModeBtn'),fpYearStripEl=$('fpYearStrip');
   const FP_SPEEDS=[1,1.5,2];
   const FP_CARD_W=154, FP_CARD_H=70, FP_CARD_PAD=10;
   const FP_VIEW_ZOOM=1.2, FP_VIEW_CENTER=[108,35.5];
@@ -11574,7 +11722,6 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       }
       const formattedDistance=fpFmtKm(total);
       totalTripKmEl.textContent=formattedDistance;
-      distanceStatEl.firstChild.nodeValue=formattedDistance;
     }catch(e){}
   }
 
@@ -11643,6 +11790,34 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     dot.setAttribute('class','fp-stop-dot'); dot.setAttribute('r','3.5');
     dot.setAttribute('cx',s.px[ci][0]); dot.setAttribute('cy',s.px[ci][1]);
     fpLinesEl.append(dot); s.dots.push(dot);
+  }
+  // 两种轨迹共用名称层：按屏幕中的实际文字范围避让，缩放后重新决定显隐。
+  function fpRenderCityLabels(){
+    fpLinesEl.querySelector('.fp-city-labels')?.remove();
+    const s=fpYearState||fpState;if(!s||!myChart) return;
+    const home=fpYearState?s.home:s.route[0];
+    const arrived=fpYearState?(s.year==='all'?s.cities:s.arrived):s.arrived.map(i=>s.route[i]);
+    const latest=arrived.at(-1),cities=[latest,home,...arrived.slice().reverse()].filter(Boolean);
+    const NS='http://www.w3.org/2000/svg',group=document.createElementNS(NS,'g');
+    group.setAttribute('class','fp-city-labels');fpLinesEl.append(group);
+    const seen=new Set(),boxes=[],w=mapWrapEl.clientWidth,h=mapWrapEl.clientHeight;
+    for(const city of cities){
+      if(seen.has(city.cityKey)) continue;seen.add(city.cityKey);
+      const p=myChart.convertToPixel({geoIndex:2},city.value);
+      if(!p||!p.every(Number.isFinite)||p[0]<0||p[0]>w||p[1]<0||p[1]>h) continue;
+      const label=document.createElementNS(NS,'text');
+      label.setAttribute('class','fp-city-name fp-year-label');label.dataset.cityKey=city.cityKey;
+      label.textContent=city.name;
+      label.setAttribute('x',p[0]+9);label.setAttribute('y',p[1]-10);group.append(label);
+      const measured=label.getBBox();
+      const dx=Math.max(4,Math.min(w-measured.width-4,measured.x))-measured.x;
+      const dy=Math.max(4,Math.min(h-measured.height-4,measured.y))-measured.y;
+      label.setAttribute('x',p[0]+9+dx);label.setAttribute('y',p[1]-10+dy);
+      const box={x:measured.x+dx-4,y:measured.y+dy-4,w:measured.width+8,h:measured.height+8};
+      const overlaps=boxes.some(b=>box.x<b.x+b.w&&box.x+box.w>b.x&&box.y<b.y+b.h&&box.y+box.h>b.y);
+      if(overlaps) label.style.display='none';
+      else boxes.push(box);
+    }
   }
   function fpAddPulse(ci){
     const s=fpState, NS='http://www.w3.org/2000/svg';
@@ -11723,7 +11898,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       w:Math.max(...xs)-Math.min(...xs)+pad*2,h:Math.max(...ys)-Math.min(...ys)+pad*2};
   }
   function fpPickCardSpot(pt,ci){
-    const s=fpState;
+    const s=fpState||fpYearState;
     const w=mapWrapEl.clientWidth,h=mapWrapEl.clientHeight;
     const cw=FP_CARD_W,ch=FP_CARD_H;
     const rects=[];
@@ -11771,7 +11946,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     return best||base;
   }
   function fpUpdateCardLink(ci){
-    const s=fpState,link=s&&s.cardLinks&&s.cardLinks[ci],card=s&&s.cards&&s.cards[ci],pt=s&&s.px&&s.px[ci];
+    const s=fpState||fpYearState,link=s&&s.cardLinks&&s.cardLinks[ci],card=s&&s.cards&&s.cards[ci],pt=s&&s.px&&s.px[ci];
     if(!link||!card||!pt) return;
     const rect={x:parseFloat(card.style.left),y:parseFloat(card.style.top),w:card.offsetWidth||FP_CARD_W,h:card.offsetHeight||FP_CARD_H};
     if(!Number.isFinite(rect.x)||!Number.isFinite(rect.y)) return;
@@ -11781,7 +11956,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     link.dot.setAttribute('cx',pt[0]);link.dot.setAttribute('cy',pt[1]);
   }
   function fpPlaceCard(card,pt,ci){
-    const s=fpState;
+    const s=fpState||fpYearState;
     const w=mapWrapEl.clientWidth,h=mapWrapEl.clientHeight;
     const cw=FP_CARD_W,ch=FP_CARD_H;
     let x,y;
@@ -11800,7 +11975,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     fpUpdateCardLink(ci);
   }
   function fpShowCityCard(ci){
-    const s=fpState;
+    const s=fpState||fpYearState;
     if(!s||!s.px||!s.px[ci]||s.cards[ci]) return;
     const c=s.route[ci];
     const card=document.createElement('div');
@@ -11831,7 +12006,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   // 省份视图已为城市渲染了省份卡片时，隐藏对应足迹卡片（家/到站站）—— 两层各有一张，视觉上合为一张
   function fpSyncCardsVisibility(){
-    const s=fpState;
+    const s=fpState||fpYearState;
     if(!s) return;
     const keys=(!document.body.classList.contains('footprint-cinematic')&&!provinceFocusLayer.hidden&&provinceFocusCities.length)
       ?new Set(provinceFocusCities.map(it=>it.city&&it.city.cityKey).filter(Boolean))
@@ -11851,6 +12026,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   // ---- 几何同步：roam/resize 后按当前进度重建所有 path 与标记位置 ----
   function fpSyncGeometry(){
     fpSyncQueued=false;
+    if(fpYearState){fpRenderYearGeometry();return;}
     const s=fpState;
     if(!s||!myChart) return;
     const w=mapWrapEl.clientWidth,h=mapWrapEl.clientHeight;
@@ -11886,9 +12062,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     }else{
       fpPlaneAt(s.px[Math.min(s.seg,s.route.length-1)][0], s.px[Math.min(s.seg,s.route.length-1)][1], NaN);
     }
+    fpRenderCityLabels();
   }
   function fpRequestSync(){
-    if(!fpState||fpSyncQueued) return;
+    if((!fpState&&!fpYearState)||fpSyncQueued) return;
     fpSyncQueued=true;
     requestAnimationFrame(fpSyncGeometry);
   }
@@ -11942,6 +12119,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     fpAddPulse(ci);
     fpShowMemoryCard(ci);                               // 沉浸播放：展示当前城市封面信息卡
     fpShowCityCard(ci);                                 // 到站后展示与城市视图一致的封面卡片及避让连线
+    updateVisitedBorderLayer();                        // 只高亮本次轨迹已到站的城市轮廓
     s.seg=ci; s.t=0;
     fpPlaneAt(s.px[ci][0],s.px[ci][1],NaN);
     if(ci>=s.route.length-1){
@@ -11956,6 +12134,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     }
     fpUpdateStatus();
     fpUpdateCinematicProgress();
+    fpRenderCityLabels();
   }
   function fpTick(ts){
     const s=fpState;
@@ -12024,39 +12203,186 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     currentZoom=zoom;
     myChart.dispatchAction({type:'geoRoam',componentType:'geo',name:'china_labels',zoom:1.0001,originX:mapWrapEl.clientWidth/2,originY:mapWrapEl.clientHeight/2});
   }
-  // 沉浸回放期间调淡地图上的城市标记与城市名（结束恢复 opacity:1），让航线与飞机更突出
-  function fpDimCityMarkers(dim){
+  // 进入轨迹时清空普通城市标记及旧高亮，退出后按当前数据恢复，不改动旅行记录。
+  function fpRefreshMap(){
     if(!myChart) return;
-    try{
-      const opt=myChart.getOption();
-      if(!opt||!opt.series) return;
-      const series=opt.series.map(s=>{
-        if(!s||!s.name) return s;
-        if(s.name==='已记录'||s.name==='家乡'){
-          s.itemStyle=Object.assign({},s.itemStyle,{opacity:dim?0.38:1});
-        }else if(s.name==='已记录城市名'){
-          s.label=Object.assign({},s.label,{opacity:dim?0.38:1});
-        }
-        return s;
-      });
-      myChart.setOption({series});
-    }catch(e){ /* ECharts 内部结构变化时静默回退，不影响播放 */ }
+    myChart.dispatchAction({type:'hideTip'});
+    myChart.dispatchAction({type:'downplay'});
+    updateScatterData();
+    applyProvinceRegionStyles();
+    updateVisitedBorderLayer();
   }
   function fpStopAll(){
+    fpRunToken+=1;
     if(fpState&&fpState.raf) cancelAnimationFrame(fpState.raf);
-    const restoreView=fpState&&fpState.restoreView;
-    fpState=null;
+    if(fpYearState&&fpYearState.raf) cancelAnimationFrame(fpYearState.raf);
+    const restoreView=(fpState||fpYearState||{}).restoreView;
+    fpState=null;fpYearState=null;
     fpResetVisuals();
     fpLayerEl.hidden=true;
     fpPanelEl.hidden=true;
     fpBtnEl.classList.remove('active');
     document.body.classList.remove('footprint-cinematic');
-    fpDimCityMarkers(false);
+    document.body.classList.remove('footprint-year-view');
+    fpRefreshMap();
     fpSetMapView(restoreView);
   }
+  async function collectFootprintYearCities(){
+    const cities=[];
+    for(const cityKey of citiesWithPhotos){
+      const city=cityPoints.find(c=>c.cityKey===cityKey);
+      if(!city||!city.value) continue;
+      const meta=await getCityMeta(cityKey);
+      const dates=getVisitMonths(meta).concat(meta.visitMonth||'',(meta.attractions||[]).map(a=>a.visitDate||''))
+        .filter(date=>/^\d{4}-(0[1-9]|1[0-2])(?:-\d{2})?$/.test(date)).sort();
+      const years=[...new Set(dates.map(date=>date.slice(0,4)))];
+      cities.push({...city,years,dates,cover:meta.coverImage||'',
+        rating:Math.max(0,Math.min(5,Math.round(Number(meta.rating)||0))),
+        tags:(meta.tags||[]).map(t=>t&&t.text).filter(Boolean)});
+    }
+    return cities;
+  }
+  function fpUpdateModeControls(){
+    fpYearModeBtnEl.setAttribute('aria-pressed',String(fpMode==='year'));
+    fpCityModeBtnEl.setAttribute('aria-pressed',String(fpMode==='city'));
+    fpYearStripEl.hidden=fpMode!=='year';
+  }
+  function fpRenderYearGeometry(){
+    const s=fpYearState;
+    if(!s||!myChart) return;
+    const NS='http://www.w3.org/2000/svg',home=myChart.convertToPixel({geoIndex:2},s.home.value);
+    if(!home||!home.every(Number.isFinite)) return;
+    fpLinesEl.setAttribute('viewBox','0 0 '+mapWrapEl.clientWidth+' '+mapWrapEl.clientHeight);
+    fpLinesEl.innerHTML='';
+    const stops=s.stops;
+    s.px=s.route.map(c=>myChart.convertToPixel({geoIndex:2},c.value));
+    s.flows=[];
+    const marker=(p,isHome)=>{
+      const dot=document.createElementNS(NS,'circle');
+      dot.setAttribute('class',isHome?'fp-home-dot':'fp-stop-dot');dot.setAttribute('r',isHome?'5':'3.5');
+      dot.setAttribute('cx',p[0]);dot.setAttribute('cy',p[1]);
+      fpLinesEl.append(dot);
+    };
+    for(let i=0;!s.done&&i<stops.length;i++){
+      const city=stops[i],p=myChart.convertToPixel({geoIndex:2},city.value);
+      if(!p||!p.every(Number.isFinite)) continue;
+      const dx=p[0]-home[0],dy=p[1]-home[1],bend=(i%2?1:-1)*.14;
+      const line=document.createElementNS(NS,'path');line.setAttribute('class','fp-year-route');
+      const ctrl=[(home[0]+p[0])/2-dy*bend,(home[1]+p[1])/2+dx*bend];
+      line.setAttribute('d','M'+home[0].toFixed(1)+' '+home[1].toFixed(1)+' Q'+
+        ctrl[0].toFixed(1)+' '+ctrl[1].toFixed(1)+' '+p[0].toFixed(1)+' '+p[1].toFixed(1));
+      fpLinesEl.append(line);
+      if(s.year!=='all'){
+        const flow=document.createElementNS(NS,'path');flow.setAttribute('class','fp-year-flow');
+        flow.setAttribute('d',line.getAttribute('d'));flow.setAttribute('pathLength','100');
+        fpLinesEl.append(flow);s.flows.push(flow);
+      }
+    }
+    for(const city of s.arrived){
+      const p=myChart.convertToPixel({geoIndex:2},city.value);
+      if(p&&p.every(Number.isFinite)) marker(p,false);
+    }
+    marker(home,true);
+    const arrivedKeys=new Set(s.arrived.map(c=>c.cityKey));
+    for(const k in s.cards){
+      if(!arrivedKeys.has(s.route[k].cityKey)){
+        s.cards[k].remove();delete s.cards[k];delete s.cardLinks[k];delete s.cardOff[k];
+      }
+    }
+    for(const city of s.arrived){
+      const ci=s.route.findIndex(c=>c.cityKey===city.cityKey),pt=s.px[ci];
+      if(!pt||!pt.every(Number.isFinite)) continue;
+      if(!s.cards[ci]) fpShowCityCard(ci);
+      else{
+        const link=s.cardLinks[ci];fpLinesEl.append(link.path,link.dot);
+        fpPlaceCard(s.cards[ci],pt,ci);
+      }
+    }
+    fpStatusMainEl.textContent=(s.year==='all'?'全部年份':s.year+' 年')+' · '+stops.length+' 座城市';
+    fpStatusSubEl.textContent=s.done?'年份播放完成':(s.year==='all'?'从 '+s.home.name+' 出发，查看全部足迹'
+      :(stops.length?'从 '+s.home.name+' 辐射至本年 '+stops.length+' 座城市':'这一年没有其他城市'));
+    fpPlaneEl.hidden=true;
+    fpUpdateYearLive();
+    fpRenderCityLabels();
+  }
+  function fpUpdateYearLive(){
+    const s=fpYearState;if(!s) return;
+    for(const flow of s.flows) flow.style.strokeDashoffset=String(-Math.min(1,s.elapsed/3000)*92);
+  }
+  function fpSelectYear(year){
+    const s=fpYearState;if(!s) return;
+    if(s.raf) cancelAnimationFrame(s.raf);
+    s.year=year;s.elapsed=0;s.lastTs=null;
+    s.done=false;s.playing=year!=='all';
+    s.stops=s.cities.filter(c=>year==='all'||c.years.includes(year)).sort((a,b)=>{
+      const date=c=>c.dates.find(d=>year==='all'||d.startsWith(year))||'';
+      return date(a).localeCompare(date(b))||a.name.localeCompare(b.name);
+    });
+    // 城市逐年累积；手动回到早年或重播时不带入未来年份。
+    s.arrived=year==='all'?s.stops:s.cities.filter(c=>c.years.some(y=>y<year));
+    s.reached=year==='all';
+    fpMemoryCardEl.hidden=true;
+    for(const button of fpYearStripEl.querySelectorAll('[data-year]'))
+      button.setAttribute('aria-pressed',String(button.dataset.year===year));
+    $('fpYearPlayBtn').textContent=year==='all'?'按年份播放':'暂停';
+    fpRenderYearGeometry();updateVisitedBorderLayer();
+    fpYearStripEl.querySelector('[aria-pressed="true"]')?.scrollIntoView({block:'nearest',inline:'center'});
+    if(s.playing) s.raf=requestAnimationFrame(fpYearTick);
+  }
+  function fpYearTick(ts){
+    const s=fpYearState;if(!s||!s.playing||s.done) return;
+    const dt=s.lastTs===null?0:Math.min(64,ts-s.lastTs);s.lastTs=ts;
+    s.elapsed=Math.min(4000,s.elapsed+dt);fpUpdateYearLive();
+    if(!s.reached&&s.elapsed>=3000){
+      s.reached=true;
+      s.arrived=[...new Map(s.arrived.concat(s.stops).map(c=>[c.cityKey,c])).values()];
+      fpRenderYearGeometry();updateVisitedBorderLayer();
+    }
+    if(s.elapsed>=4000){
+      const next=s.years[s.years.indexOf(s.year)+1];
+      if(next){fpSelectYear(next);return;}
+      s.done=true;s.playing=false;$('fpYearPlayBtn').textContent='重播';fpRenderYearGeometry();return;
+    }
+    s.raf=requestAnimationFrame(fpYearTick);
+  }
+  async function fpStartYear(home,token){
+    const cities=(await collectFootprintYearCities()).filter(c=>c.cityKey!==home.cityKey);
+    if(token!==fpRunToken) return;
+    const years=[...new Set(cities.flatMap(c=>c.years))].sort();
+    const geo=(myChart.getOption().geo||[])[2]||{};
+    fpYearState={home,cities,years,year:years[0]||'all',arrived:[],
+      route:cities,cards:{},cardLinks:{},cardOff:{},
+      restoreView:{zoom:Number(geo.zoom)||currentZoom,center:Array.isArray(geo.center)?geo.center.slice():FP_VIEW_CENTER}};
+    fpYearStripEl.innerHTML='';
+    for(const year of years.concat('all')){
+      const button=document.createElement('button');button.type='button';button.textContent=year==='all'?'全部':year;
+      button.dataset.year=year;button.setAttribute('aria-pressed',String(year===fpYearState.year));
+      button.addEventListener('click',()=>{
+        fpSelectYear(year);
+      });
+      fpYearStripEl.append(button);
+    }
+    const play=document.createElement('button');play.type='button';play.id='fpYearPlayBtn';
+    play.addEventListener('click',()=>{
+      const s=fpYearState;if(!s) return;
+      if(s.done||s.year==='all'){fpSelectYear(s.years[0]||'all');return;}
+      s.playing=!s.playing;s.lastTs=null;play.textContent=s.playing?'暂停':'继续';
+      if(s.playing) s.raf=requestAnimationFrame(fpYearTick);
+      else cancelAnimationFrame(s.raf);
+    });
+    fpYearStripEl.append(play);
+    document.body.classList.add('footprint-cinematic','footprint-year-view');
+    fpRefreshMap();fpLayerEl.hidden=false;fpPanelEl.hidden=false;fpBtnEl.classList.add('active');
+    fpUpdateModeControls();fpSetMapView({zoom:FP_VIEW_ZOOM,center:FP_VIEW_CENTER});
+    fpSelectYear(fpYearState.year);
+    fpYearStripEl.querySelector('[aria-pressed="true"]')?.scrollIntoView({block:'nearest',inline:'center'});
+    if(!fpRoamHooked&&myChart){fpRoamHooked=true;myChart.on('georoam',fpRequestSync);}
+  }
   async function fpStart(){
+    const token=++fpRunToken;
     const home=getFootprintHome();
     if(!home){ openFpHomePicker('start'); return; }
+    if(fpMode==='year'){await fpStartYear(home,token);return;}
     const cities=await collectTimelineCities();
     const travel=cities.filter(c=>c.cityKey!==home.cityKey);
     if(!travel.length){ toast('除家之外还没有点亮的城市，先去点亮几座吧',true); return; }
@@ -12078,6 +12404,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         cover:meta.coverImage||'',description:meta.description||'',province:provinceOf(c.adcode)
       });
     }
+    if(token!==fpRunToken) return;
     const segKm=[],cumKm=[0];let totalKm=0;
     for(let i=0;i<route.length-1;i++){
       const k=fpHavKm(route[i].value,route[i+1].value);
@@ -12092,8 +12419,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       arrived:[],dots:[],pulses:[],paths:[],cards:{},cardLinks:{},cardOff:{},restoreView,totalKm,segKm,cumKm
     };
     fpStatusDistEl.hidden=false;
+    fpUpdateModeControls();
     document.body.classList.add('footprint-cinematic');
-    fpDimCityMarkers(true);
+    fpRefreshMap();
     fpLayerEl.hidden=false; fpPanelEl.hidden=false;
     fpBtnEl.classList.add('active');
     fpPlayBtnEl.textContent='⏸'; fpSpeedBtnEl.textContent='1x';
@@ -12106,7 +12434,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     fpState.raf=requestAnimationFrame(fpTick);
   }
   async function toggleFootprint(){
-    if(fpState){ fpStopAll(); return; }
+    if(fpState||fpYearState){ fpStopAll(); return; }
     if(!myChart){ toast('地图尚未就绪，请稍后再试',true); return; }
     if(!citiesWithPhotos.size){ toast('还没有点亮任何城市，先去记录你的足迹吧',true); return; }
     await fpStart();
@@ -12154,7 +12482,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
           openCityModal(c);
         }else{
           toast('家的城市已设置为「'+c.name+'」');
-          if(fpState) fpStopAll();
+          if(fpState||fpYearState) fpStopAll();
           fpStart();
         }
       });
@@ -12165,6 +12493,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   // ---- 事件绑定 ----
   fpBtnEl.addEventListener('click',toggleFootprint);
+  for(const [button,mode] of [[fpYearModeBtnEl,'year'],[fpCityModeBtnEl,'city']]){
+    button.addEventListener('click',()=>{if(fpMode!==mode){fpStopAll();fpMode=mode;fpStart();}});
+  }
   fpCloseBtnEl.addEventListener('click',fpStopAll);
   fpRestartBtnEl.addEventListener('click',()=>{ if(fpState){ fpStopAll(); fpStart(); } });
   fpPlayBtnEl.addEventListener('click',()=>{
@@ -14034,10 +14365,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         text.appendChild(notesEl);
       }
       card.appendChild(text);
-      // 新增：卡片右上角照片数量小字（单景点照片数点缀）
+      // 卡片右上角分别显示照片与视频数量
       const pcount=document.createElement('div');
-      pcount.className='att-card-photo-count';
-      pcount.innerHTML='<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/></svg>'+(hasPhoto?att.photos.length:0);
+      pcount.className='att-card-media-count';
+      pcount.innerHTML=attractionMediaBadgeHtml(att.photos||[]);
+      pcount.title=formatMediaCounts(countMedia(att.photos||[]))||'暂无照片或视频';
       card.appendChild(pcount);
 
       const editBtn=document.createElement('button');
@@ -16234,7 +16566,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   let gravityEngine=null,gravityRender=null,gravityRunner=null,gravityBodies=[],gravityMouse=null;
   let gravityPhotos=[],gravityClickStart=null;
   // 【修复项2-3】事件回调引用（close 时 Events.off 精确移除，防止监听器堆积）
-  let gravityAfterRenderCb=null,gravityMouseDownCb=null,gravityMouseUpCb=null;
+  let gravityAfterRenderCb=null,gravityMouseDownCb=null,gravityMouseUpCb=null,gravityTopWallCb=null;
   // 【修复项2-3】GSAP 入场动画 timeline 引用（close 时 kill，避免多个动画实例堆积冲突）
   let gravityEntranceTl=null;
   // 【修复项1-2】当前引力相册城市标识（异步加载守卫：切换城市时丢弃过期请求，防串数据）
@@ -16318,11 +16650,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       frameEl.style.opacity='1';
     }
 
-    const {Engine,Render,Runner,World,Bodies,Body,Mouse,MouseConstraint,Events,Composite}=Matter;
+    const {Engine,Render,Runner,World,Bodies,Mouse,MouseConstraint,Events,Composite}=Matter;
 
     // 创建物理引擎
     gravityEngine=Engine.create();
-    gravityEngine.world.gravity.y=1.4;
+    gravityEngine.world.gravity.y=0.45;
     gravityEngine.world.gravity.x=0;
 
     // 【修复项2-1】pixelRatio 使用限制后的 dpr，降低 canvas 分辨率开销
@@ -16334,11 +16666,12 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
     // 边界墙（不可见）
     const wallThick=200;
+    const entranceHeight=photos.length*(230*0.3+8)+230;
+    const topWall=Bodies.rectangle((playLeft+playRight)/2, playTop-wallThick/2, playW+400, wallThick, {isStatic:true,label:'wall',render:{visible:false}});
     const walls=[
       Bodies.rectangle((playLeft+playRight)/2, playBottom+wallThick/2, playW+400, wallThick, {isStatic:true,label:'wall',render:{visible:false}}),
-      Bodies.rectangle(playLeft-wallThick/2, (playTop+playBottom)/2, wallThick, (playBottom-playTop)+400, {isStatic:true,label:'wall',render:{visible:false}}),
-      Bodies.rectangle(playRight+wallThick/2, (playTop+playBottom)/2, wallThick, (playBottom-playTop)+400, {isStatic:true,label:'wall',render:{visible:false}}),
-      Bodies.rectangle((playLeft+playRight)/2, playTop-wallThick/2, playW+400, wallThick, {isStatic:true,label:'wall',render:{visible:false}})
+      Bodies.rectangle(playLeft-wallThick/2, (playTop+playBottom-entranceHeight)/2, wallThick, (playBottom-playTop)+entranceHeight+400, {isStatic:true,label:'wall',render:{visible:false}}),
+      Bodies.rectangle(playRight+wallThick/2, (playTop+playBottom-entranceHeight)/2, wallThick, (playBottom-playTop)+entranceHeight+400, {isStatic:true,label:'wall',render:{visible:false}})
     ];
     World.add(gravityEngine.world,walls);
 
@@ -16353,7 +16686,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     // ===== 批量预加载所有照片（并行分批，避免阻塞主线程）=====
     // 修复：原方案前6张同步+剩余 requestIdleCallback 懒加载，导致照片分批"蹦出"
     //   且懒加载 index 固定为 loadedImages.length（位置重叠/错位）
-    // 新方案：分批 Promise.all 并行解码，批间 yield 主线程，全部完成后一次性创建刚体
+    // 分批 Promise.all 并行解码，批间 yield 主线程，全部完成后在画面上方创建刚体
     const loadImage=(photo)=>new Promise(resolve=>{
       const img=new Image();
       img.onload=()=>resolve({img,photo});
@@ -16384,11 +16717,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       let bw,bh;
       if(ratio>=1){ bw=bodySize; bh=bodySize/ratio; }
       else{ bh=bodySize; bw=bodySize*ratio; }
-      bw=Math.max(60,bw); bh=Math.max(60,bh);
+      bw=Math.max(60,bw)*1.08; bh=Math.max(60,bh)*1.08;
 
-      const n=n0;
-      const x=playLeft+((index+0.5)/n)*playW;
-      const y=playTop+bh/2+index*(bh*0.15+10);
+      const x=Math.max(playLeft+bw/2,Math.min(playRight-bw/2,playLeft+((index+0.5)/n0)*playW));
+      // 参考版入场：照片预先位于画面上方，按高度错开，自然自由落入
+      const y=playTop-bh/2-30-index*(bh*0.3+8);
       const body=Bodies.rectangle(x,y,bw,bh,{
         restitution:0.1,
         friction:0.1,
@@ -16418,10 +16751,18 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       gravityBodies.push(body);
       World.add(gravityEngine.world,body);
     }
-    // 一次性创建所有刚体（消除分批"蹦出"，所有照片同时出现）
+    // 一次性创建所有刚体：在可视区上方同时开始物理下落，不定时排出照片
     allLoadedImages.forEach((item,i)=>{
       addPhotoBody(item,i,playLeft,playRight,playTop,playW,bodySize);
     });
+    // 等所有照片完整进入相册后再封顶，不能把仍在上方的照片挡在外面
+    gravityTopWallCb=function(){
+      if(!gravityBodies.every(body=>body.bounds.min.y>playTop+2)) return;
+      World.add(gravityEngine.world,topWall);
+      Events.off(gravityEngine,'beforeUpdate',gravityTopWallCb);
+      gravityTopWallCb=null;
+    };
+    Events.on(gravityEngine,'beforeUpdate',gravityTopWallCb);
 
     // 【修复项2-5】自定义渲染：每帧用 Canvas 2D API 绘制照片
     // 优化：跳过 canvas 视口外刚体；照片 >15 张时关闭 shadow（shadowBlur+clip 组合 GPU 开销大）
@@ -16498,20 +16839,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     Runner.run(gravityRunner,gravityEngine);
     Render.run(gravityRender);
 
-    // 【修复项2-3】GSAP 入场动画：照片从上方淡入下落，will-change 硬件加速
-    // timeline 存引用，close 时 kill 避免实例堆积冲突
-    if(window.gsap && gravityBodies.length){
+    // 仅淡入装饰边框，不再移动照片，照片完全交由物理引擎自由下落
+    if(window.gsap && frameEl){
       gravityEntranceTl=gsap.timeline();
-      gravityBodies.forEach((body,i)=>{
-        // 用 GSAP 驱动 Body.setPosition 实现淡入下落（Matter 刚体由 GSAP 接管初始位移）
-        const startX=body.position.x;
-        const startY=body.position.y-80;
-        Body.setPosition(body,{x:startX,y:startY});
-        gravityEntranceTl.to({},{duration:0.01,onUpdate:function(){
-          // GSAP 不直接驱动 Matter 刚体（物理引擎接管），这里仅做 opacity 淡入提示
-        }},i*0.04);
-      });
-      // 装饰边框淡入
       gravityEntranceTl.from(frameEl,{opacity:0,duration:0.4,ease:'power2.out'},0);
     }
   }
@@ -16528,6 +16858,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     if(gravityRender && gravityAfterRenderCb){
       Matter.Events.off(gravityRender,'afterRender',gravityAfterRenderCb);
       gravityAfterRenderCb=null;
+    }
+    if(gravityEngine && gravityTopWallCb){
+      Matter.Events.off(gravityEngine,'beforeUpdate',gravityTopWallCb);
+      gravityTopWallCb=null;
     }
     // mouseConstraint 事件随 World.clear 一起销毁，此处置空引用即可
     gravityMouseDownCb=null;
@@ -16769,6 +17103,30 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       try{localStorage.setItem('travel-legend-collapsed',collapsed?'1':'0');}catch(e){}
     });
     applyState();
+  })();
+
+  /* ===== 顶部统一收起左右面板、图例与人生寄语 ===== */
+  (function setupPanelsToggle(){
+    const button=document.getElementById('panelsToggle');
+    if(!button) return;
+    const toggles=['leftPanelToggle','rightPanelToggle','legendToggle','mottoToggleBtn'].map(id=>document.getElementById(id));
+    const activeToggles=()=>toggles.filter(toggle=>!toggle.hidden);
+    const allCollapsed=()=>activeToggles().every(toggle=>toggle.getAttribute('aria-expanded')==='false');
+    const sync=()=>{
+      const collapsed=allCollapsed(),label=collapsed?'展开边栏':'收起边栏';
+      button.querySelector('.fp-btn-label').textContent=label;
+      button.setAttribute('aria-label',label);
+      button.setAttribute('aria-expanded',String(!collapsed));
+      button.title=collapsed?'同时展开左右信息区、图例和人生寄语':'同时收起左右信息区、图例和人生寄语';
+    };
+    toggles.forEach(toggle=>toggle.addEventListener('click',sync));
+    new MutationObserver(sync).observe(document.getElementById('mottoToggleBtn'),{attributes:true,attributeFilter:['hidden']});
+    button.addEventListener('click',()=>{
+      const collapse=!allCollapsed();
+      activeToggles().forEach(toggle=>{if((toggle.getAttribute('aria-expanded')==='true')===collapse)toggle.click();});
+      sync();
+    });
+    sync();
   })();
 
   /* ===== 【滚轮事件隔离】城市列表区块滚轮不冒泡到页面 ===== */
@@ -17104,6 +17462,61 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         journeyArchiveIntroEl=$('journeyArchiveIntro'),journeyArchiveBodyEl=$('journeyArchiveBody');
 
   let lifeDomeGalleryInstance=null;
+  const lifeImageAtlasBtnEl=$('lifeImageAtlasBtn'),imageAtlasOverlayEl=$('imageAtlasOverlay'),imageAtlasHostEl=$('imageAtlasHost');
+  const lifeAtlasEffect=window.initTactileButton(lifeImageAtlasBtnEl);
+  let imageAtlasFrame=null,imageAtlasRecords=[],imageAtlasJourney=[],imageAtlasYears={},imageAtlasSaving=false,imageAtlasRequest=0;
+  function closeImageAtlas(){
+    imageAtlasRequest++;
+    imageAtlasFrame=null;
+    imageAtlasHostEl.replaceChildren();
+    imageAtlasOverlayEl.hidden=true;
+    lifeAtlasEffect.setActive(true);
+    lifeImageAtlasBtnEl.focus();
+  }
+  function mountImageAtlas(){
+    const frame=document.createElement('iframe');
+    frame.title='按年份浏览旅行照片';
+    frame.style.cssText='display:block;width:100%;height:100%;border:0;';
+    frame.srcdoc=window.ImageAtlasDocument(imageAtlasRecords,imageAtlasJourney);
+    imageAtlasFrame=frame;
+    imageAtlasHostEl.replaceChildren(frame);
+  }
+  async function openImageAtlas(){
+    lifeAtlasEffect.setActive(false);
+    const request=++imageAtlasRequest;
+    imageAtlasOverlayEl.hidden=false;
+    imageAtlasHostEl.textContent='正在整理年份照片…';
+    try{
+      const [data,years]=await Promise.all([collectJourneyArchiveData(),idbGetSetting('imageAtlasYears')]);
+      const records=await window.TravelImageAtlas.collect(data.entries,getPhotosByCity,years||{});
+      if(request!==imageAtlasRequest)return;
+      imageAtlasRecords=records;imageAtlasYears=years||{};
+      imageAtlasJourney=data.entries.map(entry=>({cityKey:entry.city.cityKey,name:entry.city.name,month:entry.month||'',date:entry.date||'',visitOrder:entry.visitOrder||1}));
+      mountImageAtlas();
+    }catch(error){
+      if(request!==imageAtlasRequest)return;
+      imageAtlasHostEl.textContent='照片加载失败，请返回时间轴后重试。';
+      console.error('年份照片加载失败',error);
+    }
+  }
+  lifeImageAtlasBtnEl.addEventListener('click',openImageAtlas);
+  $('imageAtlasClose').addEventListener('click',closeImageAtlas);
+  window.addEventListener('message',async event=>{
+    if(!imageAtlasFrame||event.source!==imageAtlasFrame.contentWindow||event.data?.type!=='atlas-year'||imageAtlasSaving)return;
+    const {id,year}=event.data,record=imageAtlasRecords.find(photo=>photo.id===id);
+    if(!record||(year!==null&&(!Number.isInteger(year)||year<1000||year>9999)))return;
+    imageAtlasSaving=true;
+    const frame=imageAtlasFrame;
+    try{
+      const updated={...imageAtlasYears,[id]:year};
+      await idbSetSetting('imageAtlasYears',updated);
+      imageAtlasYears=updated;record.year=year??'年份未确定';record.date=String(record.year);record.dateSource='manual';
+      if(frame===imageAtlasFrame)mountImageAtlas();
+    }catch(error){
+      frame.contentWindow?.postMessage({type:'atlas-year-error'},'*');
+      console.error('照片年份保存失败',error);
+    }finally{imageAtlasSaving=false;}
+  });
   function destroyLifeDomeGallery(){
     if(!lifeDomeGalleryInstance) return;
     lifeDomeGalleryInstance.destroy();
@@ -17112,6 +17525,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   function closeJourneyArchive(){
     if(!journeyArchiveOverlayEl) return;
+    if(!imageAtlasOverlayEl.hidden)closeImageAtlas();
     destroyLifeDomeGallery();
     journeyArchiveOverlayEl.classList.remove('show');
     document.body.classList.remove('modal-open');
@@ -17150,7 +17564,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       orderedCities.push(entry.city);
     });
     const cityPhotos=await Promise.all(orderedCities.map(city=>getPhotosByCity(city.cityKey)));
-    return cityPhotos.flatMap((photos,cityIndex)=>photos.map((photo,photoIndex)=>({
+    return cityPhotos.flatMap((photos,cityIndex)=>photos.filter(photo=>photo.kind!=='video').map((photo,photoIndex)=>({
       src:photo.dataUrl,
       alt:orderedCities[cityIndex].name+'旅行照片 '+(photoIndex+1)
     })).filter(photo=>photo.src));
@@ -17186,9 +17600,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     journeyArchiveBodyEl.innerHTML='<div class="life-archive-layout">'+
       '<div class="life-timeline-pane" aria-label="人生足迹时间轴">'+timelineHtml+'</div>'+
       '<section class="life-photo-dome" aria-label="旅途照片穹顶">'+
-        '<div class="life-photo-dome-head"><div><b>旅途影像</b><span>按时间轴城市顺序汇集</span></div><em>'+(galleryPhotos.length?galleryPhotos.length+' 张照片 · 拖动浏览':'暂无照片')+'</em></div>'+
+        '<div class="life-photo-dome-head"><div><b>旅途影像</b><span>按时间轴城市顺序汇集</span></div><div id="lifePhotoDomeActions" class="life-photo-dome-actions"><em>'+(galleryPhotos.length?galleryPhotos.length+' 张照片 · 拖动浏览':'暂无照片')+'</em></div></div>'+
         '<div id="lifePhotoDome" class="life-photo-dome-stage">'+(galleryPhotos.length?'':'<div class="life-photo-dome-empty"><strong>还没有旅途照片</strong><span>在城市详情中保存照片后，这里会自动汇集。</span></div>')+'</div>'+
       '</section></div>';
+    $('lifePhotoDomeActions').append(lifeImageAtlasBtnEl);
+    lifeImageAtlasBtnEl.hidden=false;
     if(galleryPhotos.length&&window.DomeGallery){
       lifeDomeGalleryInstance=new window.DomeGallery($('lifePhotoDome'),{
         images:galleryPhotos,
@@ -17250,6 +17666,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     if(!journeyArchiveOverlayEl) return;
     destroyLifeDomeGallery();
     const stats=mode==='stats';
+    lifeImageAtlasBtnEl.hidden=true;
     journeyArchiveOverlayEl.classList.toggle('life-mode',!stats);
     journeyArchiveKickerEl.textContent=stats?'旅行洞察':'时光旅程';
     journeyArchiveTitleEl.textContent=stats?'旅行统计':'人生足迹时间轴';
@@ -17350,14 +17767,14 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     const paint=image=>{
       ctx.clearRect(0,0,512,768);ctx.filter='none';
       const paper=ctx.createLinearGradient(0,0,512,0);
-      if(isLeft){paper.addColorStop(0,'#e4dbcd');paper.addColorStop(.1,'#f8f3e9');paper.addColorStop(.92,'#f3eee4');paper.addColorStop(1,'#d8cdbd');}
-      else{paper.addColorStop(0,'#d8cdbd');paper.addColorStop(.08,'#f3eee4');paper.addColorStop(.92,'#f8f3e9');paper.addColorStop(1,'#e2d9ca');}
+      if(isLeft){paper.addColorStop(0,'#f4efe4');paper.addColorStop(.94,'#f4efe4');paper.addColorStop(1,'#e7dfd1');}
+      else{paper.addColorStop(0,'#e7dfd1');paper.addColorStop(.06,'#f4efe4');paper.addColorStop(1,'#f4efe4');}
       ctx.fillStyle=paper;ctx.fillRect(0,0,512,768);
       ctx.globalAlpha=.07;ctx.strokeStyle='#8d7c65';ctx.lineWidth=.5;for(let y=3;y<768;y+=6){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(512,y+1);ctx.stroke();}ctx.globalAlpha=1;
       ctx.fillStyle='rgba(122,99,74,.035)';for(let y=11;y<768;y+=19){for(let x=9;x<512;x+=23){ctx.fillRect(x+(y%7),y,1,1);}}
       if(isLeft){
         if(image){ctx.save();ctx.beginPath();ctx.rect(0,0,512,330);ctx.clip();const scale=Math.max(512/image.width,330/image.height),w=image.width*scale,h=image.height*scale;ctx.filter='saturate(1.08) contrast(1.04) brightness(1.03)';ctx.drawImage(image,(512-w)/2,(330-h)/2,w,h);ctx.filter='none';ctx.restore();}
-        else{ctx.fillStyle='#b8c9d1';ctx.fillRect(0,0,512,330);}
+        else{ctx.fillStyle='#eee8dc';ctx.fillRect(0,0,512,330);}
         const wash=ctx.createLinearGradient(0,190,0,330);wash.addColorStop(0,'rgba(25,48,62,0)');wash.addColorStop(1,'rgba(25,48,62,.34)');ctx.fillStyle=wash;ctx.fillRect(0,190,512,140);
         ctx.fillStyle='#547383';ctx.font='600 15px "Microsoft YaHei",Arial';ctx.fillText('省份旅行记忆',48,382);
         ctx.fillStyle='#1d3342';ctx.font='500 60px "Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif';ctx.fillText(province.name,48,456);
@@ -17366,7 +17783,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         ctx.fillStyle='#203b4c';ctx.font='700 34px "Microsoft YaHei",Arial';ctx.fillText(String(province.cities.length),48,638);ctx.fillText(String(province.photoCount),178,638);
         ctx.fillStyle='#567283';ctx.font='500 14px "Microsoft YaHei",Arial';ctx.fillText('城市章节',48,666);ctx.fillText('旅行照片',178,666);
       }else{
-        const spineShade=ctx.createLinearGradient(0,0,42,0);spineShade.addColorStop(0,'rgba(76,58,42,.18)');spineShade.addColorStop(1,'rgba(76,58,42,0)');ctx.fillStyle=spineShade;ctx.fillRect(0,0,42,768);
+        const spineShade=ctx.createLinearGradient(0,0,24,0);spineShade.addColorStop(0,'rgba(76,58,42,.06)');spineShade.addColorStop(1,'rgba(76,58,42,0)');ctx.fillStyle=spineShade;ctx.fillRect(0,0,24,768);
         ctx.fillStyle='#527386';ctx.font='600 15px "Microsoft YaHei",Arial';ctx.fillText('城市章节',54,64);ctx.textAlign='right';ctx.fillText(province.name,458,64);ctx.textAlign='left';
         const cities=province.cities.slice(0,6),rowHeight=91;
         cities.forEach((city,index)=>{
@@ -17394,7 +17811,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
   function memoryPageEdgeTexture(THREE,color){
     const canvas=document.createElement('canvas');canvas.width=64;canvas.height=512;const ctx=canvas.getContext('2d');ctx.fillStyle=color;ctx.fillRect(0,0,64,512);
-    ctx.strokeStyle='rgba(122,99,74,.16)';ctx.lineWidth=1;for(let y=2;y<512;y+=4){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(64,y);ctx.stroke();}
+    ctx.strokeStyle='rgba(122,99,74,.06)';ctx.lineWidth=1;for(let y=2;y<512;y+=4){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(64,y);ctx.stroke();}
     const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;texture.wrapS=texture.wrapT=THREE.RepeatWrapping;return texture;
   }
   function memoryClothTextures(THREE,color,index){
@@ -17408,10 +17825,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     bctx.fillStyle='#808080';bctx.fillRect(0,0,width,height);bctx.lineWidth=1;for(let x=.5;x<width;x+=3){bctx.strokeStyle=x%6<1?'#929292':'#747474';bctx.beginPath();bctx.moveTo(x,0);bctx.lineTo(x,height);bctx.stroke();}bctx.setLineDash([2,2]);for(let y=.5;y<height;y+=4){bctx.lineDashOffset=y%8<1?0:2;bctx.strokeStyle=y%8<1?'#8d8d8d':'#777';bctx.beginPath();bctx.moveTo(0,y);bctx.lineTo(width,y);bctx.stroke();}
     const map=new THREE.CanvasTexture(albedo),bumpMap=new THREE.CanvasTexture(bump);map.colorSpace=THREE.SRGBColorSpace;map.wrapS=map.wrapT=bumpMap.wrapS=bumpMap.wrapT=THREE.RepeatWrapping;map.repeat.set(1.2,2.7);bumpMap.repeat.copy(map.repeat);map.anisotropy=bumpMap.anisotropy=8;return {map,bumpMap};
   }
-  function memoryRoundedBookGeometry(THREE,width,height,depth,radius,bottomBow=0,leftRadius=radius){
+  function memoryRoundedBookGeometry(THREE,width,height,depth,radius,bottomBow=0,leftRadius=radius,bevel=.012){
     const x=-width*.5,y=-height*.5,r=Math.min(radius,width*.25,height*.25),lr=Math.min(leftRadius,r),bow=Math.min(bottomBow,r*.45),shape=new THREE.Shape();
     shape.moveTo(x+lr,y+bow);if(bow) shape.quadraticCurveTo(0,y-bow,x+width-r,y+bow);else shape.lineTo(x+width-r,y);shape.quadraticCurveTo(x+width,y+bow,x+width,y+r+bow);shape.lineTo(x+width,y+height-r);shape.quadraticCurveTo(x+width,y+height,x+width-r,y+height);shape.lineTo(x+lr,y+height);shape.quadraticCurveTo(x,y+height,x,y+height-lr);shape.lineTo(x,y+lr+bow);shape.quadraticCurveTo(x,y+bow,x+lr,y+bow);
-    const geometry=new THREE.ExtrudeGeometry(shape,{depth,steps:1,curveSegments:8,bevelEnabled:true,bevelSegments:2,bevelSize:.012,bevelThickness:.008});geometry.translate(0,0,-depth*.5);geometry.computeVertexNormals();return geometry;
+    const geometry=new THREE.ExtrudeGeometry(shape,{depth,steps:1,curveSegments:8,bevelEnabled:true,bevelSegments:2,bevelSize:bevel,bevelThickness:bevel*2/3});geometry.translate(0,0,-depth*.5);geometry.computeVertexNormals();return geometry;
   }
   function memoryRoundedBookFaceGeometry(THREE,width,height,radius,bottomBow=0,leftRadius=radius){
     const x=-width*.5,y=-height*.5,r=Math.min(radius,width*.25,height*.25),lr=Math.min(leftRadius,r),bow=Math.min(bottomBow,r*.45),shape=new THREE.Shape();
@@ -17423,20 +17840,22 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   function memoryCreateThreeBook(THREE,province,index){
     const bookScale=1.08,colors=memoryBookPalette(index),height=2.14*bookScale*(1+[0,.018,-.012,.028,-.022,.009][index%6]),width=height*.635,depth=.27*bookScale*(1+[.04,-.03,.07,-.05,.02,0][index%6]);
     const root=new THREE.Group(),motion=new THREE.Group();root.add(motion);root.userData.bookIndex=index;
-    const paperColor='#e8dfd0';
+    const paperColor='#eee8dc';
     const clothTextures=memoryClothTextures(THREE,colors[0],index),cloth=new THREE.MeshPhysicalMaterial({color:0xffffff,map:clothTextures.map,bumpMap:clothTextures.bumpMap,bumpScale:.009,roughness:.9,metalness:0,clearcoat:.004,clearcoatRoughness:1});
     const paper=new THREE.MeshStandardMaterial({map:memoryPageEdgeTexture(THREE,paperColor),roughness:.98,color:0xffffff});
-    const pageBlock=new THREE.Mesh(memoryRoundedBookGeometry(THREE,width-.085,height-.105,depth-.045,.044,.012,.018),paper);pageBlock.castShadow=pageBlock.receiveShadow=true;motion.add(pageBlock);
-    const back=new THREE.Mesh(memoryRoundedBookGeometry(THREE,width,height,.052,.052,.014,.021),cloth);back.position.z=-depth*.5-.012;back.castShadow=back.receiveShadow=true;motion.add(back);
+    const lining=new THREE.MeshBasicMaterial({color:0xeee8dc,toneMapped:false});
+    const pageWidth=width-.008,pageHeight=height-.012;
+    const pageBlock=new THREE.Mesh(memoryRoundedBookGeometry(THREE,pageWidth-.004,pageHeight-.004,depth-.045,.008,0,.006,.002),paper);pageBlock.castShadow=pageBlock.receiveShadow=true;motion.add(pageBlock);
+    const back=new THREE.Mesh(memoryRoundedBookGeometry(THREE,pageWidth+.004,pageHeight+.004,.052,.012,0,.008,.002),cloth);back.position.z=-depth*.5-.012;back.castShadow=back.receiveShadow=true;motion.add(back);
     const coverPivot=new THREE.Group();coverPivot.position.set(-width*.5,0,depth*.5);motion.add(coverPivot);
     const coverCloth=new THREE.MeshPhysicalMaterial({color:0xf3f0e8,roughness:.94,metalness:0,clearcoat:.012,clearcoatRoughness:1});
-    const coverShell=new THREE.Mesh(memoryRoundedBookGeometry(THREE,width,height,.032,.055,.015,.022),coverCloth);coverShell.position.x=width*.5;coverShell.castShadow=coverShell.receiveShadow=true;coverShell.userData.bookIndex=index;coverPivot.add(coverShell);
+    const coverShell=new THREE.Mesh(memoryRoundedBookGeometry(THREE,width,height,.032,.012,0,.008,.003),coverCloth);coverShell.position.x=width*.5;coverShell.castShadow=coverShell.receiveShadow=true;coverShell.userData.bookIndex=index;coverPivot.add(coverShell);
     const coverMaterial=new THREE.MeshBasicMaterial({map:memoryBookCoverTexture(THREE,province,index),toneMapped:false});
     const coverArt=new THREE.Mesh(memoryRoundedBookFaceGeometry(THREE,width-.012,height-.012,.049,.014,.018),coverMaterial);coverArt.position.set(width*.5,0,.031);coverArt.userData.bookIndex=index;coverPivot.add(coverArt);
     const insideCoverMaterial=new THREE.MeshBasicMaterial({map:memoryChapterPreviewTexture(THREE,province,'left'),toneMapped:false});
-    const insideCoverArt=new THREE.Mesh(new THREE.PlaneGeometry(width-.07,height-.08),insideCoverMaterial);insideCoverArt.position.set(width*.5,0,-.029);insideCoverArt.rotation.y=Math.PI;insideCoverArt.visible=false;insideCoverArt.userData.bookIndex=index;coverPivot.add(insideCoverArt);
+    const insideCoverArt=new THREE.Mesh(memoryRoundedBookFaceGeometry(THREE,pageWidth,pageHeight,.006),insideCoverMaterial);insideCoverArt.position.set(width*.5,0,-.029);insideCoverArt.rotation.y=Math.PI;insideCoverArt.visible=false;insideCoverArt.userData.bookIndex=index;coverPivot.add(insideCoverArt);
     const chapterPageMaterial=new THREE.MeshBasicMaterial({map:memoryChapterPreviewTexture(THREE,province,'right'),toneMapped:false,side:THREE.DoubleSide,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-8,polygonOffsetUnits:-8});
-    const chapterPageArt=new THREE.Mesh(new THREE.PlaneGeometry(width-.13,height-.15),chapterPageMaterial);chapterPageArt.position.set(.025,0,depth*.5+.026);chapterPageArt.renderOrder=4;chapterPageArt.visible=false;chapterPageArt.userData.bookIndex=index;motion.add(chapterPageArt);
+    const chapterPageArt=new THREE.Mesh(memoryRoundedBookFaceGeometry(THREE,pageWidth,pageHeight,.006),chapterPageMaterial);chapterPageArt.position.set(0,0,depth*.5+.026);chapterPageArt.renderOrder=4;chapterPageArt.visible=false;chapterPageArt.userData.bookIndex=index;motion.add(chapterPageArt);
     const spine=new THREE.Mesh(new THREE.CylinderGeometry(depth*.56,depth*.56,height-.026,28),cloth);spine.scale.x=.64;spine.position.x=-width*.5+.018;spine.castShadow=spine.receiveShadow=true;spine.userData.bookIndex=index;motion.add(spine);
     const spineLabelArc=1.22,spineLabelRadius=depth*.57;
     const spineLabelGeometry=new THREE.CylinderGeometry(spineLabelRadius,spineLabelRadius,height*.82,18,1,true,-Math.PI*.5-spineLabelArc*.5,spineLabelArc);
@@ -17444,19 +17863,22 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     const bandGeometry=new THREE.CylinderGeometry(.022,.022,.23,12),bandMaterial=new THREE.MeshStandardMaterial({color:0xd8d1c5,roughness:1});
     [-1,1].forEach(side=>{const band=new THREE.Mesh(bandGeometry,bandMaterial);band.rotation.z=Math.PI/2;band.position.set(-width*.5+.105,side*(height*.5-.058),0);motion.add(band);});
     root.traverse(object=>{if(object.isMesh&&!Number.isInteger(object.userData.bookIndex)) object.userData.bookIndex=index;});
-    return {root,motion,coverPivot,insideCoverArt,chapterPageArt,spineLabel,spine,back,width,height,depth,target:new THREE.Vector3(),targetRotation:new THREE.Euler(),targetScale:1};
+    return {root,motion,coverPivot,coverShell,coverCloth,insideCoverArt,chapterPageArt,spineLabel,spine,back,paper,cloth,lining,width,height,depth,target:new THREE.Vector3(),targetRotation:new THREE.Euler(),targetScale:1};
   }
   function memoryUpdateThreeShelfTargets(){
     const shelf=memoryThreeShelf;if(!shelf) return;const viewport=$('memoryShelfViewport'),total=shelf.rigs.length,layout=memoryShelfLayout(viewport,total),pageShift=memoryShelfState.pageShift||0;
     shelf.rigs.forEach((rig,index)=>{const active=index===memoryShelfState.active,slot=active?-1:(index-memoryShelfState.active-1+total)%total;
       const visible=active||slot<layout.capacity+(pageShift?layout.capacity:0);rig.root.visible=visible;rig.slotVisible=visible;
       const opening=active&&memoryShelfState.opening,inspecting=active&&memoryShelfState.bookRotation!==null&&Math.abs(memoryShelfState.bookRotation)>1,targetScale=active?(opening?1.08:1.16):Math.max(.76,.96-slot*.035),groundY=-1.11+rig.height*targetScale*.5;
+      rig.spine.material=opening?rig.paper:rig.cloth;rig.back.material=opening?rig.lining:rig.cloth;
+      rig.coverShell.material=opening?rig.lining:rig.coverCloth;
       const activeRotation=memoryShelfState.bookRotation===null?.2:shelf.THREE.MathUtils.degToRad(memoryShelfState.bookRotation);
       rig.target.set(active?(opening?0.1:-1.25-pageShift*.03):.38+(slot-pageShift)*.36,opening?.08:groundY,active?(opening?1.18:.85):-slot*.06);rig.targetRotation.set(active?.02:0,active?(opening?-.03:activeRotation):1.43+(index%3-1)*.018,0);rig.targetScale=targetScale;rig.insideCoverArt.visible=opening;rig.chapterPageArt.visible=opening;rig.spineLabel.visible=!active||inspecting;rig.spine.visible=true;rig.back.visible=!active||opening||inspecting;
     });
     memoryPositionShelfMore(viewport,layout);
   }
   function memoryDisposeThreeShelf(){
+    if(memoryThreeShelf) memoryThreeShelf.rigs.forEach(rig=>{rig.spine.material=rig.cloth;rig.back.material=rig.cloth;rig.coverShell.material=rig.coverCloth;rig.lining.dispose();});
     const shelf=memoryThreeShelf;if(!shelf) return;cancelAnimationFrame(shelf.frame);shelf.resize?.disconnect();shelf.scene.traverse(object=>{object.geometry?.dispose();const materials=Array.isArray(object.material)?object.material:[object.material];materials.filter(Boolean).forEach(material=>{material.map?.dispose();material.bumpMap?.dispose();material.dispose();});});shelf.renderer.dispose();memoryThreeShelf=null;
   }
   async function memoryInitThreeShelf(){
@@ -17828,6 +18250,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
   function memoryOpenChapters(province){
     if(!province) return;
+    memoryDisposeAlbum3D();
     memoryDisposeThreeShelf();
     memoryShelfState.opening=false;memoryShelfState.level='chapters';memoryShelfState.province=province;memoryShelfState.city=null;
     memorySetHeader(province.name+'旅行章节','选择一座到达过的城市，翻开它的旅行相册。');
@@ -17845,7 +18268,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
   async function memoryPrepareAlbumPhotos(photos){
     await Promise.all(photos.map(photo=>{
-      if(photo._memoryOrientation) return Promise.resolve();
+      if(photo._memoryOrientation&&photo._memoryImage) return Promise.resolve();
       return new Promise(resolve=>{
         const image=new Image();
         const rememberSize=()=>{
@@ -17855,6 +18278,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         };
         image.onload=()=>{
           rememberSize();
+          photo._memoryImage=image;
           if(image.decode) image.decode().catch(()=>{}).finally(resolve);
           else resolve();
         };
@@ -17940,7 +18364,394 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       openPhotoViewer(photos,photoIndex,false);
     });
   }
+  /* ===== 城市相册 3D 翻页（three + quick_flipbook，引擎见 assets/vendor/album-3d.js）=====
+     书页 DOM 依 .memory-album-page 摄影书样式用 Canvas 2D 重绘为贴图交给 3D 引擎；
+     交互语义与旧版一致：轻点照片进查看器、长按/拖动调整构图、拖页缘刮动翻页、滚轮与方向键翻页。
+     WebGL 不可用或引擎缺失时回退到原静态跨页渲染。 */
+  const memoryAlbum3DState={reader:null,themeObserver:null,canvases:[],framing:null,frameDirty:false};
+  const MEMORY_ALBUM_3D={pageHeight:1024,pageRatio:.86,designHeight:650,padX:38,padTop:34,headH:34,footH:22,padBottom:34};
+
+  function memoryAlbumThemeColors(){
+    // 画布透明,书本浮在相册自身背景上;主题只影响投影浓度与环境光
+    // (翻起书页会在右页投下大片影子,浓度不宜超过 .25 以免压脏纸面)
+    return document.body.classList.contains('light-theme')
+      ?{shadowOpacity:.11,hemiSky:'#ffffff',hemiGround:'#e6e4de'}
+      :{shadowOpacity:.16,hemiSky:'#ffffff',hemiGround:'#e6e4de'};
+  }
+  function memoryAlbumPageDescriptors(){
+    const spreads=memoryAlbumSpreadPlan(memoryShelfState.photos);
+    const descriptors=[];
+    for(let s=0;s<spreads.length;s++){
+      const sides=memoryAlbumSpreadSides(spreads[s],s);
+      descriptors.push({kind:'left',entries:sides.left,spread:s});
+      descriptors.push({kind:'right',entries:sides.right,spread:s});
+    }
+    return descriptors;
+  }
+  function memoryAlbumNewCanvas(){
+    const cfg=MEMORY_ALBUM_3D,S=cfg.pageHeight/cfg.designHeight;
+    const canvas=document.createElement('canvas');
+    canvas.width=Math.round(cfg.pageHeight*cfg.pageRatio);
+    canvas.height=cfg.pageHeight;
+    return {canvas,ctx:canvas.getContext('2d'),W:canvas.width,H:canvas.height,S,rects:[]};
+  }
+  function memoryAlbumSetFont(ctx,size,weight,family,letterSpacing){
+    ctx.font=(weight||400)+' '+Math.round(size)+'px '+(family||'Inter,"Microsoft YaHei",sans-serif');
+    try{ctx.letterSpacing=letterSpacing||'0em';}catch(error){/* 旧内核不支持 letterSpacing 时保持默认 */}
+  }
+  function memoryAlbumWrapText(ctx,text,maxWidth){
+    const lines=[];
+    String(text).split(/\n/).forEach(paragraph=>{
+      let line='';
+      for(const char of paragraph){
+        if(line&&ctx.measureText(line+char).width>maxWidth){lines.push(line);line=char;}
+        else line+=char;
+      }
+      lines.push(line);
+    });
+    return lines;
+  }
+  function memoryAlbumPaintPaper(record,side){
+    const {ctx,W,H,S}=record,cfg=MEMORY_ALBUM_3D;
+    ctx.save();
+    ctx.fillStyle=side==='cover-back'?'#4c5e70':'#f4efe4';
+    ctx.fillRect(0,0,W,H);
+    if(side==='left'||side==='right'){
+      const gradient=ctx.createLinearGradient(0,0,W,0);
+      if(side==='left'){gradient.addColorStop(0,'#f4efe4');gradient.addColorStop(.94,'#f4efe4');gradient.addColorStop(1,'#e7dfd1');}
+      else{gradient.addColorStop(0,'#e7dfd1');gradient.addColorStop(.06,'#f4efe4');gradient.addColorStop(1,'#f4efe4');}
+      ctx.fillStyle=gradient;ctx.fillRect(0,0,W,H);
+      const spine=ctx.createLinearGradient(side==='left'?W:0,0,side==='left'?W-18*S:18*S,0);
+      spine.addColorStop(0,'rgba(76,58,42,.06)');spine.addColorStop(1,'rgba(76,58,42,0)');
+      ctx.fillStyle=spine;ctx.fillRect(0,0,W,H);
+      const bottomShade=ctx.createLinearGradient(0,H-16*S,0,H);
+      bottomShade.addColorStop(0,'rgba(113,83,51,0)');bottomShade.addColorStop(1,'rgba(113,83,51,.035)');
+      ctx.fillStyle=bottomShade;ctx.fillRect(0,H-16*S,W,16*S);
+    }else if(side==='cover-front'){
+      const edge=ctx.createLinearGradient(0,0,W,0);
+      edge.addColorStop(0,'rgba(71,94,103,.26)');edge.addColorStop(10/W,'rgba(132,153,160,.12)');edge.addColorStop(20/W,'rgba(0,0,0,0)');edge.addColorStop(1,'rgba(0,0,0,0)');
+      ctx.fillStyle=edge;ctx.fillRect(0,0,W,H);
+    }
+    ctx.restore();
+  }
+  function memoryAlbumPaintHead(ctx,side,city,month,W,S){
+    const cfg=MEMORY_ALBUM_3D,top=cfg.padTop*S;
+    ctx.textBaseline='top';
+    if(side==='left'){
+      ctx.textAlign='left';memoryAlbumSetFont(ctx,12*S,600,'Inter,"Microsoft YaHei",sans-serif','.04em');ctx.fillStyle='#183743';
+      ctx.fillText(city.name,cfg.padX*S,top);
+      ctx.textAlign='right';memoryAlbumSetFont(ctx,9*S,600,'Inter,"Microsoft YaHei",sans-serif','.16em');ctx.fillStyle='#687b80';
+      ctx.fillText(month,W-cfg.padX*S,top+3*S);
+    }else{
+      ctx.textAlign='left';memoryAlbumSetFont(ctx,9*S,600,'Inter,"Microsoft YaHei",sans-serif','.16em');ctx.fillStyle='#687b80';
+      ctx.fillText('旅行照片册',cfg.padX*S,top+3*S);
+      ctx.textAlign='right';memoryAlbumSetFont(ctx,12*S,600,'Inter,"Microsoft YaHei",sans-serif','.04em');ctx.fillStyle='#183743';
+      ctx.fillText(city.name,W-cfg.padX*S,top);
+    }
+  }
+  function memoryAlbumPaintFoot(ctx,note,pageNumber,W,H,S){
+    const cfg=MEMORY_ALBUM_3D,baseY=H-cfg.padBottom*S;
+    ctx.textBaseline='bottom';
+    ctx.textAlign='left';memoryAlbumSetFont(ctx,10*S,600,'Inter,"Microsoft YaHei",sans-serif');ctx.fillStyle='#687b80';
+    ctx.fillText(note,cfg.padX*S,baseY);
+    ctx.textAlign='right';
+    ctx.fillText(pageNumber,W-cfg.padX*S,baseY);
+  }
+  function memoryAlbumPaintIntroArea(record){
+    const {ctx,W,H,S}=record,cfg=MEMORY_ALBUM_3D;
+    const city=memoryShelfState.city,description=String(city.meta.description||'').trim();
+    const month=city.firstMonth?formatMonth(city.firstMonth):'时间未记录';
+    const left=W*.10;
+    ctx.textBaseline='top';ctx.textAlign='left';
+    memoryAlbumSetFont(ctx,10*S,700,'Inter,"Microsoft YaHei",sans-serif','.18em');ctx.fillStyle='#a35b38';
+    ctx.fillText('城市简介',left,H*.17);
+    memoryAlbumSetFont(ctx,40*S,400,'"Noto Serif SC","Source Han Serif SC","Songti SC",serif','.05em');ctx.fillStyle='#183743';
+    ctx.fillText(city.name,left,H*.21);
+    memoryAlbumSetFont(ctx,14*S,400,'"Microsoft YaHei",sans-serif');ctx.fillStyle='#455e65';
+    const lines=memoryAlbumWrapText(ctx,description||'这座城市的简介尚未填写，可前往城市详情补充。',W*.8);
+    const lineHeight=28*S,top=H*.33,bottom=H*.81;
+    for(let i=0;i<lines.length;i++){
+      const y=top+i*lineHeight;
+      if(y+lineHeight>bottom){
+        ctx.save();ctx.globalAlpha=.35;ctx.fillText(lines[i],left,y);ctx.restore();
+        break;
+      }
+      ctx.fillText(lines[i],left,y);
+    }
+    memoryAlbumSetFont(ctx,10*S,600,'Inter,"Microsoft YaHei",sans-serif','.1em');ctx.fillStyle='#536d77';
+    ctx.fillText(month+'　'+memoryShelfState.photos.length+' 张照片',left,H*.885);
+  }
+  function memoryAlbumPaintEditorial(record){
+    const {ctx,W,H,S}=record,city=memoryShelfState.city,centerX=W/2,gridTop=(MEMORY_ALBUM_3D.padTop+MEMORY_ALBUM_3D.headH)*S,gridBottom=H-(MEMORY_ALBUM_3D.padBottom+MEMORY_ALBUM_3D.footH)*S;
+    const centerY=(gridTop+gridBottom)/2;
+    ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillStyle='#a35b38';ctx.fillRect(centerX-21*S,centerY-46*S,42*S,1.4*S);
+    memoryAlbumSetFont(ctx,10*S,600,'Inter,"Microsoft YaHei",sans-serif','.18em');ctx.fillStyle='#687b80';
+    ctx.fillText('旅行照片',centerX,centerY-16*S);
+    memoryAlbumSetFont(ctx,34*S,400,'"Noto Serif SC","Source Han Serif SC","Songti SC",serif');ctx.fillStyle='#183743';
+    ctx.fillText(city?city.name:'',centerX,centerY+16*S);
+    memoryAlbumSetFont(ctx,12*S,400,'Inter,"Microsoft YaHei",sans-serif');ctx.fillStyle='#617276';
+    ctx.fillText('这一页留给下一段影像。',centerX,centerY+58*S);
+  }
+  function memoryAlbumDrawCoverImage(ctx,image,dx,dy,dw,dh,position){
+    const nw=image.naturalWidth||image.width||1,nh=image.naturalHeight||image.height||1;
+    const scale=Math.max(dw/nw,dh/nh),sw=dw/scale,sh=dh/scale;
+    const sx=(nw-sw)*((position?position.x:50)/100),sy=(nh-sh)*((position?position.y:50)/100);
+    ctx.drawImage(image,sx,sy,sw,sh,dx,dy,dw,dh);
+  }
+  function memoryAlbumPaintGrid(record,descriptor,adjustingPhotoIndex){
+    const {ctx,W,H,S}=record,cfg=MEMORY_ALBUM_3D,entries=descriptor.entries;
+    if(entries[0]?.intro){memoryAlbumPaintIntroArea(record);return;}
+    if(!entries.length){memoryAlbumPaintEditorial(record);return;}
+    const gridTop=(cfg.padTop+cfg.headH)*S,gridBottom=H-(cfg.padBottom+cfg.footH)*S;
+    const gridX=cfg.padX*S,gridW=W-2*gridX,gridH=gridBottom-gridTop;
+    const orientations=entries.map(entry=>entry.photo._memoryOrientation||'square');
+    let layout='layout-single';
+    if(entries.length===2) layout=orientations.every(value=>value==='portrait')?'layout-two-portrait':'layout-two-landscape';
+    else if(entries.length>=3) layout='layout-four';
+    const cells=[];
+    if(layout==='layout-single'){
+      const size=orientations[0]==='landscape'?{w:.96,h:.72}:orientations[0]==='portrait'?{w:.66,h:.96}:{w:.84,h:.84};
+      const w=gridW*size.w,h=gridH*size.h;
+      cells.push({x:gridX+(gridW-w)/2,y:gridTop+(gridH-h)/2,w,h});
+    }else{
+      const gap=16*S,pad=gridW*.02,innerX=gridX+pad,innerY=gridTop+pad,innerW=gridW-2*pad,innerH=gridH-2*pad;
+      if(layout==='layout-two-landscape'){
+        const h=(innerH-gap)/2;
+        cells.push({x:innerX,y:innerY,w:innerW,h},{x:innerX,y:innerY+h+gap,w:innerW,h});
+      }else if(layout==='layout-two-portrait'){
+        const w=(innerW-gap)/2;
+        cells.push({x:innerX,y:innerY,w,h:innerH},{x:innerX+w+gap,y:innerY,w,h:innerH});
+      }else{
+        const w=(innerW-gap)/2,h=(innerH-gap)/2;
+        cells.push({x:innerX,y:innerY,w,h},{x:innerX+w+gap,y:innerY,w,h},{x:innerX,y:innerY+h+gap,w,h},{x:innerX+w+gap,y:innerY+h+gap,w,h});
+      }
+    }
+    entries.forEach((entry,i)=>{
+      const cell=cells[i];
+      const position=memoryShelfState.photoPositions.get(entry.index)||{x:50,y:50};
+      ctx.save();
+      ctx.shadowColor='rgba(57,61,58,.16)';ctx.shadowBlur=22*S;ctx.shadowOffsetY=10*S;
+      ctx.fillStyle='#fffdf8';
+      ctx.fillRect(cell.x,cell.y,cell.w,cell.h);
+      ctx.restore();
+      ctx.strokeStyle='rgba(87,73,56,.16)';ctx.lineWidth=Math.max(1,S);
+      ctx.strokeRect(cell.x,cell.y,cell.w,cell.h);
+      const inset=7*S;
+      ctx.save();
+      ctx.beginPath();ctx.rect(cell.x+inset,cell.y+inset,cell.w-2*inset,cell.h-2*inset);ctx.clip();
+      ctx.fillStyle='#e4e9e9';ctx.fillRect(cell.x+inset,cell.y+inset,cell.w-2*inset,cell.h-2*inset);
+      const image=entry.photo._memoryImage;
+      if(image) memoryAlbumDrawCoverImage(ctx,image,cell.x+inset,cell.y+inset,cell.w-2*inset,cell.h-2*inset,position);
+      ctx.restore();
+      if(adjustingPhotoIndex===entry.index){
+        ctx.strokeStyle='#a35b38';ctx.lineWidth=2*S;
+        ctx.strokeRect(cell.x,cell.y,cell.w,cell.h);
+      }
+      record.rects.push({photoIndex:entry.index,x:cell.x/W,y:cell.y/H,w:cell.w/W,h:cell.h/H});
+    });
+  }
+  function memoryAlbumPaintCover(record,kind){
+    const {ctx,W,H,S}=record;
+    const city=memoryShelfState.city,photos=memoryShelfState.photos;
+    if(kind==='back'){
+      // 与手机分享页封底一致：暖纸终章、最后一张照片和未完待续。
+      ctx.save();
+      ctx.fillStyle='#f4f1e8';ctx.fillRect(0,0,W,H);
+      const edge=ctx.createLinearGradient(0,0,18*S,0);
+      edge.addColorStop(0,'rgba(76,58,42,.08)');edge.addColorStop(1,'rgba(76,58,42,0)');
+      ctx.fillStyle=edge;ctx.fillRect(0,0,18*S,H);
+      const left=W*.09,right=W*.92;
+      ctx.textAlign='left';ctx.textBaseline='top';ctx.fillStyle='#536973';
+      memoryAlbumSetFont(ctx,12*S,600);
+      ctx.fillText('旅行记忆',left,H*.07);ctx.textAlign='right';ctx.fillText('终章',right,H*.07);
+      ctx.textAlign='left';ctx.fillStyle='#183846';
+      memoryAlbumSetFont(ctx,38*S,400,'"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif','.02em');
+      ctx.fillText('把时光',left,H*.13);ctx.fillText('留在这一册',left,H*.13+48*S);
+      memoryAlbumSetFont(ctx,11*S,400);ctx.fillStyle='#536973';
+      ctx.fillText('记录一座城，也记录那时的自己。',left,H*.34);
+      const plateW=W*.64,plateH=H*.4,inset=6*S;
+      ctx.save();ctx.translate(W/2,H*.63);ctx.rotate(-3*Math.PI/180);
+      ctx.shadowColor='rgba(56,44,32,.15)';ctx.shadowBlur=20*S;ctx.shadowOffsetY=8*S;
+      ctx.fillStyle='#fffdf8';ctx.fillRect(-plateW/2,-plateH/2,plateW,plateH);
+      ctx.shadowColor='transparent';ctx.shadowBlur=0;ctx.shadowOffsetY=0;
+      const innerW=plateW-2*inset,innerH=plateH-2*inset;
+      ctx.fillStyle='#e8e3d8';ctx.fillRect(-innerW/2,-innerH/2,innerW,innerH);
+      const image=photos[photos.length-1]?._memoryImage;
+      if(image){
+        const imageW=image.naturalWidth||image.width,imageH=image.naturalHeight||image.height;
+        const scale=Math.min(innerW/imageW,innerH/imageH),w=imageW*scale,h=imageH*scale;
+        ctx.drawImage(image,-w/2,-h/2,w,h);
+      }else{
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#536973';ctx.fillText('尚未记录',0,0);
+      }
+      ctx.restore();
+      ctx.strokeStyle='rgba(196,181,159,.5)';ctx.lineWidth=S;
+      ctx.beginPath();ctx.moveTo(left,H*.9);ctx.lineTo(right,H*.9);ctx.stroke();
+      ctx.textAlign='left';ctx.textBaseline='bottom';ctx.fillStyle='#536973';
+      memoryAlbumSetFont(ctx,12*S,600);ctx.fillText(city?city.name:'尚未记录',left,H*.95);
+      ctx.textAlign='right';ctx.fillText('未完待续',right,H*.95);
+      ctx.restore();
+      return;
+    }
+    // 封面:满版照片 + 上下压暗渐变 + 白色衬线标题(经典摄影书封面)
+    ctx.fillStyle='#f3f0e8';ctx.fillRect(0,0,W,H);
+    const first=photos[0];
+    if(first&&first._memoryImage){
+      ctx.save();
+      ctx.beginPath();ctx.rect(0,0,W,H);ctx.clip();
+      memoryAlbumDrawCoverImage(ctx,first._memoryImage,0,0,W,H,{x:50,y:42});
+      ctx.restore();
+    }else{
+      const fallback=ctx.createLinearGradient(0,0,0,H);
+      fallback.addColorStop(0,'#5b7085');fallback.addColorStop(1,'#3d5163');
+      ctx.fillStyle=fallback;ctx.fillRect(0,0,W,H);
+    }
+    const topScrim=ctx.createLinearGradient(0,0,0,H*.34);
+    topScrim.addColorStop(0,'rgba(17,29,36,.56)');topScrim.addColorStop(1,'rgba(17,29,36,0)');
+    ctx.fillStyle=topScrim;ctx.fillRect(0,0,W,H*.34);
+    const bottomScrim=ctx.createLinearGradient(0,H*.6,0,H);
+    bottomScrim.addColorStop(0,'rgba(15,26,32,0)');bottomScrim.addColorStop(1,'rgba(15,26,32,.66)');
+    ctx.fillStyle=bottomScrim;ctx.fillRect(0,H*.6,W,H*.4);
+    const spine=ctx.createLinearGradient(0,0,16*S,0);
+    spine.addColorStop(0,'rgba(10,18,24,.42)');spine.addColorStop(1,'rgba(10,18,24,0)');
+    ctx.fillStyle=spine;ctx.fillRect(0,0,16*S,H);
+    const padX=36*S,padTop=30*S;
+    ctx.textBaseline='top';ctx.textAlign='left';
+    ctx.shadowColor='rgba(8,16,20,.6)';ctx.shadowBlur=5*S;
+    memoryAlbumSetFont(ctx,10*S,600,'Inter,"Microsoft YaHei",sans-serif');ctx.fillStyle='rgba(244,248,250,.94)';
+    ctx.fillText('旅 行 照 片 册',padX,padTop);
+    let titleSize=44;
+    const title=city?city.name:'';
+    memoryAlbumSetFont(ctx,titleSize*S,600,'"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif','.06em');
+    while(titleSize>24&&ctx.measureText(title).width>W-2*padX){titleSize-=3;memoryAlbumSetFont(ctx,titleSize*S,600,'"Noto Serif SC","Source Han Serif SC","STSong","SimSun",serif','.06em');}
+    ctx.fillStyle='#f7fafb';
+    ctx.fillText(title,padX,padTop+26*S);
+    const month=city&&city.firstMonth?formatMonth(city.firstMonth):'时间未记录';
+    ctx.textBaseline='bottom';
+    memoryAlbumSetFont(ctx,12*S,700,'Inter,"Microsoft YaHei",sans-serif');ctx.fillStyle='rgba(243,246,248,.95)';
+    ctx.fillText(month,padX,H-20*S);
+    ctx.textAlign='right';ctx.fillText(photos.length+' 张照片',W-22*S,H-20*S);
+    ctx.shadowColor='transparent';ctx.shadowBlur=0;
+  }
+  function memoryAlbumPaintContent(record,adjustingPhotoIndex){
+    const {ctx,W,H,S}=record,descriptor=record.descriptor,cfg=MEMORY_ALBUM_3D;
+    memoryAlbumPaintPaper(record,descriptor.kind);
+    const city=memoryShelfState.city,month=city&&city.firstMonth?formatMonth(city.firstMonth):'时间未记录';
+    memoryAlbumPaintHead(ctx,descriptor.kind,city,month,W,S);
+    record.rects.length=0;
+    memoryAlbumPaintGrid(record,descriptor,adjustingPhotoIndex);
+    const note=descriptor.kind==='left'
+      ?(descriptor.spread===0?'城市简介':'旅行照片册')
+      :(descriptor.entries.some(entry=>entry.photo)?'影像记录':'尚未记录');
+    memoryAlbumPaintFoot(ctx,note,String(descriptor.spread*2+1).padStart(2,'0'),W,H,S);
+  }
+  function memoryAlbumBuildPages(){
+    const descriptors=memoryAlbumPageDescriptors();
+    const records=[memoryAlbumNewCanvas(),...descriptors.map(()=>memoryAlbumNewCanvas()),memoryAlbumNewCanvas()];
+    records[0].kind='cover-front';
+    memoryAlbumPaintCover(records[0],'front');
+    records.forEach((record,i)=>{
+      if(i===0||i===records.length-1) return;
+      record.kind='content';
+      record.descriptor=descriptors[i-1];
+      memoryAlbumPaintContent(record);
+    });
+    records[records.length-1].kind='cover-back';
+    memoryAlbumPaintCover(records[records.length-1],'back');
+    memoryAlbum3DState.canvases=records;
+    return records;
+  }
+  function memoryAlbumRepaintPage(pageIndex,adjustingPhotoIndex){
+    const record=memoryAlbum3DState.canvases[pageIndex],reader=memoryAlbum3DState.reader;
+    if(!record||!reader) return;
+    if(record.kind==='content') memoryAlbumPaintContent(record,adjustingPhotoIndex==null?-1:adjustingPhotoIndex);
+    else memoryAlbumPaintCover(record,record.kind==='cover-front'?'front':'back');
+    reader.refreshPage(pageIndex,record.canvas);
+  }
+  function memoryAlbumApplyStatus(status){
+    const counter=$('memoryAlbumCounter'),prev=$('memoryAlbumPrev'),next=$('memoryAlbumNext');
+    if(!counter) return;
+    if(status.state==='cover') counter.textContent='封面';
+    else if(status.state==='back') counter.textContent='封底';
+    else counter.textContent=String(status.spread).padStart(2,'0')+' / '+String(status.totalSpreads).padStart(2,'0');
+    if(prev) prev.disabled=!!status.turning||status.state==='cover';
+    if(next) next.disabled=!!status.turning||status.state==='back';
+    if(status.state==='spread'&&!status.turning) memoryShelfState.page=status.spread-1;
+  }
+  async function memoryStartAlbum3D(){
+    const stage=$('memoryAlbumStage');
+    const createReader=window.Album3DReader&&window.Album3DReader.createAlbum3DReader;
+    if(!stage||!createReader||!('WebGL2RenderingContext' in window)){memoryRenderAlbumSpread();return;}
+    let reader=null;
+    try{
+      reader=createReader({
+        container:stage,
+        ratio:MEMORY_ALBUM_3D.pageRatio,
+        reducedMotion:!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches),
+        theme:memoryAlbumThemeColors(),
+        onStatus:memoryAlbumApplyStatus,
+        onPhotoTap:photo=>{if(memoryShelfState.photos[photo.photoIndex]) openPhotoViewer(memoryShelfState.photos,photo.photoIndex,false);},
+        onPhotoFrameStart:photo=>{
+          memoryAlbum3DState.framing={photoIndex:photo.photoIndex,pageIndex:photo.pageIndex,rect:photo.rect,start:{...(memoryShelfState.photoPositions.get(photo.photoIndex)||{x:50,y:50})}};
+        },
+        onPhotoFrameMove:event=>{
+          const frame=memoryAlbum3DState.framing;
+          if(!frame||frame.photoIndex!==event.photoIndex) return;
+          const boxW=Math.max(1,event.rect.w*event.pageWidth),boxH=Math.max(1,event.rect.h*event.pageHeight);
+          const x=Math.max(0,Math.min(100,frame.start.x-event.dx/boxW*100));
+          const y=Math.max(0,Math.min(100,frame.start.y-event.dy/boxH*100));
+          const position={x:Math.round(x*10)/10,y:Math.round(y*10)/10};
+          memoryShelfState.photoPositions.set(frame.photoIndex,position);
+          if(memoryAlbum3DState.frameDirty) return;
+          memoryAlbum3DState.frameDirty=true;
+          requestAnimationFrame(()=>{
+            memoryAlbum3DState.frameDirty=false;
+            if(memoryAlbum3DState.framing) memoryAlbumRepaintPage(frame.pageIndex,frame.photoIndex);
+          });
+        },
+        onPhotoFrameEnd:()=>{
+          const frame=memoryAlbum3DState.framing;
+          memoryAlbum3DState.framing=null;
+          if(frame) memoryAlbumRepaintPage(frame.pageIndex,-1);
+        }
+      });
+    }catch(error){console.warn('3D 相册初始化失败，回退静态跨页',error);memoryRenderAlbumSpread();return;}
+    try{
+      await Promise.race([
+        Promise.all([
+          document.fonts.load('400 42px "Noto Serif SC"'),
+          document.fonts.load('500 38px "Noto Serif SC"'),
+          document.fonts.load('600 16px "Noto Serif SC"')
+        ]),
+        new Promise(resolve=>setTimeout(resolve,1800))
+      ]).catch(()=>{});
+      if(memoryShelfState.level!=='album'||memoryShelfState.city===null){reader.dispose();return;}
+      memoryAlbum3DState.reader=reader;
+      memoryAlbum3DState.themeObserver=new MutationObserver(()=>{if(memoryAlbum3DState.reader) memoryAlbum3DState.reader.setTheme(memoryAlbumThemeColors());});
+      memoryAlbum3DState.themeObserver.observe(document.body,{attributes:true,attributeFilter:['class']});
+      await reader.setPages(memoryAlbumBuildPages());
+    }catch(error){
+      console.warn('3D 相册书页构建失败，回退静态跨页',error);
+      memoryDisposeAlbum3D();
+      memoryRenderAlbumSpread();
+    }
+  }
+  function memoryDisposeAlbum3D(){
+    if(memoryAlbum3DState.themeObserver){memoryAlbum3DState.themeObserver.disconnect();memoryAlbum3DState.themeObserver=null;}
+    if(memoryAlbum3DState.reader){try{memoryAlbum3DState.reader.dispose();}catch(error){console.warn('3D 相册销毁失败',error);}memoryAlbum3DState.reader=null;}
+    memoryAlbum3DState.canvases=[];
+    memoryAlbum3DState.framing=null;
+  }
+  function memoryAlbumStageWheel(event){
+    memoryAlbum3DState.reader?.recordInput?.({type:'wheel-input',deltaX:event.deltaX,deltaY:event.deltaY});
+    if(!memoryAlbum3DState.reader||event.deltaY===0) return;
+    event.preventDefault();
+    const now=performance.now();if(now-memoryShelfState.wheelAt<350) return;memoryShelfState.wheelAt=now;
+    memoryTurnAlbum(event.deltaY>0?1:-1);
+  }
   function memoryRenderAlbumSpread(){
+    if(memoryAlbum3DState.reader) return;
     const city=memoryShelfState.city,photos=memoryShelfState.photos,page=memoryShelfState.page;
     const spreads=memoryAlbumSpreadPlan(photos),spread=spreads[page]||[];
     const {left,right}=memoryAlbumSpreadSides(spread,page);
@@ -17963,57 +18774,21 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     },{passive:false});
   }
   function memoryTurnAlbum(step){
+    if(memoryAlbum3DState.reader){
+      memoryAlbum3DState.reader.recordInput?.({type:'navigation-input',step});
+      if(step>0) memoryAlbum3DState.reader.nextPage();
+      else memoryAlbum3DState.reader.previousPage();
+      return;
+    }
     const pageCount=Math.max(1,memoryAlbumSpreadPlan(memoryShelfState.photos).length);
     const next=Math.max(0,Math.min(pageCount-1,memoryShelfState.page+step));
-    if(next===memoryShelfState.page||memoryShelfState.albumTurning) return;
-    const currentBook=$('memoryAlbumBook');
-    const currentLeft=currentBook?.querySelector('.memory-album-page.left')?.cloneNode(true);
-    const currentRight=currentBook?.querySelector('.memory-album-page.right')?.cloneNode(true);
-    const reduceMotion=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if(next===memoryShelfState.page) return;
     memoryShelfState.page=next;
     memoryRenderAlbumSpread();
-    if(!currentLeft||!currentRight||reduceMotion) return;
-    const book=$('memoryAlbumBook'),targetLeft=book.querySelector('.memory-album-page.left'),targetRight=book.querySelector('.memory-album-page.right');
-    if(!targetLeft||!targetRight) return;
-    const front=step>0?currentRight:currentLeft;
-    const back=step>0?targetLeft:targetRight;
-    if(step>0) book.querySelector('.memory-album-page.left').replaceWith(currentLeft);
-    else book.querySelector('.memory-album-page.right').replaceWith(currentRight);
-    memoryShelfState.albumTurning=true;book.classList.add('turning');book.setAttribute('aria-busy','true');
-    front.classList.add('memory-page-turner',step>0?'front-forward':'front-backward');
-    front.querySelectorAll('button').forEach(button=>button.tabIndex=-1);
-    back.querySelectorAll('button').forEach(button=>button.tabIndex=-1);
-    book.appendChild(front);
-    $('memoryAlbumPrev').disabled=true;$('memoryAlbumNext').disabled=true;
-    let finished=false;
-    const finish=()=>{
-      if(finished) return;finished=true;
-      back.classList.remove('memory-page-turner',step>0?'back-forward':'back-backward');
-      back.querySelectorAll('button').forEach(button=>button.removeAttribute('tabindex'));
-      const restingPage=book.querySelector(step>0?'.memory-album-page.left':'.memory-album-page.right');
-      if(restingPage) restingPage.replaceWith(back);
-      front.remove();book.classList.remove('turning');book.removeAttribute('aria-busy');
-      memoryShelfState.albumTurning=false;
-      const prev=$('memoryAlbumPrev'),nextButton=$('memoryAlbumNext');
-      if(prev) prev.disabled=memoryShelfState.page<=0;
-      if(nextButton) nextButton.disabled=memoryShelfState.page>=pageCount-1;
-    };
-    const runPhase=(element,nextPhase)=>{
-      let phaseDone=false;
-      const complete=()=>{if(phaseDone) return;phaseDone=true;nextPhase();};
-      element.addEventListener('animationend',event=>{if(event.target===element) complete();});
-      setTimeout(complete,680);
-    };
-    runPhase(front,()=>{
-      front.remove();
-      back.classList.add('memory-page-turner',step>0?'back-forward':'back-backward');
-      book.appendChild(back);
-      runPhase(back,finish);
-    });
   }
   async function memoryOpenAlbum(province,city){
     memoryShelfState.level='album';memoryShelfState.province=province;memoryShelfState.city=city;memoryShelfState.page=0;memoryShelfState.albumTurning=false;memoryShelfState.photoPositions=new Map();
-    memorySetHeader(city.name+'旅行相册','照片纪念册 · 使用方向键或两侧按钮翻页。');
+    memorySetHeader(city.name+'旅行相册','拖动书页边缘翻页，也可使用两侧按钮或方向键；点击照片查看原图。');
     memoryShelfBodyEl.innerHTML='<div class="memory-album"><div class="memory-view-tools"><button class="memory-back" id="memoryBackChapters" type="button">返回'+escapeHtml(province.name)+'</button><div class="memory-view-title"><span>旅行照片册</span><h3>'+escapeHtml(city.name)+'</h3></div><button class="memory-city-detail" id="memoryCityDetail" type="button">城市详情</button></div><div class="memory-album-frame"><button class="memory-album-side prev" id="memoryAlbumPrev" type="button" aria-label="上一页">‹</button><div class="memory-album-stage" id="memoryAlbumStage"><div class="memory-empty"><span>正在整理旅行照片...</span></div></div><button class="memory-album-side next" id="memoryAlbumNext" type="button" aria-label="下一页">›</button><span class="memory-album-counter" id="memoryAlbumCounter">01 / 01</span></div></div>';
     $('memoryBackChapters').addEventListener('click',()=>memoryOpenChapters(province));
     $('memoryCityDetail').addEventListener('click',()=>{closeMemoryShelf();openAttractionDetail({name:city.name,value:city.value,cityKey:city.cityKey,adcode:city.adcode});});
@@ -18024,7 +18799,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     memoryShelfState.photos=photos;
     $('memoryAlbumPrev').addEventListener('click',()=>memoryTurnAlbum(-1));
     $('memoryAlbumNext').addEventListener('click',()=>memoryTurnAlbum(1));
-    memoryRenderAlbumSpread();
+    $('memoryAlbumStage').addEventListener('wheel',memoryAlbumStageWheel,{passive:false});
+    await memoryStartAlbum3D();
   }
   async function openMemoryShelf(){
     if(!memoryShelfOverlayEl||memoryShelfOverlayEl.classList.contains('show')) return;
@@ -18045,6 +18821,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
   function closeMemoryShelf(){
     if(!memoryShelfOverlayEl) return;
+    memoryDisposeAlbum3D();
     clearTimeout(memoryShelfState.infoTimer);clearTimeout(memoryShelfState.switchTimer);clearTimeout(memoryShelfState.pageTimer);clearTimeout(memoryShelfState.openTimer);
     closeMemoryProvinceEditor();memoryDisposeThreeShelf();memoryShelfOverlayEl.classList.remove('show');document.body.classList.remove('modal-open');
     memoryShelfState.level='shelf';memoryShelfState.province=null;memoryShelfState.city=null;memoryShelfState.photos=[];memoryShelfState.pageShift=0;memoryShelfState.paging=false;memoryShelfState.bookRotation=null;memoryShelfState.albumTurning=false;memoryShelfState.opening=false;memoryShelfState.photoPositions=new Map();
@@ -18080,7 +18857,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       photos.sort((a,b)=>(a.order||a.timestamp||0)-(b.order||b.timestamp||0)).forEach(photo=>add(photo,photo.cityKey));
       photoStreamItems=items;
       if(!items.length){photoStreamStage.textContent='还没有旅行照片。在城市或景点中上传照片后，这里会自动汇集。';return;}
-      const frame=document.createElement('iframe');frame.title='旅途照片流';frame.src='assets/photo-stream/index.html';
+      const frame=document.createElement('iframe');frame.title='旅途照片流';
+      frame.srcdoc=window.TravelPhotoStreamDocument;
       frame.style.cssText='width:100%;height:100%;border:0;display:block;';photoStreamStage.replaceChildren(frame);
     }catch(error){
       if(session===photoStreamSession) photoStreamStage.textContent='照片读取失败，请关闭后重试。';
@@ -18112,6 +18890,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   $('photoStreamBtn').addEventListener('click',openPhotoStream);
   $('photoStreamClose').addEventListener('click',closePhotoStream);
   photoStreamOverlay.addEventListener('keydown',event=>{
+    if(event.key===' '){
+      event.preventDefault();event.stopImmediatePropagation();
+      if(!event.repeat) photoStreamStage.querySelector('iframe')?.contentWindow?.dispatchEvent(new KeyboardEvent('keydown',{key:' ',code:'Space'}));
+    }
     if(event.key==='Escape'){event.stopImmediatePropagation();closePhotoStream();}
     if(event.key==='Tab'){event.preventDefault();const frame=photoStreamStage.querySelector('iframe');document.activeElement===$('photoStreamClose')&&frame?frame.focus():$('photoStreamClose').focus();}
   });
@@ -18151,6 +18933,16 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   if(memoryShelfOverlayEl) memoryShelfOverlayEl.addEventListener('click',event=>{if(event.target===memoryShelfOverlayEl) closeMemoryShelf();});
   document.addEventListener('keydown',event=>{
     if(!memoryShelfOverlayEl?.classList.contains('show')) return;
+    if(memoryShelfState.level==='album'&&event.altKey&&event.shiftKey&&event.code==='KeyD'){
+      event.preventDefault();
+      const diagnostics=memoryAlbum3DState.reader?.getTurnDiagnostics?.();
+      if(diagnostics){
+        const url=URL.createObjectURL(new Blob([JSON.stringify(diagnostics,null,2)],{type:'application/json'}));
+        const link=document.createElement('a');link.href=url;link.download='album-turn-diagnostics.json';
+        document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+      }
+      return;
+    }
     if(event.key==='Escape'){
       event.preventDefault();event.stopImmediatePropagation();
       if(memoryProvinceEditorEl&&!memoryProvinceEditorEl.hidden){closeMemoryProvinceEditor();return;}
@@ -18443,6 +19235,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     radius=Math.max(420, baseRadius*1.20);
   }
 
+  function renderRing(){
+    // 抵消前景卡片的圆环半径：照片数量只改变排列，不再产生透视放大
+    vRing.style.transform='translateZ('+(-radius)+'px) rotateY('+ringRotation+'deg)';
+  }
+
   // ===== 打开预览器 =====
   // opts.sizeScale: 卡片尺寸缩放倍数（1=330×440, 1.5=495×660）
   // opts.bgUrl: 背景虚化封面图 URL（启用 cover-bg-mode）
@@ -18457,7 +19254,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     currentIdx=Math.min(startIdx||0, photos.length-1);
     zoomScale=1; isZoomed=false;
     // 尺寸缩放：通过 CSS 变量控制卡片宽高
-    const scale=(opts&&opts.sizeScale)?opts.sizeScale:1;
+    const scale=Math.min(((opts&&opts.sizeScale)?opts.sizeScale:1)*1.15,window.innerWidth*0.72/330,window.innerHeight*0.68/440);
     curCardW=Math.round(330*scale);
     const cardH=Math.round(440*scale);
     vRing.style.setProperty('--card-w',curCardW+'px');
@@ -18490,7 +19287,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     // 旋转到当前照片
     ringRotation=-currentIdx*angleStep;
     vRing.style.transition='none';
-    vRing.style.transform='rotateY('+ringRotation+'deg)';
+    renderRing();
+    void vRing.offsetWidth; // 先应用新圆环距离，再恢复旋转动画，避免打开时尺寸闪变
     requestAnimationFrame(()=>{
       vRing.style.transition='';
     });
@@ -18553,7 +19351,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
       const stripRect=vThumbs.getBoundingClientRect();
       const thumbRect=active.getBoundingClientRect();
       if(thumbRect.left<stripRect.left||thumbRect.right>stripRect.right){
-        active.scrollIntoView({behavior:'smooth',inline:'center',block:'nearest'});
+        vThumbs.scrollTo({left:vThumbs.scrollLeft+thumbRect.left-stripRect.left-(stripRect.width-thumbRect.width)/2,behavior:'smooth'});
       }
     }
   }
@@ -18585,7 +19383,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     }else{
       ringRotation+=(n-forward)*angleStep;   // 反向旋转（prev 方向，更近）
     }
-    vRing.style.transform='rotateY('+ringRotation+'deg)';
+    renderRing();
     currentIdx=newIdx;
     vCounter.textContent=(currentIdx+1)+' / '+photoList.length;
     updateActiveCard();
@@ -18649,7 +19447,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         dragRAFpending=false;
         if(!dragging) return;
         ringRotation=dragPendingRotation;
-        vRing.style.transform='rotateY('+ringRotation+'deg)';
+        renderRing();
       });
     }
   });
@@ -18668,7 +19466,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     }else{
       // 回弹到拖拽开始的对齐位置（累积角度基准）
       ringRotation=dragStartRotation;
-      vRing.style.transform='rotateY('+ringRotation+'deg)';
+      renderRing();
     }
   });
 

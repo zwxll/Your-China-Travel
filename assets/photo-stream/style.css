@@ -34,8 +34,8 @@ body.story-open .stream-hint{display:none;}
 #stream{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none;cursor:grab}
 #stream:active{cursor:grabbing}
 #city-labels{position:fixed;inset:0;z-index:5;overflow:hidden;pointer-events:none;}
-#city-labels span{position:absolute;left:0;top:0;padding-bottom:12px;transform:translate(-50%,-100%);white-space:nowrap;font:400 12px/1.5 'Noto Serif SC','Source Han Serif SC','STSong','SimSun',serif;letter-spacing:1.5px;color:rgba(219,215,205,.46);text-shadow:0 1px 2px rgba(3,4,10,.25);}
-#city-labels span.vertical{writing-mode:vertical-rl;font-size:11px;letter-spacing:2px;}
+#city-labels span{position:absolute;left:0;top:0;padding-bottom:12px;transform:translate(-50%,-100%);white-space:nowrap;font:400 14.4px/1.5 'Noto Serif SC','Source Han Serif SC','STSong','SimSun',serif;letter-spacing:1.5px;color:rgba(232,242,255,.65);text-shadow:0 1px 2px rgba(3,4,10,.25);}
+#city-labels span.vertical{writing-mode:vertical-rl;font-size:13.2px;letter-spacing:2px;}
 body.story-open #city-labels{display:none;}
 @media (hover:hover) and (pointer:fine){#stream,#stream:active{cursor:none}}
 
@@ -68,6 +68,10 @@ body.story-open #cursor{opacity:0!important}
     radial-gradient(50% 70% at 50% 50%,rgb(var(--accent) / .09),transparent 70%),
     var(--bg)}
 #story.on .story-backdrop{opacity:1}
+.story-backdrop{pointer-events:none}
+.story-galaxy{position:absolute;inset:0;width:100%;height:100%;opacity:.42;pointer-events:none}
+.story-backdrop::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent 10%,rgb(3 4 10 / .65) 35%,rgb(3 4 10 / .85) 50%,rgb(3 4 10 / .65) 65%,transparent 90%)}
 #story.closing .story-backdrop{transition:opacity .7s ease}
 
 /* The thread itself: pours down where it was touched, then glides to the centre. */
@@ -94,7 +98,7 @@ body.story-open #cursor{opacity:0!important}
 .story-side:focus-visible{outline:none}
 #story.unfolded .story-side{opacity:1;transition-delay:.6s}
 
-.story-flow{position:absolute;inset:0;touch-action:none;cursor:grab;
+.story-flow{position:absolute;inset:120px 0 0;overflow:hidden;touch-action:none;cursor:grab;
   -webkit-mask:linear-gradient(transparent,#000 13%,#000 87%,transparent);mask:linear-gradient(transparent,#000 13%,#000 87%,transparent)}
 #story.dragging .story-flow{cursor:grabbing}
 .strip{position:absolute;inset:0}
@@ -140,10 +144,12 @@ body.story-open #cursor{opacity:0!important}
 .story-back:hover{border-color:rgb(var(--accent) / .7)}
 .story-back:hover svg{transform:translateY(-2px)}
 .story-back:focus-visible{outline:1px solid rgb(var(--accent));outline-offset:4px}
-.story-title{text-shadow:0 1px 12px #000;position:absolute;z-index:6;top:max(22px,env(safe-area-inset-top));left:calc(max(22px,env(safe-area-inset-left)) + 60px);
-  height:44px;margin:0;display:flex;align-items:center;font:italic 400 15px/1 var(--serif);color:rgb(215 222 255 / .62);
-  letter-spacing:.01em;opacity:0;transition:opacity .8s ease;pointer-events:none}
-.story-back,.story-title{top:68px;}
+.story-title{text-shadow:0 1px 12px #000;position:absolute;z-index:6;top:max(22px,env(safe-area-inset-top));left:50%;transform:translateX(-50%);
+  width:calc(100% - 160px);max-width:560px;height:44px;margin:0;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  font:600 clamp(20px,2vw,24px)/44px 'Noto Serif SC','Source Han Serif SC','STSong','SimSun',serif;color:rgb(232 242 255 / .92);
+  letter-spacing:.12em;opacity:0;transition:opacity .8s ease;pointer-events:none}
+.story-back{top:68px;}
+.story-title{top:48px;}
 #story.unfolded .story-back,#story.unfolded .story-title{opacity:1;transition-delay:.5s}
 #story.closing .story-back,#story.closing .story-title{opacity:0;transition-delay:0s}
 

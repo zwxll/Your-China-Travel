@@ -1,0 +1,88 @@
+// Adapted from Haichao Li's Image Atlas (MIT). Layout and interaction remain upstream.
+const images=window.atlasImages;
+const $=s=>document.querySelector(s);
+const space=$('#space'),world=$('#world'),input=$('#search'),suggestions=$('#suggestions'),selection=$('#selection'),announcer=$('#announcer');
+const reducedMotion=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const journey=window.atlasJourney||[];
+const journeyYear=entry=>/^\d{4}-\d{2}/.test(entry.month)?Number(entry.month.slice(0,4)):'年份未确定';
+const years=[...new Set([...images.map(r=>r.year),...journey.map(journeyYear)])].sort((a,b)=>a==='年份未确定'?1:b==='年份未确定'?-1:a-b);
+const home={x:0,y:0,z:2400,yaw:0,pitch:0},camera={...home},desired={...home};
+let width=innerWidth,height=innerHeight,focal=height*1.27,activeYear=null,selected=null,flight=null,dragging=false,dragMoved=false,pointerStart=null,lastTime=performance.now(),results=[],resultIndex=0,lastQuery='',cycleIndex=-1,lastFrame='',pinch=null;
+let seed=8142;const random=()=>{seed=(Math.imul(seed,1664525)+1013904223)>>>0;return seed/4294967296};
+const norm=s=>s.toLowerCase().normalize('NFKC').replace(/[^\p{L}\p{N}]+/gu,' ').trim();
+const cards=[],rings=[];
+const planes=new Map(years.map((y,i)=>[y,-(years.length-1-i)*1250]));
+function makeCard(record,index,total){
+  // Each year forms a ring; growing radii keep all photographs unique and accessible.
+  const ring=Math.floor(index/24),count=Math.min(24,total-ring*24),angle=((index%24)/count)*Math.PI*2+ring*.29+years.indexOf(record.year)*.71;
+  const radius=430+ring*205,jitter=(random()-.5)*75;
+  const card={record,x:Math.cos(angle)*(radius+jitter)*1.4,y:Math.sin(angle)*(radius+jitter)*.79,z:planes.get(record.year)+(random()-.5)*540,w:80+random()*42,ry:(random()-.5)*16,rz:(random()-.5)*6};card.h=card.w/record.aspect;
+  const el=document.createElement('button');el.type='button';el.className='image-card';el.setAttribute('aria-label',`${record.date} · ${record.title}`);el.dataset.imageId=record.id;
+  el.style.width=`${card.w}px`;el.style.height=`${card.h}px`;
+  const img=document.createElement('img');img.src=record.src;img.alt=record.title;img.draggable=false;img.decoding='async';img.loading='lazy';img.width=480;img.height=Math.round(480/record.aspect);
+  img.addEventListener('load',()=>{if(!img.naturalWidth)return;record.aspect=img.naturalWidth/img.naturalHeight;card.h=card.w/record.aspect;el.style.height=`${card.h}px`;setCardTransform(card);if(selected===card){const point=destination(card);if(flight)flight.to=point;else{Object.assign(camera,point);Object.assign(desired,point);lastFrame=''}}});
+  const caption=document.createElement('span');caption.className='caption';caption.textContent=`${record.date} · ${record.title}`;el.append(img,caption);
+  el.addEventListener('click',e=>{if(e.detail===0&&!flight)focusCard(card)});
+  card.element=el;card.image=img;world.append(el);cards.push(card);setCardTransform(card);
+}
+function setCardTransform(card){const f=selected===card?0:1;card.element.style.transform=`translate3d(${card.x-card.w/2}px,${card.y-card.h/2}px,${card.z}px) rotateY(${card.ry*f}deg) rotateZ(${card.rz*f}deg)`;card.element.classList.toggle('is-selected',selected===card)}
+for(const year of years){const group=images.filter(r=>r.year===year);group.forEach((r,i)=>makeCard(r,i,group.length));
+ const el=document.createElement('div');el.className='year-ring';const rw=1200;el.style.cssText=`width:${rw}px;height:680px;transform:translate3d(${-rw/2}px,-340px,${planes.get(year)-200}px)`;const label=document.createElement('span');label.className='ring-label';label.textContent=year;el.append(label);world.append(el);rings.push({el,year});
+}
+$('#archive-count').textContent=`${images.length} 张旅行照片 · ${years.filter(y=>typeof y==='number').length} 个年份`;
+if(!images.length){$('#period-caption').textContent='还没有旅行照片，请先在城市详情中保存照片。'}
+function yearButton(label,year,count){const b=document.createElement('button');b.textContent=label;b.className=year===null?'active':'';b.dataset.year=year??'all';b.setAttribute('aria-pressed',String(year===null));const small=document.createElement('small');small.textContent=count;b.append(small);b.addEventListener('click',()=>chooseYear(year));$('#timeline').append(b)}
+yearButton('全部',null,images.length);for(const y of years)yearButton(String(y),y,images.filter(r=>r.year===y).length);
+if(journey.length){
+  document.body.classList.add('has-journey');$('#journey-panel').hidden=false;$('#journey-toggle').hidden=false;
+  for(const year of [...years].reverse()){
+    const entries=journey.filter(entry=>journeyYear(entry)===year).sort((a,b)=>(b.date||b.month).localeCompare(a.date||a.month));
+    if(!entries.length)continue;
+    const section=document.createElement('section');section.className='journey-year';section.dataset.journeyYear=year;
+    const heading=document.createElement('h3');heading.textContent=year==='年份未确定'?'时间未记录':String(year);
+    const summary=document.createElement('p');summary.className='journey-summary';summary.textContent=`${entries.length} 次旅程 · ${new Set(entries.map(entry=>entry.cityKey)).size} 座城市`;
+    const list=document.createElement('ol');
+    for(const entry of entries){
+      const item=document.createElement('li');item.className='journey-visit';
+      const name=document.createElement('b');name.textContent=entry.name;
+      const date=document.createElement('time');date.textContent=entry.date||entry.month||'时间未记录';if(entry.date||entry.month)date.dateTime=entry.date||entry.month;
+      const order=document.createElement('span');order.textContent=`第 ${entry.visitOrder} 次抵达`;
+      item.append(name,date,order);list.append(item);
+    }
+    section.append(heading,summary,list);$('#journey-years').append(section);
+  }
+}
+function journeyVisible(){return innerWidth<=700?document.body.classList.contains('journey-open'):!document.body.classList.contains('journey-collapsed')}
+function toggleJourney(open){document.body.classList.toggle(innerWidth<=700?'journey-open':'journey-collapsed',innerWidth<=700?open:!open);size()}
+$('#journey-toggle').addEventListener('click',()=>toggleJourney(!journeyVisible()));
+function updateYearUI(){for(const b of $('#timeline').children){const active=b.dataset.year===String(activeYear??'all');b.classList.toggle('active',active);b.setAttribute('aria-pressed',String(active))}$('#period').textContent=activeYear??'ALL THE DAYS';$('#period-caption').textContent=activeYear?`${images.filter(r=>r.year===activeYear).length} 个留下来的片刻`:'日子，一圈一圈。';for(const c of cards){c.element.hidden=activeYear!==null&&c.record.year!==activeYear;c.element.tabIndex=c.element.hidden?-1:0}for(const r of rings)r.el.hidden=activeYear!==null&&r.year!==activeYear;for(const section of $('#journey-years').children)section.hidden=activeYear!==null&&section.dataset.journeyYear!==String(activeYear);$('#journey-years').scrollTop=0;lastFrame=''}
+function yearHome(){return activeYear===null?{...home}:{...home,z:planes.get(activeYear)+1900}}
+function chooseYear(year){activeYear=year;updateYearUI();clearSearch();if(innerWidth<=700)toggleJourney(false);const group=cards.filter(c=>c.record.year===year);return group.length===1?focusCard(group[0]):flyTo(yearHome())}
+function size(){const open=journeyVisible();$('#journey-toggle').setAttribute('aria-expanded',String(open));$('#journey-toggle').textContent=innerWidth<=700?(open?'收起足迹':'查看足迹'):(open?'隐藏足迹':'显示足迹');width=space.clientWidth;height=space.clientHeight;focal=Math.max(470,height*1.27);space.style.perspective=`${focal}px`;if(selected){const point=destination(selected);if(flight)flight.to=point;else{Object.assign(camera,point);Object.assign(desired,point)}}lastFrame=''}size();addEventListener('resize',size);
+function destination(card){const targetWidth=Math.min(720,width*.78,height*(width<701?.5:.55)*card.record.aspect);return{x:card.x,y:card.y+(width<701?20:35)*card.w/targetWidth,z:card.z+focal*card.w/targetWidth,yaw:0,pitch:0}}
+function flyTo(to,card=null){if(flight)flight.resolve({cancelled:true});selected=card;cards.forEach(setCardTransform);document.body.classList.add('flying');document.body.classList.toggle('focused',!!card);selection.hidden=true;const from={...camera};const distance=Math.hypot(to.x-from.x,to.y-from.y,to.z-from.z);return new Promise(resolve=>{flight={from,to,start:performance.now(),duration:reducedMotion?0:Math.min(1800,950+distance*.07),resolve}})}
+function focusCard(card){if(!card)return Promise.resolve({found:false});if(innerWidth<=700)toggleJourney(false);closeSuggestions();input.blur();card.image.src=card.record.full;card.image.loading='eager';announcer.textContent=`正在移向 ${card.record.date} ${card.record.title}`;return flyTo(destination(card),card)}
+function clearSearch(){closeSuggestions();input.value='';$('#clear').hidden=true;lastQuery='';cycleIndex=-1}
+function goHome(){clearSearch();return flyTo(yearHome())}
+function settle(){document.body.classList.remove('flying');if(selected){selection.hidden=false;$('#selection-title').textContent=selected.record.title;$('#selection-meta').textContent=selected.record.date.replaceAll('-',' . ')+(selected.record.year==='年份未确定'?' · 可手动补充年份':selected.record.dateSource==='city'?' · 按城市旅行年份归类':selected.record.dateSource==='manual'?' · 手动归属':'');const select=$('#photo-year');select.replaceChildren();for(const y of ['年份未确定',...[...new Set([...years.filter(y=>typeof y==='number'),...selected.record.visitYears])].sort((a,b)=>a-b)]){const option=document.createElement('option');option.value=String(y);option.textContent=String(y);select.append(option)}const custom=document.createElement('option');custom.value='custom';custom.textContent='填写年份…';select.append(custom);select.value=String(selected.record.year);$('#year-status').textContent='';announcer.textContent=`${selected.record.date}，${selected.record.title}`}else announcer.textContent=activeYear?`${activeYear} 的照片`:'已返回全部年轮'}
+$('#photo-year').addEventListener('change',e=>{if(!selected)return;let value=e.target.value;if(value==='custom'){value=prompt('填写照片所属的旅行年份（4位数字）','');if(value===null){e.target.value=String(selected.record.year);return}if(!/^\d{4}$/.test(value.trim())||Number(value)<1000){$('#year-status').textContent='请输入有效的4位年份';e.target.value=String(selected.record.year);return}}$('#year-status').textContent='正在保存…';parent.postMessage({type:'atlas-year',id:selected.record.id,year:value==='年份未确定'?null:Number(value)},'*')});
+addEventListener('message',e=>{if(e.source===parent&&e.data?.type==='atlas-year-error')$('#year-status').textContent='保存失败，请重试';});
+function animate(now){const dt=Math.min(40,now-lastTime);lastTime=now;if(flight){const t=flight.duration?Math.min(1,(now-flight.start)/flight.duration):1,e=t*t*t*(t*(t*6-15)+10);for(const k of ['x','y','z','yaw','pitch'])camera[k]=flight.from[k]+(flight.to[k]-flight.from[k])*e;if(t>=1){const{resolve,to}=flight;flight=null;Object.assign(desired,to);settle();resolve({cancelled:false,image:selected?.record.id??null})}}else{const ease=reducedMotion?1:1-Math.exp(-dt*.009);for(const k of ['x','y','z','yaw','pitch'])camera[k]+=(desired[k]-camera[k])*ease}
+ const frame=Object.values(camera).map(v=>v.toFixed(2)).join(',')+selected?.record.id;if(frame!==lastFrame){lastFrame=frame;world.style.transform=`translateZ(${focal}px) rotateX(${camera.pitch}deg) rotateY(${camera.yaw}deg) translate3d(${-camera.x}px,${-camera.y}px,${-camera.z}px)`;
+ for(const card of cards){if(card.element.hidden)continue;const depth=camera.z-card.z;let opacity=selected===card?1:Math.min(1,Math.max(0,(depth-90)/260));if(selected&&selected!==card)opacity*=.14;card.element.style.opacity=opacity;card.element.style.pointerEvents=opacity<.2?'none':'auto';card.element.tabIndex=opacity<.2?-1:0}
+ for(const r of rings)r.el.style.opacity=selected?'.12':'1';}
+ requestAnimationFrame(animate)}requestAnimationFrame(animate);
+function findImages(query){const q=norm(query);if(!q)return[];return images.map(record=>{const all=norm(`${record.title} ${record.tags} ${record.year} ${record.date} ${record.sourceFile}`);const score=norm(record.title)===q?100:all.includes(q)?60:q.split(' ').every(t=>all.includes(t))?30:0;return{record,score}}).filter(x=>x.score>0).sort((a,b)=>b.score-a.score||b.record.date.localeCompare(a.record.date)).map(x=>x.record)}
+function closeSuggestions(){suggestions.hidden=true;input.setAttribute('aria-expanded','false')}
+function renderResults(){suggestions.replaceChildren();results=findImages(input.value).slice(0,7);resultIndex=0;const q=norm(input.value);$('#clear').hidden=!q;if(!q){closeSuggestions();return}suggestions.hidden=false;input.setAttribute('aria-expanded','true');if(!results.length){const p=document.createElement('p');p.className='empty';p.textContent='还没有找到。试试城市名、照片文件名或一个年份。';suggestions.append(p);return}results.forEach((r,i)=>{const b=document.createElement('button');b.type='button';b.className='result'+(!i?' active':'');const img=document.createElement('img');img.src=r.src;img.alt='';const label=document.createElement('span');label.textContent=r.title;const hint=document.createElement('small');hint.textContent=r.date;label.append(hint);b.append(img,label);b.addEventListener('click',()=>selectResult(r));suggestions.append(b)})}
+function selectResult(r){if(activeYear!==null&&activeYear!==r.year){activeYear=r.year;updateYearUI()}return focusCard(cards.find(c=>c.record.id===r.id))}
+function search(query){const matches=findImages(query);if(!matches.length){input.value=query;renderResults();announcer.textContent='没有找到匹配的照片';return Promise.resolve({found:false})}if(norm(query)===lastQuery)cycleIndex=(cycleIndex+1)%matches.length;else{lastQuery=norm(query);cycleIndex=0}const r=matches[cycleIndex];return selectResult(r).then(x=>({...x,found:true,title:r.title}))}
+input.addEventListener('input',renderResults);input.addEventListener('focus',()=>{if(input.value)renderResults()});input.addEventListener('keydown',e=>{if(e.isComposing)return;if(['ArrowDown','ArrowUp'].includes(e.key)){e.preventDefault();if(!results.length)return;resultIndex=(resultIndex+(e.key==='ArrowDown'?1:-1)+results.length)%results.length;[...suggestions.children].forEach((el,i)=>el.classList.toggle('active',i===resultIndex))}});
+$('#search-form').addEventListener('submit',e=>{e.preventDefault();if(!input.value.trim())return;if(!suggestions.hidden&&results.length&&resultIndex>0)selectResult(results[resultIndex]);else search(input.value)});$('#clear').addEventListener('click',goHome);$('#back').addEventListener('click',goHome);$('#home').addEventListener('click',()=>chooseYear(null));
+function adjacent(step){if(!selected)return;const list=cards.filter(c=>activeYear===null||c.record.year===activeYear);focusCard(list[(list.indexOf(selected)+step+list.length)%list.length])}$('#previous').addEventListener('click',()=>adjacent(-1));$('#next').addEventListener('click',()=>adjacent(1));
+document.addEventListener('pointerdown',e=>{if(!e.target.closest('.search-shell'))closeSuggestions()});document.addEventListener('keydown',e=>{if(e.isComposing)return;if(e.key==='Escape'){input.blur();goHome()}if(e.key==='/'&&document.activeElement!==input){e.preventDefault();input.focus()}if(e.target instanceof HTMLInputElement||e.target instanceof HTMLSelectElement)return;if(selected&&['ArrowLeft','ArrowRight'].includes(e.key)){e.preventDefault();adjacent(e.key==='ArrowLeft'?-1:1);return}const move={ArrowLeft:[-180,0],ArrowRight:[180,0],ArrowUp:[0,-150],ArrowDown:[0,150]}[e.key];if(move&&!flight){e.preventDefault();releaseFocus();desired.x+=move[0];desired.y+=move[1]}});
+function releaseFocus(){if(flight){flight.resolve({cancelled:true});flight=null;Object.assign(desired,camera)}selected=null;selection.hidden=true;document.body.classList.remove('focused','flying');cards.forEach(setCardTransform);lastFrame=''}
+const pointers=new Map();space.addEventListener('pointerdown',e=>{if(e.button!==0)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2){const[a,b]=[...pointers.values()];pinch={distance:Math.hypot(a.x-b.x,a.y-b.y),z:desired.z};dragMoved=true}dragging=true;pointerStart={x:e.clientX,y:e.clientY,cx:desired.x,cy:desired.y};if(pointers.size===1)dragMoved=false;space.setPointerCapture(e.pointerId);space.classList.add('dragging')});
+space.addEventListener('pointermove',e=>{if(!dragging)return;pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(pointers.size===2&&pinch){const[a,b]=[...pointers.values()];releaseFocus();desired.z=Math.max(-9000,Math.min(4500,pinch.z-(Math.hypot(a.x-b.x,a.y-b.y)-pinch.distance)*7));return}const dx=e.clientX-pointerStart.x,dy=e.clientY-pointerStart.y;if(Math.hypot(dx,dy)>5){if(!dragMoved)releaseFocus();dragMoved=true}if(dragMoved){const factor=Math.max(.5,(camera.z-(activeYear?planes.get(activeYear):0))/focal);desired.x=pointerStart.cx-dx*factor;desired.y=pointerStart.cy-dy*factor;desired.yaw=0;desired.pitch=0}});
+space.addEventListener('pointerup',e=>{const moved=dragMoved;pointers.delete(e.pointerId);if(space.hasPointerCapture(e.pointerId))space.releasePointerCapture(e.pointerId);if(!pointers.size){dragging=false;pinch=null;space.classList.remove('dragging');if(!moved&&!flight){const el=document.elementFromPoint(e.clientX,e.clientY)?.closest('.image-card');const card=cards.find(c=>c.element===el);if(card)focusCard(card)}dragMoved=false}else{const p=[...pointers.values()][0];pointerStart={...p,cx:desired.x,cy:desired.y}}});space.addEventListener('pointercancel',()=>{pointers.clear();dragging=false;pinch=null;space.classList.remove('dragging')});
+space.addEventListener('wheel',e=>{e.preventDefault();releaseFocus();if(e.shiftKey)desired.x+=e.deltaY*1.5;else desired.z=Math.max(Math.min(0,...planes.values())-300,Math.min(6000,desired.z+e.deltaY*1.8));desired.x+=e.deltaX*1.4},{passive:false});

@@ -5,7 +5,9 @@
 
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 import { clamp, smooth, damp, mod } from './math.js';
+import { StoryGalaxy } from './galaxy.js';
 const DRIFT = 30; // px/s the stream flows on its own
+const EMBEDDED = location.protocol === 'about:';
 
 export class StoryView {
   constructor({ stories, onShow, onCovered, onHide }) {
@@ -53,7 +55,7 @@ export class StoryView {
       if (k === 'Escape') { e.preventDefault(); this.lb.hidden ? this.close() : this.closeLightbox(); }
       else if (k === 'ArrowLeft' || k === 'ArrowRight') { e.preventDefault(); this.lb.hidden ? this.step(k === 'ArrowRight' ? 1 : -1) : this.lightboxStep(k === 'ArrowRight' ? 1 : -1); }
       else if (k === 'ArrowUp' || k === 'ArrowDown') { e.preventDefault(); this.target += k === 'ArrowUp' ? 180 : -180; }
-      else if (k === ' ') { e.preventDefault(); this.paused = !this.paused; }
+      else if (k === ' ') { e.preventDefault(); if (!e.repeat) this.paused = !this.paused; }
       e.stopImmediatePropagation();
     }, true);
   }
@@ -67,18 +69,20 @@ export class StoryView {
     if (!s) return;
     this.origin = x;
     const hash = `#/story/${encodeURIComponent(s.id)}` + (chapter != null ? `/${chapter + 1}` : '');
+    if (EMBEDDED) { this.routeHash = hash; return this.route(); }
     if (location.hash === hash) return this.route();
     if (replace) { history.replaceState(null, '', hash); this.route(); }
     else { this.pushed = true; location.hash = hash; }
   }
   close() {
     if (!this.isOpen) return;
+    if (EMBEDDED) { this.routeHash = ''; return this.route(); }
     if (this.pushed) { this.pushed = false; history.back(); }
     else { history.replaceState(null, '', location.pathname + location.search); this.route(); }
   }
   step(d) { this.open(mod(this.index + d, this.stories.length), { replace: true }); }
   route() {
-    const m = location.hash.match(/^#\/story\/([^/]+)(?:\/(\d+))?/);
+    const m = (EMBEDDED ? this.routeHash || '' : location.hash).match(/^#\/story\/([^/]+)(?:\/(\d+))?/);
     const index = m ? this.stories.findIndex(s => s.id === decodeURIComponent(m[1])) : -1;
     if (index < 0) return this.hide();
     this.show(index, m[2] ? +m[2] - 1 : null);
@@ -108,6 +112,7 @@ export class StoryView {
     this.clearTimers();
     this.lastFocus = document.activeElement;
     el.hidden = false;                                     // visible first, so entries can be measured
+    this.galaxy ??= new StoryGalaxy(el.querySelector('.story-backdrop'));
     el.classList.remove('closing', 'folding', 'on', 'poured', 'centered', 'unfolded');
     this.render(index, chapter);
     el.style.setProperty('--tx', `${Math.round(this.origin)}px`);
@@ -179,10 +184,11 @@ export class StoryView {
   layout() {
     const vw = innerWidth, vh = innerHeight;
     const gap = clamp(vh * 0.075, 36, 80), textW = clamp(vw * 0.2, 220, 300), gutter = clamp(vw * 0.04, 36, 60);
-    let base = Math.min(clamp(vh * 0.44, 220, 380), vw * 0.64);
+    let base = Math.min(clamp(vh * 0.6072, 304, 524), vw * 0.8832);
     // Wide screens keep the journal beside each photograph, alternating sides; narrow ones below.
     const beside = vw >= base + 2 * (gutter + textW + 40);
-    if (!beside) base = Math.min(vw * 0.8, 440);
+    if (!beside) base = Math.min(vw * 0.92, 607);
+    base *= 0.8;
     this.el.classList.toggle('stacked', !beside);
     this.el.style.setProperty('--gap', `${Math.round(gap)}px`);
     this.el.style.setProperty('--textw', `${Math.round(textW)}px`);
@@ -236,7 +242,7 @@ export class StoryView {
   // Put moment `i` in the middle of the screen.
   centre(i, animate) {
     const it = this.items.find(t => t.i === i) ?? this.items[0];
-    const want = innerHeight / 2 - it.H / 2 - it.y0;
+    const want = this.flow.clientHeight / 2 - it.H / 2 - it.y0;
     const now = this.target;
     const d = mod(want - now + this.cycle / 2, this.cycle) - this.cycle / 2; // shortest way round
     this.target = now + d;
@@ -244,7 +250,7 @@ export class StoryView {
   }
 
   place() {
-    const vh = innerHeight, span = this.copies * this.cycle;
+    const vh = this.flow.clientHeight, span = this.copies * this.cycle;
     for (const n of this.nodes) {
       const y = mod(n.base + this.offset, span) - this.cycle;
       n.y = y;
@@ -262,6 +268,7 @@ export class StoryView {
       this.raf = requestAnimationFrame(tick);
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
       const flowing = this.el.classList.contains('unfolded') && !this.paused && !REDUCED && this.lb.hidden;
+      if (!this.el.classList.contains('closing') && this.lb.hidden) this.galaxy?.draw(dt, flowing);
       const hold = this.hovering && !this.drag;
       this.drift = damp(this.drift, flowing && !hold ? DRIFT : 0, hold ? 5 : 1.6, dt);
       if (!this.drag) { this.target += (this.drift + this.vel) * dt; this.vel *= Math.exp(-dt * 3); }
