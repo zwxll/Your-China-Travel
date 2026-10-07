@@ -70,6 +70,21 @@
     font-display:swap;
     font-style:normal;
   }
+  /* 启动页文案及左上标题的完整字形子集，避免原省市字库缺字时混用系统宋体。 */
+  @font-face{
+    font-family:'Noto Serif SC Launch';
+    src:url('assets/fonts/NotoSerifSC-Launch-400.woff2') format('woff2');
+    font-weight:400;
+    font-display:swap;
+    font-style:normal;
+  }
+  @font-face{
+    font-family:'Noto Serif SC Launch';
+    src:url('assets/fonts/NotoSerifSC-Launch-700.woff2') format('woff2');
+    font-weight:700;
+    font-display:swap;
+    font-style:normal;
+  }
   :root{
     /* ===== 全局配色：纯黑科技基底 + 青蓝主色（原为米白+橙）===== */
     --ink:#f8fafc;          /* 主标题文字：冷亮白（原 #1f2a37）*/
@@ -668,6 +683,7 @@
   }
   .brand-text{display:flex;flex-direction:column;gap:2px;min-width:0;}
   .brand h1{
+    font-family:'Noto Serif SC','Noto Serif SC Launch','Source Han Serif SC','Songti SC','SimSun',serif;
     margin:0;font-size:20px;font-weight:800;letter-spacing:1.6px;white-space:nowrap;
     line-height:1.25;
     /* Shiny Text 闪光效果（参考 reactbits shiny-text: spread=135, speed=1.6s, delay=1.4s, yoyo, pauseOnHover）*/
@@ -680,6 +696,7 @@
     animation:shinyTextYoyo 6s ease-in-out infinite;
   }
   .brand .sub{
+    font-family:'Noto Serif SC','Noto Serif SC Launch','Source Han Serif SC','Songti SC','SimSun',serif;
     margin:0;font-size:12px;line-height:1.4;letter-spacing:1px;
     max-width:min(34vw,420px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
     background:linear-gradient(135deg,
@@ -3026,6 +3043,8 @@
   }
   .tl-btn-secondary::after{animation-duration:3.5s;background:linear-gradient(105deg, transparent 0%, rgba(186,230,253,0) 30%, rgba(186,230,253,0.5) 50%, rgba(186,230,253,0) 70%, transparent 100%);}
   .tl-btn-secondary:hover{box-shadow:0 6px 20px rgba(56,189,248,.4), inset 0 0 14px rgba(56,189,248,.18);border-color:rgba(56,189,248,.95);}
+  /* 旅行轨迹两处入口只保留静态光晕，不再循环扫光。 */
+  #tlBtnPlay::after,#tlBtnOverview::after{content:none;animation:none;}
 
   /* ===== 时间轴全屏弹窗 ===== */
   .timeline-modal-overlay{
@@ -4193,12 +4212,22 @@
   .img-viewer .vm-btn{width:30px;height:26px;border-radius:8px;cursor:pointer;border:1px solid transparent;background:transparent;display:grid;place-items:center;padding:0;color:rgba(255,255,255,.5);transition:color .25s ease,background .25s ease,border-color .25s ease;}
   .img-viewer .vm-btn:hover{color:#fff;background:rgba(255,255,255,.08);}
   .img-viewer .vm-btn.is-active{color:#0f1116;background:rgba(255,255,255,.9);border-color:rgba(255,255,255,.9);}
-  .img-viewer .viewer-wall{position:absolute;left:0;right:0;top:76px;bottom:72px;z-index:15;display:none;grid-template-columns:repeat(auto-fill,minmax(116px,1fr));grid-auto-rows:116px;gap:9px;align-content:start;padding:8px 22px 26px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent;}
-  .img-viewer.wall-mode .viewer-wall{display:grid;}
+  .img-viewer .viewer-wall{position:absolute;left:0;right:0;top:76px;bottom:72px;z-index:15;display:none;padding:40px 24px;overflow-y:auto;overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.3) transparent;}
+  .img-viewer.wall-mode{background:#161513;backdrop-filter:none;}
+  .img-viewer.wall-mode .viewer-wall{display:flex;background:radial-gradient(ellipse at center,rgba(106,98,83,.3),transparent 75%);}
   .img-viewer.wall-mode .stage,.img-viewer.wall-mode .thumb-strip,.img-viewer.wall-mode .hint{display:none;}
-  .img-viewer .wall-tile{position:relative;margin:0;padding:0;border:none;cursor:pointer;border-radius:8px;overflow:hidden;background:rgba(255,255,255,.045);box-shadow:inset 0 0 0 1px rgba(255,255,255,.075);transform:translate3d(0,0,0) scale(1);transition:transform .18s ease,box-shadow .18s ease;}
-  .img-viewer .wall-tile:hover{transform:scale(1.04);z-index:2;box-shadow:inset 0 0 0 1px rgba(255,255,255,.3),0 14px 30px rgba(0,0,0,.5);}
-  .img-viewer .wall-tile img{width:100%;height:100%;object-fit:cover;display:block;}
+  /* Native hanging-slide adaptation inspired by Slide Curtain; no demo code or photos copied. */
+  .img-viewer .curtain-panel{position:relative;display:flex;flex:none;margin:auto;padding:14px 12px 10px;background:radial-gradient(ellipse at 50% 35%,#fff8df,#d6ccb7);border:9px solid #777164;box-shadow:0 0 0 14px rgba(143,135,118,.15),0 0 65px rgba(236,220,179,.18),inset 0 0 12px #fff7e0;}
+  .img-viewer .curtain-rod{position:absolute;left:-22px;right:-22px;top:-13px;height:9px;border-radius:5px;background:linear-gradient(#5b5851,#151412 45%,#24221e);box-shadow:0 4px 5px rgba(19,17,13,.45);}
+  .img-viewer .curtain-rod::before,.img-viewer .curtain-rod::after{content:'';position:absolute;top:-4px;width:17px;height:17px;border-radius:50%;background:#151412;}
+  .img-viewer .curtain-rod::before{left:-4px;}.img-viewer .curtain-rod::after{right:-4px;}
+  .img-viewer .curtain-chain{width:var(--curtain-cell);flex:none;transform:rotate(0deg);transform-origin:50% -14px;}
+  .img-viewer .curtain-link{height:var(--curtain-cell);display:flex;align-items:center;justify-content:center;}
+  .img-viewer .wall-tile{position:relative;display:flex;align-items:center;justify-content:center;width:90%;height:90%;margin:0;padding:8%;border:1px solid #484238;cursor:pointer;border-radius:4px;background:linear-gradient(125deg,#333029,#161513 55%,#28251f);box-shadow:0 2px 3px rgba(29,24,17,.4),inset 0 0 0 2px rgba(239,222,185,.035);transition:box-shadow .18s ease;}
+  .img-viewer .wall-tile::before{content:'';position:absolute;left:50%;bottom:calc(100% + 1px);width:16%;height:18%;border:2px solid #4e493f;border-radius:50%;transform:translateX(-50%);box-sizing:border-box;}
+  .img-viewer .wall-tile:hover{box-shadow:0 2px 9px rgba(29,24,17,.5),inset 0 0 0 2px #827663;}
+  .img-viewer .wall-tile:focus-visible{outline:3px solid #ad7b39;outline-offset:2px;}
+  .img-viewer .wall-tile img{width:100%;height:100%;object-fit:contain;display:block;filter:none;pointer-events:none;}
   .img-viewer .wall-no{position:absolute;left:6px;bottom:5px;font-size:10px;line-height:1;color:rgba(255,255,255,.92);padding:3px 5px;border-radius:5px;background:rgba(12,14,18,.5);opacity:0;transition:opacity .2s ease;}
   .img-viewer .wall-tile:hover .wall-no{opacity:1;}
   .img-viewer .wall-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;background:rgba(12,14,18,.42);border:1px solid rgba(255,255,255,.5);}
@@ -4213,7 +4242,7 @@
   .img-viewer .wz-count{font-size:13px;color:rgba(255,255,255,.82);white-space:nowrap;}.img-viewer .wz-name{font-size:12px;color:rgba(255,255,255,.45);max-width:38vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .img-viewer .wz-dl,.img-viewer .wz-strip{cursor:pointer;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:rgba(255,255,255,.8);border-radius:9px;font:12px inherit;padding:5px 12px;}
   .img-viewer .wz-hint{position:absolute;top:30px;left:26px;color:rgba(255,255,255,.3);font-size:11px;z-index:4;}
-  @media(max-width:760px){.img-viewer .viewer-mode{right:20px;top:74px;padding:5px 6px 5px 9px;}.img-viewer .vm-label{display:none;}.img-viewer .viewer-wall{top:118px;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));grid-auto-rows:92px;gap:7px;padding:8px 14px 24px;}.img-viewer .wz-stage{width:calc(100% - 24px);height:calc(100% - 130px);}.img-viewer .wz-name{display:none;}}
+  @media(max-width:760px){.img-viewer .viewer-mode{right:20px;top:74px;padding:5px 6px 5px 9px;}.img-viewer .vm-label{display:none;}.img-viewer .viewer-wall{top:118px;padding:32px 20px;}.img-viewer .curtain-panel{padding:12px 4px 6px;border-width:5px;box-shadow:0 0 0 7px rgba(143,135,118,.15),0 0 30px rgba(236,220,179,.15);}.img-viewer .curtain-rod{left:-13px;right:-13px;}.img-viewer .wz-stage{width:calc(100% - 24px);height:calc(100% - 130px);}.img-viewer .wz-name{display:none;}}
   @media(max-width:760px){.img-viewer .download-btn{left:14px;top:16px;}.img-viewer .close-btn{right:14px;top:16px;}.img-viewer .viewer-media-tabs{left:64px;top:20px;}.img-viewer .viewer-mode{right:14px;}.img-viewer .viewer-media-tab{padding:6px 8px;}}
 
   /* ============================================================
@@ -4361,6 +4390,7 @@
 
   /* 副标题：smokytex 烟雾动画（纯色文字，无渐变填充，避免乱码）*/
   .launch-subtitle{
+    font-family:'Noto Serif SC Launch','Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif;
     font-size:clamp(1.05rem,2.2vw,1.6rem);
     letter-spacing:0.05em;
     margin-top:18px;
@@ -4383,7 +4413,7 @@
     -webkit-text-fill-color:#bae6fd;
     color:#bae6fd;
     text-shadow:none;
-    font-family:'Figtree','PingFang SC','Microsoft YaHei',-apple-system,sans-serif;
+    font-family:inherit;
     font-size:inherit;
     font-weight:400;
     display:inline-block;
@@ -4406,6 +4436,7 @@
   /* 底部诗意标语：绝对定位锚定启动页底部（图1「— 把流浪写成诗 —」同款布局）
      配色：青蓝渐变字（呼应主标题 Chinese Footprint 的青蓝家族），在深色星空中鲜艳醒目 */
   .launch-motto{
+    font-family:'Noto Serif SC Launch','Noto Serif SC','Source Han Serif SC','Songti SC','SimSun',serif;
     position:absolute;                                  /* 相对 .launch-overlay（inset:0）定位 */
     left:0;
     right:0;
@@ -4906,6 +4937,7 @@
   .life-photo-dome{min-width:0;min-height:0;overflow:hidden;display:flex;flex-direction:column;border:1px solid rgba(125,179,255,.14);border-radius:14px;background:#08182a;box-shadow:inset 0 1px 0 rgba(255,255,255,.04);}
   .life-photo-dome-head{position:relative;z-index:7;flex:0 0 auto;min-height:54px;padding:12px 16px;border-bottom:1px solid rgba(125,179,255,.12);display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:rgba(8,24,42,.94);}
   .life-photo-dome-actions{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-left:auto;}
+  @media(max-width:700px){.life-photo-dome-actions{max-width:100%;flex-wrap:wrap;gap:8px;}.life-photo-dome-actions em{flex-basis:100%;text-align:right;}}
   .life-photo-dome-head b,.life-photo-dome-head span{display:block}.life-photo-dome-head b{font-size:14px;color:#dbeaff}.life-photo-dome-head span{margin-top:3px;font-size:11px;color:#7892b2}.life-photo-dome-head em{font-style:normal;font-size:11px;color:#82b3fa;white-space:nowrap;}
   .life-photo-dome-stage{position:relative;flex:1 1 auto;min-height:0;overflow:hidden;}
   .life-photo-dome-empty{height:100%;min-height:340px;display:grid;place-content:center;gap:8px;text-align:center;color:#7892ad}.life-photo-dome-empty strong{font-size:17px;color:#dbeaff}.life-photo-dome-empty span{font-size:13px;}
@@ -5543,17 +5575,21 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
             <span class="fp-btn-ico" aria-hidden="true">▦</span>
             <span class="fp-btn-label">城市记忆</span>
           </button>
-          <button class="theme-toggle-btn footprint-btn" id="memoryShelfBtn" type="button" aria-label="记忆书架" aria-haspopup="dialog" aria-controls="memoryShelfOverlay" title="按省份翻阅旅行记忆书籍">
+          <button class="theme-toggle-btn footprint-btn" id="memoryShelfBtn" type="button" aria-label="旅行书架" aria-haspopup="dialog" aria-controls="memoryShelfOverlay" title="按省份翻阅旅行记忆书籍">
             <span class="fp-btn-ico" aria-hidden="true">▤</span>
-            <span class="fp-btn-label">记忆书架</span>
+            <span class="fp-btn-label">旅行书架</span>
           </button>
-          <button class="theme-toggle-btn footprint-btn" id="photoStreamBtn" type="button" aria-label="照片流" aria-haspopup="dialog" aria-controls="photoStreamOverlay" title="在光瀑中浏览全部旅行照片">
+          <button class="theme-toggle-btn footprint-btn" id="photoStreamBtn" type="button" aria-label="光影相册" aria-haspopup="dialog" aria-controls="photoStreamOverlay" title="在光瀑中浏览全部旅行照片">
             <span class="fp-btn-ico" aria-hidden="true">≋</span>
-            <span class="fp-btn-label">照片流</span>
+            <span class="fp-btn-label">光影相册</span>
           </button>
-          <button class="theme-toggle-btn footprint-btn" id="lifeJourneyBtn" type="button" aria-label="时间足迹" aria-haspopup="dialog" title="按年份查看走过的城市">
+          <button class="theme-toggle-btn footprint-btn" id="lifeJourneyBtn" type="button" aria-label="旅途影像" aria-haspopup="dialog" title="按年份查看走过的城市">
             <span class="fp-btn-ico" aria-hidden="true">◷</span>
-            <span class="fp-btn-label">时间足迹</span>
+            <span class="fp-btn-label">旅途影像</span>
+          </button>
+          <button class="theme-toggle-btn footprint-btn" id="travelRingTreeBtn" type="button" aria-label="旅行年轮树" aria-haspopup="dialog" aria-controls="travelRingTreeOverlay" title="把城市照片挂上旅行记忆树">
+            <span class="fp-btn-ico" aria-hidden="true">♧</span>
+            <span class="fp-btn-label">旅行年轮树</span>
           </button>
           <button class="theme-toggle-btn footprint-btn" id="journeyStatsBtn" type="button" aria-label="旅行统计" aria-haspopup="dialog" title="查看旅行数据统计">
             <span class="fp-btn-ico" aria-hidden="true">
@@ -6049,10 +6085,25 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
         </div>
       </div>
       <button id="lifeImageAtlasBtn" class="life-image-atlas-btn" type="button" hidden><canvas aria-hidden="true"></canvas><span class="life-atlas-label"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><ellipse cx="20" cy="20" rx="17" ry="15"/><ellipse cx="20" cy="20" rx="12" ry="10"/><ellipse cx="20" cy="20" rx="6" ry="5"/></svg>年轮照片</span></button>
+      <button id="lifePhotoWallBtn" class="life-image-atlas-btn" type="button" hidden><canvas aria-hidden="true"></canvas><span class="life-atlas-label"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><rect x="5" y="5" width="12" height="12" rx="2"/><rect x="23" y="5" width="12" height="12" rx="2"/><rect x="5" y="23" width="12" height="12" rx="2"/><rect x="23" y="23" width="12" height="12" rx="2"/></svg>照片墙</span></button>
+      <button id="lifeCanopyBtn" class="life-image-atlas-btn" type="button" hidden><canvas aria-hidden="true"></canvas><span class="life-atlas-label"><svg viewBox="0 0 40 40" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4 20a16 16 0 0 1 32 0c-3-3-5-3-8 0-3-3-5-3-8 0-3-3-5-3-8 0-3-3-5-3-8 0Z"/><path d="M20 4v-2m0 18v12a4 4 0 0 0 8 0M20 4c-5 3-8 8-8 16m8-16c5 3 8 8 8 16"/></svg>伞幕照片</span></button>
       <div id="journeyArchiveBody" class="journey-archive-body"></div>
     </section>
   </div>
 
+  <style id="canopy-controls-theme">
+    #canopyClose { background:#e0e8d7; color:#344b3b; box-shadow:0 2px 8px rgba(52,75,59,.08); }
+    #canopyClose:hover { background:#d5e0ca; }
+    #canopyClose:focus-visible { outline:2px solid #344b3b; outline-offset:3px; }
+  </style>
+  <div id="canopyOverlay" role="dialog" aria-modal="true" aria-label="伞幕照片" hidden style="position:fixed;inset:0;z-index:111;background:#f1e9d6;color:#344b3b;">
+    <button id="canopyClose" type="button" style="position:absolute;left:20px;top:20px;z-index:3;padding:10px 14px;border:1px solid #a7b69e;border-radius:24px;cursor:pointer;">返回时间轴</button>
+    <div id="canopyHost" style="height:100%;"></div>
+  </div>
+  <div id="travelRingTreeOverlay" role="dialog" aria-modal="true" aria-label="旅行年轮树" hidden style="position:fixed;inset:0;z-index:112;background:#f1ebdd;color:#3e4a37;">
+    <button id="travelRingTreeClose" type="button" style="position:absolute;right:20px;top:20px;z-index:3;padding:10px 14px;border:1px solid #aab39c;border-radius:24px;background:#f5f0e5ee;color:inherit;cursor:pointer;">返回地图</button>
+    <div id="travelRingTreeHost" style="height:100%;"></div>
+  </div>
   <div id="imageAtlasOverlay" role="dialog" aria-modal="true" aria-label="按年份看照片" hidden style="position:fixed;inset:0;z-index:110;background:#fafcfb;color:#303a36;">
     <button id="imageAtlasClose" type="button" style="position:absolute;right:20px;top:24px;z-index:3;padding:10px 14px;border:1px solid #aeb8b2;border-radius:24px;background:#fafcfbf0;color:inherit;cursor:pointer;">返回时间轴</button>
     <div id="imageAtlasHost" style="height:100%;"></div>
@@ -6071,7 +6122,7 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
       <div class="memory-shelf-head">
         <div>
           <span class="memory-shelf-kicker">旅行记忆书库</span>
-          <h2 id="memoryShelfTitle">记忆书架</h2>
+          <h2 id="memoryShelfTitle">旅行书架</h2>
           <p id="memoryShelfIntro">一省一卷，一城一章，翻阅属于自己的旅行故事。</p>
         </div>
         <div class="memory-shelf-share-actions">
@@ -6476,6 +6527,10 @@ body.light-theme .dg-scrim { background: rgba(25, 48, 69, .42); }
 <script src="assets/photo-stream/embedded.js"></script>
 <script src="assets/image-atlas/data.js"></script>
 <script src="assets/image-atlas/embedded.js"></script>
+<script src="assets/umbrella-canopy/embedded.js"></script>
+<script src="assets/umbrella-canopy/host.js"></script>
+<script src="assets/travel-ring-tree/embedded.js"></script>
+<script src="assets/travel-ring-tree/host.js"></script>
 <script src="assets/tactile-button.js"></script>
 <script src="assets/vendor/album-3d.js?v=20261003-monotonic-clock"></script>
 <script src="china-geo.js"></script>
@@ -7704,6 +7759,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   let recomputeLabelPositions=null; // 指向 computeLabelPositions（initChart 内赋值）
   let currentZoom=1.18;             // 当前地图缩放级别（散点大小据此动态调整）
   const LABEL_ZOOM_THRESHOLD=2;   // 已点亮城市名：缩放达到该值后自动显示
+  const FULL_VISITED_LABEL_ZOOM_THRESHOLD=5; // 充分放大后不再因碰撞隐藏已点亮城市名
   const NORMAL_LABEL_ZOOM_THRESHOLD=8; // 未点亮城市名：缩放达到该值后全国自动显示
   const CITY_BORDER_ZOOM_THRESHOLD=7.5;  // 城市边界线：zoom≥7.5 时显示，避免缩小视图下密集线条干扰
   let _cityBordersActive=false;          // 城市边界地图是否已加载（zoom<阈值时用 china 轻量地图）
@@ -8100,8 +8156,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     const tc=chartThemeColors();   // 首次渲染即按当前主题配色（避免浅色主题启动闪黑）
     const option={
       backgroundColor:'transparent',
-      // 地图全局字体（省份名/城市名/tooltip 统一继承）
-      textStyle:{fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif'},
+      // 省市标签统一继承本地思源宋体，悬浮提示保留原字体。
+      textStyle:{fontFamily:'"Noto Serif SC","Source Han Serif SC","Songti SC","SimSun",serif'},
       // 性能优化：关闭所有动画，消除缩放/拖拽时的拖影和延迟
       animation:false,
       animationDuration:0,
@@ -8116,7 +8172,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         backgroundColor:tc.tooltipBg,
         borderColor:tc.tooltipBorder,borderWidth:1,
         extraCssText:'box-shadow:0 8px 24px rgba(31,42,55,.16);border-radius:10px;max-width:280px;',
-        textStyle:{color:tc.tooltipText,fontSize:12},  /* 【提亮】地图 tooltip 文字：#1f2a37 → 冷亮白 #f8fafc，适配黑色科技基底 */
+        textStyle:{color:tc.tooltipText,fontSize:12,fontFamily:'-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif'},  /* 【提亮】地图 tooltip 文字：#1f2a37 → 冷亮白 #f8fafc，适配黑色科技基底 */
         padding:[10,14],
         formatter:p=>{
           if(p.seriesName==='家乡'){ return '<div style="font-weight:700;font-size:14px;text-shadow:0 0 8px rgba(248,250,252,.25)">🏠 我的家乡 · '+p.data.name+'</div>'; }
@@ -8247,7 +8303,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
           name:'城市',type:'scatter',coordinateSystem:'geo',geoIndex:2,data:[],
           symbolSize:p=>(isCapital(p)?13:7)*markerScale(),z:5,
           itemStyle:{color:tc.markerNormal,opacity:.9,borderColor:tc.markerBorder,borderWidth:1.2},
-          label:{show:false},
+          label:{show:false,opacity:.6},
           emphasis:{
             scale:1.5,
             itemStyle:{color:tc.markerNormalHover,borderColor:'#ffffff',borderWidth:1,shadowBlur:8,shadowColor:'rgba(56,189,248,.95)'},
@@ -8288,6 +8344,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
           symbolSize:0.1,silent:true,z:7,
           label:{
             show:false,
+            opacity:.6,
             formatter:p=>p.data.name,
             position:'right',
             color:tc.cityLabel,
@@ -8296,9 +8353,9 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
             textShadowColor:tc.cityLabelShadow,
             textShadowBlur:3,
             distance:3,
-            overflow:'truncate',
-            ellipsis:'…',
-            width:70
+            overflow:'none',
+            ellipsis:'',
+            width:null
           }
         },
         {
@@ -8350,50 +8407,43 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
        const visited=opt.series[1].data;
        if(!visited.length) return;
        const s=markerScale();
-       const markR=(isCapital(visited[0])?20:15)*s/2; // 光标半径估算
+       const measure=document.createElement('canvas').getContext('2d');
+       measure.font='700 11.5px '+(opt.textStyle&&opt.textStyle.fontFamily||'"Noto Serif SC",serif');
+       const mapDom=myChart.getDom(),mapRect=mapDom.getBoundingClientRect();
        // 候选方向及对应标签锚点偏移（相对城市中心，px）
        const candidates=[
          {pos:'right',  dx:1,dy:0},
          {pos:'left',   dx:-1,dy:0},
          {pos:'top',    dx:0,dy:-1},
-         {pos:'bottom', dx:0,dy:1},
-         {pos:'right',  dx:1,dy:-0.6},
-         {pos:'left',   dx:-1,dy:-0.6},
-         {pos:'right',  dx:1,dy:0.6},
-         {pos:'left',   dx:-1,dy:0.6}
+         {pos:'bottom', dx:0,dy:1}
        ];
-       const fontW=8,fontH=15; // 单字宽高估算
-       const pad=6;
        const pts=visited.map(d=>{
          const px=myChart.convertToPixel({geoIndex:2},d.value);
-         return {cityKey:d.cityKey,name:d.name,px,chosen:null};
-       });
+         return {cityKey:d.cityKey,name:d.name,adcode:d.adcode,px,chosen:null,width:Math.ceil(measure.measureText(d.name).width),radius:(isCapital(d)?15:11)*s/2};
+       }).filter(p=>p.px&&p.px.every(Number.isFinite));
        // 计算某城市在某方向的标签矩形
        function rectOf(p,c){
-         const w=Math.max(p.name.length*fontW+pad*2,50);
-         const h=fontH+pad;
-         const dist=markR+6;
+         const w=p.width,h=16,dist=p.radius+6;
          const cx=p.px[0]+c.dx*dist+w*(c.dx<0?-1:0)+w*(c.dx===0?-0.5:0);
          const cy=p.px[1]+c.dy*dist+h*(c.dy<0?-1:0)+h*(c.dy===0?-0.5:0);
-         return {x1:cx,y1:cy,x2:cx+w,y2:cy+h};
+         return {x1:cx-2,y1:cy-2,x2:cx+w+2,y2:cy+h+2};
        }
        // 两矩形是否相交
        function overlap(a,b){
          return !(a.x2<b.x1||b.x2<a.x1||a.y2<b.y1||b.y2<a.y1);
        }
        // 贪心：按像素 x 排序，逐个选择与已选标签冲突最少的方向
-       pts.sort((a,b)=>a.px[0]-b.px[0]);
+       pts.sort((a,b)=>a.px[0]-b.px[0]||a.px[1]-b.px[1]);
        const placed=[];
        // 省内未点亮城市的灰色标签（series[0]）作为障碍物预置，避免青色名字压上去
        (opt.series[0].data||[]).forEach(d=>{
          if(!d.label||!d.label.show) return;
          const px=myChart.convertToPixel({geoIndex:2},d.value);
          if(!px) return;
-         const w=Math.max(d.name.length*7.5+10,44),h=17;
-         placed.push({rect:{x1:px[0]+4,y1:px[1]-h/2,x2:px[0]+4+w,y2:px[1]+h/2},gray:true});
+         const w=d.label.width||64,h=16,dist=d.label.distance||3;
+         placed.push({rect:{x1:px[0]+dist-2,y1:px[1]-h/2-2,x2:px[0]+dist+w+2,y2:px[1]+h/2+2},gray:true});
        });
        // 省份焦点卡片（DOM 元素）同样作为障碍物，避免城市名被卡片盖住
-       const mapDom=myChart.getDom();
        if(mapDom){
          const baseRect=mapDom.getBoundingClientRect();
          document.querySelectorAll('.province-map-card').forEach(el=>{
@@ -8415,34 +8465,34 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
          }
        }
        for(const p of pts){
-         let best=null,bestScore=-1;
+         if(!visitedNameShouldShow(p.adcode)) continue;
          for(const c of candidates){
            const r=rectOf(p,c);
-           let conflicts=0;
-           for(const q of placed){
-             if(overlap(r,q.rect)) conflicts++;
-           }
+           if(r.x1<0||r.y1<0||r.x2>mapRect.width||r.y2>mapRect.height) continue;
+           if(placed.some(q=>overlap(r,q.rect))) continue;
            // 同时避免标签覆盖其他城市光标点
-           for(const q of pts){
-             if(q===p) continue;
-             if(r.x1<=q.px[0]&&q.px[0]<=r.x2&&r.y1<=q.px[1]&&q.px[1]<=r.y2) conflicts++;
-           }
-           const score=-conflicts;
-           if(score>bestScore){ bestScore=score; best=c; }
-           if(conflicts===0) break;
+           if(pts.some(q=>q!==p&&overlap(r,{x1:q.px[0]-q.radius-2,y1:q.px[1]-q.radius-2,x2:q.px[0]+q.radius+2,y2:q.px[1]+q.radius+2}))) continue;
+           p.chosen=c; placed.push({rect:r,p}); break;
          }
-         p.chosen=best;
-         placed.push({rect:rectOf(p,best),p});
+         if(!p.chosen&&currentZoom>=FULL_VISITED_LABEL_ZOOM_THRESHOLD){
+           // 优先避让；实在无法排开时，充分放大仍保留完整名称。
+           p.chosen=candidates.find(c=>{
+             const r=rectOf(p,c);
+             return r.x1>=0&&r.y1>=0&&r.x2<=mapRect.width&&r.y2<=mapRect.height;
+           })||candidates[0];
+           placed.push({rect:rectOf(p,p.chosen),p});
+         }
        }
        const newData=visited.map(d=>{
          const p=pts.find(x=>x.cityKey===d.cityKey);
          const t=chartThemeColors();
          const label={position:p&&p.chosen?p.chosen.pos:'right'};
-         label.show=visitedNameShouldShow(d.adcode);
+         label.show=visitedNameShouldShow(d.adcode)&&!!(p&&p.chosen);
          label.formatter=q=>q.data.name;
-         label.color=t.cityLabel;label.fontSize=11.5;label.fontWeight=700;
+         label.color=t.cityLabel;label.fontSize=11.5;label.fontWeight=700;label.opacity=.6;label.lineHeight=16;
          label.textShadowColor=t.cityLabelShadow;label.textShadowBlur=3;
-         label.distance=markR+6;label.overflow='truncate';label.ellipsis='…';label.width=70;
+         label.fontFamily=opt.textStyle&&opt.textStyle.fontFamily||'"Noto Serif SC",serif';
+         label.distance=p?p.radius+6:12;label.overflow='none';label.ellipsis='';label.width=null;
          return Object.assign({},d,{label});
        });
        myChart.setOption({series:[{},{},{data:newData}]});
@@ -8725,7 +8775,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
           formatter:p=>p.data.name,
           color:tcVisited.cityLabel,fontSize:11.5,fontWeight:700,
           textShadowColor:tcVisited.cityLabelShadow,textShadowBlur:3,
-          distance:14,overflow:'truncate',ellipsis:'…',width:70
+          distance:14,overflow:'none',ellipsis:'',width:null
         }});
       }else{
         // 未点亮城市名：选中省份内或放大到 3.5 阈值后显示（放大显示所有城市名）
@@ -8773,7 +8823,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     const s2=opt.series[2];
     if(s2&&s2.data&&s2.data.length){
       patch.series[2]={data:s2.data.map(d=>
-        Object.assign({},d,{label:Object.assign({},d.label,{show:visitedNameShouldShow(d.adcode)})})
+        Object.assign({},d,{label:Object.assign({},d.label,{show:visitedNameShouldShow(d.adcode)&&(currentZoom>=FULL_VISITED_LABEL_ZOOM_THRESHOLD||d.label.show!==false)})})
       )};
     }
     myChart.setOption(patch);
@@ -17186,7 +17236,8 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         '<button class="retry-btn" onclick="location.reload()">刷新重试</button>');
       return;
     }
-    initChart();                    // 地图已注册，setOption 可正常渲染
+    await document.fonts.load('700 13px "Noto Serif SC"').catch(()=>{});
+    initChart();                    // 地图与本地字体已就绪，setOption 可正常渲染
     updateScatterData();
     mapLoader.classList.add('hidden');
     toast('点击任意城市标记，开始记录你的旅行照片');
@@ -17463,7 +17514,39 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   let lifeDomeGalleryInstance=null;
   const lifeImageAtlasBtnEl=$('lifeImageAtlasBtn'),imageAtlasOverlayEl=$('imageAtlasOverlay'),imageAtlasHostEl=$('imageAtlasHost');
+  const lifeCanopyBtnEl=$('lifeCanopyBtn');
+  const lifePhotoWallBtnEl=$('lifePhotoWallBtn');
+  async function openLifePhotoWall(){
+    lifePhotoWallBtnEl.disabled=true;
+    try{
+      const photos=(await getAllPhotos()).filter(photo=>photo.kind!=='video'&&photo.dataUrl);
+      if(!photos.length){alert('暂无可展示的照片。');return;}
+      window.__imgViewer.open(photos,0,{mode:'wall'});
+    }catch(error){
+      console.error('照片墙加载失败',error);
+      alert('照片加载失败，请重试。');
+    }finally{lifePhotoWallBtnEl.disabled=false;}
+  }
+  lifePhotoWallBtnEl.addEventListener('click',openLifePhotoWall);
+  document.addEventListener('keydown',e=>{
+    if(e.key!=='Escape'||!journeyArchiveOverlayEl.classList.contains('show')||!document.querySelector('.img-viewer.stack-mode.show'))return;
+    e.preventDefault();e.stopImmediatePropagation();
+    window.__imgViewer.close();
+    lifePhotoWallBtnEl.focus();
+  },true);
+  window.initTravelCanopy({button:lifeCanopyBtnEl,overlay:$('canopyOverlay'),host:$('canopyHost'),close:$('canopyClose'),collectRecords:async()=>{
+    const data=await collectJourneyArchiveData();
+    const records=await window.TravelImageAtlas.collect(data.entries,getPhotosByCity);
+    return records.map(record=>({...record,cityKey:record.id.slice(0,record.id.lastIndexOf(':'))}));
+  }});
+  window.initTravelRingTree({button:$('travelRingTreeBtn'),overlay:$('travelRingTreeOverlay'),host:$('travelRingTreeHost'),close:$('travelRingTreeClose'),collectRecords:async()=>{
+    const [data,years]=await Promise.all([collectJourneyArchiveData(),idbGetSetting('imageAtlasYears')]);
+    const records=await window.TravelImageAtlas.collect(data.entries,getPhotosByCity,years||{});
+    return records.map(record=>({...record,cityKey:record.id.slice(0,record.id.lastIndexOf(':'))}));
+  }});
   const lifeAtlasEffect=window.initTactileButton(lifeImageAtlasBtnEl);
+  window.initTactileButton(lifePhotoWallBtnEl);
+  window.initTactileButton(lifeCanopyBtnEl);
   let imageAtlasFrame=null,imageAtlasRecords=[],imageAtlasJourney=[],imageAtlasYears={},imageAtlasSaving=false,imageAtlasRequest=0;
   function closeImageAtlas(){
     imageAtlasRequest++;
@@ -17603,8 +17686,10 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
         '<div class="life-photo-dome-head"><div><b>旅途影像</b><span>按时间轴城市顺序汇集</span></div><div id="lifePhotoDomeActions" class="life-photo-dome-actions"><em>'+(galleryPhotos.length?galleryPhotos.length+' 张照片 · 拖动浏览':'暂无照片')+'</em></div></div>'+
         '<div id="lifePhotoDome" class="life-photo-dome-stage">'+(galleryPhotos.length?'':'<div class="life-photo-dome-empty"><strong>还没有旅途照片</strong><span>在城市详情中保存照片后，这里会自动汇集。</span></div>')+'</div>'+
       '</section></div>';
-    $('lifePhotoDomeActions').append(lifeImageAtlasBtnEl);
+    $('lifePhotoDomeActions').append(lifeImageAtlasBtnEl,lifePhotoWallBtnEl,lifeCanopyBtnEl);
     lifeImageAtlasBtnEl.hidden=false;
+    lifePhotoWallBtnEl.hidden=false;
+    lifeCanopyBtnEl.hidden=false;
     if(galleryPhotos.length&&window.DomeGallery){
       lifeDomeGalleryInstance=new window.DomeGallery($('lifePhotoDome'),{
         images:galleryPhotos,
@@ -17667,9 +17752,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     destroyLifeDomeGallery();
     const stats=mode==='stats';
     lifeImageAtlasBtnEl.hidden=true;
+    lifePhotoWallBtnEl.hidden=true;
+    lifeCanopyBtnEl.hidden=true;
     journeyArchiveOverlayEl.classList.toggle('life-mode',!stats);
     journeyArchiveKickerEl.textContent=stats?'旅行洞察':'时光旅程';
-    journeyArchiveTitleEl.textContent=stats?'旅行统计':'人生足迹时间轴';
+    journeyArchiveTitleEl.textContent=stats?'旅行统计':'旅途影像';
     journeyArchiveIntroEl.textContent=stats?'从城市、日期、照片和行程中查看旅行数据。':'沿着年份，重新看一遍走过的城市。';
     journeyArchiveBodyEl.innerHTML='<div class="journey-empty"><span>正在整理旅行记录...</span></div>';
     journeyArchiveOverlayEl.classList.add('show');
@@ -18226,7 +18313,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   }
   function renderMemoryShelf(){
     clearTimeout(memoryShelfState.pageTimer);memoryShelfState.level='shelf';memoryShelfState.province=null;memoryShelfState.city=null;memoryShelfState.photos=[];memoryShelfState.page=0;memoryShelfState.dragOffset=0;memoryShelfState.pageShift=0;memoryShelfState.paging=false;memoryShelfState.bookRotation=null;memoryShelfState.opening=false;
-    memorySetHeader('记忆书架','拖动书架选择省份，长按中心书籍可左右旋转，再次点击即可翻开城市章节。');
+    memorySetHeader('旅行书架','拖动书架选择省份，长按中心书籍可左右旋转，再次点击即可翻开城市章节。');
     if(!memoryShelfState.provinces.length){
       memoryShelfBodyEl.innerHTML='<div class="memory-empty"><strong>你的旅行故事还没有开始</strong><span>点亮第一座城市，它会成为书架上的第一本书。</span><button id="memoryLightFirst" type="button">去点亮城市</button></div>';
       $('memoryLightFirst').addEventListener('click',()=>{closeMemoryShelf();openCityAddDialog();});
@@ -18805,7 +18892,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   async function openMemoryShelf(){
     if(!memoryShelfOverlayEl||memoryShelfOverlayEl.classList.contains('show')) return;
     const shelfResources=memoryPrepareShelfResources();
-    memorySetHeader('记忆书架','正在整理省份、城市与旅行照片...');
+    memorySetHeader('旅行书架','正在整理省份、城市与旅行照片...');
     memoryShelfBodyEl.innerHTML='<div class="memory-empty"><span>正在整理旅行记忆...</span></div>';
     memoryShelfOverlayEl.classList.add('show');document.body.classList.add('modal-open');
     try{
@@ -19641,6 +19728,27 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   let wallOrder=[];
   let wallSel=0;
   let zoomOpen=false;
+  let curtainChains=[],curtainRAF=0,curtainLast=0,curtainPointer=null;
+  const curtainReduced=matchMedia('(prefers-reduced-motion: reduce)');
+  function stopCurtain(){
+    cancelAnimationFrame(curtainRAF);curtainRAF=0;curtainLast=0;curtainPointer=null;
+    curtainChains.forEach(c=>{c.angle=c.velocity=0;c.el.style.transform='rotate(0deg)';});
+  }
+  function moveCurtain(now){
+    curtainRAF=0;
+    if(document.hidden||!viewer.classList.contains('show')||!isWallMode()||zoomOpen||curtainReduced.matches){stopCurtain();return;}
+    const dt=curtainLast?Math.min((now-curtainLast)/16.67,2):1;curtainLast=now;
+    let moving=false;
+    curtainChains.forEach(c=>{
+      c.velocity=(c.velocity-c.angle*.045*dt)*Math.pow(.82,dt);
+      c.angle=Math.max(-c.limit,Math.min(c.limit,c.angle+c.velocity*dt));
+      if(Math.abs(c.angle)+Math.abs(c.velocity)<.008)c.angle=c.velocity=0;
+      else moving=true;
+      c.el.style.transform='rotate('+c.angle+'deg)';
+    });
+    if(moving)curtainRAF=requestAnimationFrame(moveCurtain);else curtainLast=0;
+  }
+  function wakeCurtain(){if(!curtainRAF&&!curtainReduced.matches)curtainRAF=requestAnimationFrame(moveCurtain);}
 
   function getPhotoIdxForPosition(position){
     const offset={'far-prev':-2,'prev':-1,'main':0,'next':1,'far-next':2};
@@ -19667,25 +19775,40 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     vZoomPrev.classList.toggle('disabled',wallSel<=0);
     vZoomNext.classList.toggle('disabled',wallSel>=wallOrder.length-1);
     vZoomDl.onclick=()=>downloadCurrent();
-    zoomOpen=true;vZoom.classList.add('show');updateWallCounter();
+    zoomOpen=true;stopCurtain();vZoom.classList.add('show');updateWallCounter();
   }
   function renderWall(){
-    buildWallOrder();vWall.innerHTML='';
+    stopCurtain();curtainChains=[];buildWallOrder();vWall.innerHTML='';
+    if(!wallOrder.length)return;
+    const mobile=innerWidth<=760,availableW=vWall.clientWidth-(mobile?58:100),availableH=vWall.clientHeight-100;
+    const cols=Math.max(1,Math.min(24,wallOrder.length,Math.floor(availableW/64),Math.ceil(Math.sqrt(wallOrder.length*availableW/Math.max(availableH,120)))));
+    const rows=Math.ceil(wallOrder.length/cols),cell=Math.max(36,Math.min(180,availableW/cols,Math.max(64,availableH/rows)));
+    const panel=document.createElement('div');panel.className='curtain-panel';panel.style.setProperty('--curtain-cell',cell+'px');
+    const rod=document.createElement('div');rod.className='curtain-rod';rod.setAttribute('aria-hidden','true');panel.appendChild(rod);
+    for(let i=0;i<cols;i++){
+      const el=document.createElement('div');el.className='curtain-chain';panel.appendChild(el);
+      const length=Math.ceil((wallOrder.length-i)/cols),limit=Math.atan(.04/length)*180/Math.PI;
+      curtainChains.push({el,limit,angle:curtainReduced.matches?0:Math.sin(i*1.4)*Math.min(.6,limit),velocity:0});
+    }
     wallOrder.forEach((photoIdx,pos)=>{
       const p=photoList[photoIdx],tile=document.createElement('button');
-      tile.type='button';tile.className='wall-tile';tile.dataset.wallpos=String(pos);tile.title='点击查看原图';
+      tile.type='button';tile.className='wall-tile';tile.dataset.wallpos=String(pos);tile.title='点击横向浏览';
       const img=document.createElement('img');img.src=p.dataUrl||'';img.alt=p.name||'';img.loading='lazy';tile.appendChild(img);
       const no=document.createElement('span');no.className='wall-no';no.textContent=String(pos+1);tile.appendChild(no);
-      tile.addEventListener('click',e=>{e.stopPropagation();openWallZoom(pos);});
-      vWall.appendChild(tile);
+      tile.setAttribute('aria-label','查看照片 '+(pos+1)+(p.name?'：'+p.name:''));
+      tile.addEventListener('click',e=>{e.stopPropagation();currentIdx=photoIdx;setMode('strip');});
+      const link=document.createElement('div');link.className='curtain-link';link.appendChild(tile);
+      curtainChains[pos%cols].el.appendChild(link);
     });
+    vWall.appendChild(panel);wakeCurtain();
     updateWallCounter();
   }
   function setMode(mode){
+    stopCurtain();
     prefMode=mode==='wall'?'wall':'strip';
     closeWallZoom();viewer.classList.toggle('wall-mode',isWallMode());
     vModeBtns.forEach(btn=>btn.classList.toggle('is-active',btn.dataset.mode===prefMode));
-    if(isWallMode()) renderWall(); else { vCounter.textContent=(currentIdx+1)+' / '+photoList.length; }
+    if(isWallMode()) renderWall(); else { renderStack(true);updateNavButtons(); }
   }
 
   function openViewer(photos, startIdx, opts){
@@ -19702,10 +19825,11 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
     renderStack(true);
     updateNavButtons();
     viewer.classList.add('show');
-    setMode(prefMode);
+    setMode(opts&&opts.mode||prefMode);
   }
 
   function closeViewer(){
+    stopCurtain();curtainChains=[];
     viewer.classList.remove('show');
     closeWallZoom();
     vWall.innerHTML='';wallOrder=[];wallSel=0;
@@ -19838,6 +19962,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   let imgDragPendingX=0, imgDragPendingY=0;
 
   viewer.addEventListener('mousedown',e=>{
+    if(isWallMode())return;
     if(e.target.closest('.nav-btn')||e.target.closest('.close-btn')||e.target.closest('.thumb')||e.target.closest('.download-btn')) return;
     if(zoomScale>1){
       isDraggingImage=true;
@@ -19926,6 +20051,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   let wheelZoomRAF=false;
   viewer.addEventListener('wheel',e=>{
+    if(isWallMode())return;
     e.preventDefault();
     if(wheelZoomRAF) return;
     wheelZoomRAF=true;
@@ -19954,6 +20080,7 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
   },{passive:false});
 
   viewer.addEventListener('dblclick',e=>{
+    if(isWallMode())return;
     if(e.target.closest('.nav-btn')||e.target.closest('.close-btn')||e.target.closest('.thumb')||e.target.closest('.download-btn')) return;
     const mc=cards.find(c=>c.position==='main');
     if(!mc) return;
@@ -19988,6 +20115,21 @@ const v=window.__CobePhenomenon;var M="phi",c="theta",R="mapSamples",O="mapBrigh
 
   // 暴露为 __imgViewer（原堆叠版本，非景点照片使用）
   window.__imgViewer={open:openViewer, close:closeViewer};
+
+  vWall.addEventListener('pointermove',e=>{
+    if(curtainReduced.matches||zoomOpen)return;
+    const el=e.target.closest('.curtain-chain'),chain=curtainChains.find(c=>c.el===el);
+    if(chain&&curtainPointer){
+      const dx=Math.max(-30,Math.min(30,e.clientX-curtainPointer));
+      chain.velocity+=dx*.018;wakeCurtain();
+    }
+    curtainPointer=e.clientX;
+  });
+  vWall.addEventListener('pointerleave',()=>{curtainPointer=null;});
+  window.addEventListener('resize',()=>{if(viewer.classList.contains('show')&&isWallMode())renderWall();});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopCurtain();});
+  curtainReduced.addEventListener('change',()=>{if(curtainReduced.matches)stopCurtain();});
+  window.addEventListener('pagehide',stopCurtain);
 
   vClose.addEventListener('click',closeViewer);
   vModeBtns.forEach(btn=>btn.addEventListener('click',e=>{e.stopPropagation();setMode(btn.dataset.mode);}));

@@ -1,0 +1,14 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>旅行年轮树</title>
+<script type="importmap">{"imports":{"three":"../umbrella-canopy/vendor/three.module.min.js"}}</script>
+<link rel="stylesheet" href="style.css"></head><body>
+<canvas id="scene" aria-label="可拖动旋转和缩放的旅行年轮树"></canvas>
+<header><h1>旅行年轮树</h1><p>把走过的城市，长成自己的记忆</p><span id="summary"></span></header>
+<div id="loading" role="status">正在整理旅行记忆…</div>
+<div id="fallback" hidden><p>当前设备无法显示三维场景，仍可按城市和年份浏览照片。</p></div>
+<nav id="years" aria-label="选择照片年份"></nav>
+<nav id="rotation-controls" aria-label="树下旋转控制"><button id="rotation-toggle" type="button" aria-pressed="false">自动旋转</button><button id="rotation-direction" type="button">顺时针</button><button id="rotation-speed" type="button">速度 1×</button></nav>
+<aside id="cities"><div class="city-heading"><h2>沿途城市</h2><div class="city-actions"><button id="whole-view" type="button">重置视角</button><button id="city-layout" type="button" aria-pressed="false">按城市分组</button></div></div><button id="city-toggle" type="button" aria-expanded="false" aria-controls="city-nav">显示城市</button><div id="city-nav" aria-label="选择城市" hidden></div><p id="city-status" role="status"></p><div id="city-photos"></div></aside>
+<aside id="photo-dialog" aria-labelledby="photo-title" hidden>
+<button id="photo-close" type="button" aria-label="关闭照片面板">×</button><img id="original-photo" alt=""><p id="photo-error" role="status" hidden>这张照片暂时无法显示，请返回或切换其他照片。</p><div class="photo-caption"><span id="photo-city"></span><span id="photo-count"></span></div><h2 id="photo-title"></h2><p id="photo-date"></p><div class="photo-actions"><button id="photo-prev" type="button">← 上一张</button><button id="photo-next" type="button">下一张 →</button></div><div id="photo-strip" aria-label="同城市照片"></div><p class="photo-keys">方向键切换照片 · Esc 关闭 · 拖动旋转，滚轮缩放</p></aside>
+<script type="module" src="main.js"></script></body></html>

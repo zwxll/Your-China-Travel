@@ -6,12 +6,17 @@ test('年轮照片按钮位于照片数量右侧，手机和浅色主题不溢�
   const start=source.indexOf('  <div id="journeyArchiveOverlay"'),end=source.indexOf('  <div id="imageAtlasOverlay"',start);
   const browser=await chromium.launch({channel:'msedge',headless:true});
   try{
-    const page=await browser.newPage();await page.setContent('<style>'+styles+'</style>'+source.slice(start,end));
+    const menu=source.slice(source.indexOf('          <button class="theme-toggle-btn footprint-btn" id="photoStreamBtn"'),source.indexOf('          <button class="theme-toggle-btn footprint-btn" id="journeyStatsBtn"'));
+    const page=await browser.newPage();await page.setContent('<style>'+styles+'</style>'+menu+source.slice(start,end));
+    assert.equal((await page.locator('#lifeJourneyBtn .fp-btn-label').textContent()).trim(),'旅途影像');
+    assert.equal(await page.locator('#lifeJourneyBtn').getAttribute('aria-label'),'旅途影像');
+    assert.equal((await page.locator('#photoStreamBtn .fp-btn-label').textContent()).trim(),'光影城市');
+    assert.equal(await page.locator('#photoStreamBtn').getAttribute('aria-label'),'光影城市');
     await page.evaluate(()=>{document.querySelector('#journeyArchiveOverlay').classList.add('show','life-mode');document.querySelector('#journeyArchiveTitle').textContent='人生足迹时间轴';document.querySelector('#lifeImageAtlasBtn').hidden=false});
     const renderStart=source.indexOf('  async function renderLifeJourneyArchive()'),renderEnd=source.indexOf('\n  async function renderJourneyStatsArchive()',renderStart);
     const openStart=source.indexOf('  async function openJourneyArchive(mode)'),openEnd=source.indexOf('\n  if(lifeJourneyBtnEl)',openStart);
     await page.evaluate(`
-      const $=id=>document.getElementById(id),journeyArchiveBodyEl=$('journeyArchiveBody'),lifeImageAtlasBtnEl=$('lifeImageAtlasBtn');
+      const $=id=>document.getElementById(id),journeyArchiveBodyEl=$('journeyArchiveBody'),lifeImageAtlasBtnEl=$('lifeImageAtlasBtn'),lifeCanopyBtnEl=$('lifeCanopyBtn'),lifePhotoWallBtnEl=$('lifePhotoWallBtn');
       let lifeDomeGalleryInstance=null;
       const journeyArchiveOverlayEl=$('journeyArchiveOverlay'),journeyArchiveKickerEl=$('journeyArchiveKicker'),journeyArchiveTitleEl=$('journeyArchiveTitle'),journeyArchiveIntroEl=$('journeyArchiveIntro');
       window.hasEntries=true;
@@ -31,7 +36,11 @@ test('年轮照片按钮位于照片数量右侧，手机和浅色主题不溢�
       await page.setViewportSize({width,height:844});await page.evaluate(theme=>document.body.classList.toggle('light-theme',theme==='light'),theme);
       const title=await page.locator('#journeyArchiveTitle').boundingBox(),box=await button.boundingBox(),close=await page.locator('#journeyArchiveClose').boundingBox();
       const count=await page.locator('.life-photo-dome-head em').boundingBox();
-      assert.ok(box.x>=count.x+count.width&&Math.abs(box.y+box.height/2-count.y-count.height/2)<2,'按钮紧邻照片数量右侧并同一行');
+      if(width>700)assert.ok(box.x>=count.x+count.width&&Math.abs(box.y+box.height/2-count.y-count.height/2)<2,'桌面按钮紧邻照片数量右侧');
+      const canopy=await page.locator('#lifeCanopyBtn').boundingBox();
+      const wall=await page.locator('#lifePhotoWallBtn').boundingBox();
+      assert.ok(wall.x>=box.x+box.width&&wall.x+wall.width<=width&&Math.abs(wall.y-box.y)<2,'照片墙紧邻年轮入口且手机端不溢出');
+      assert.ok(canopy.x>=wall.x+wall.width&&canopy.x+canopy.width<=width&&Math.abs(canopy.y-box.y)<2,'伞幕入口保留且手机端不溢出');
       assert.ok(box.x+box.width<=width && !(box.x<close.x+close.width&&box.x+box.width>close.x&&box.y<close.y+close.height&&box.y+box.height>close.y),'按钮不得溢出或遮挡关闭按钮');
       const colors=await button.evaluate(el=>({background:getComputedStyle(el).backgroundColor,color:getComputedStyle(el).color}));
       assert.notEqual(colors.background,'rgba(0, 0, 0, 0)','按钮不能继续使用透明背景');
@@ -47,6 +56,7 @@ test('年轮照片按钮位于照片数量右侧，手机和浅色主题不溢�
     });
     assert.equal(await button.isVisible(),false,'首次空时间轴不能在照片区域外暴露按钮');
     await page.evaluate(async()=>{window.hasEntries=true;await window.openTimeline('life');});
+    assert.equal(await page.locator('#journeyArchiveTitle').textContent(),'旅途影像','弹窗打开后的实际主标题使用新名称');
     assert.equal(await button.isVisible(),true);
     await page.evaluate(()=>window.openTimeline('stats'));assert.equal(await button.isVisible(),false,'统计页不显示按钮');
     await page.evaluate(()=>window.openTimeline('life'));

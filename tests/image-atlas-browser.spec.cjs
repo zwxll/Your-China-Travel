@@ -30,12 +30,17 @@ test('Edge 双击兼容图谱：真实适配路径、年份、搜索、看图、
   const folder=fs.mkdtempSync(path.join(os.tmpdir(),'travel-atlas-test-'));
   try{
     const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-    const begin=html.indexOf('  <div id="imageAtlasOverlay"'),end=html.indexOf('  <div id="photoStreamOverlay"',begin);
+    const begin=html.indexOf('  <div id="canopyOverlay"'),end=html.indexOf('  <div id="photoStreamOverlay"',begin);
     const file=path.join(folder,'index.html');
     const scripts=['data.js','embedded.js'].map(name=>'<script src="'+pathToFileURL(path.resolve(__dirname,'../assets/image-atlas/'+name)).href+'"></script>').join('');
     const button=html.match(/<button id="lifeImageAtlasBtn"[\s\S]*?<\/button>/)[0].replace(' hidden','');
+    const canopyButton=html.match(/<button id="lifeCanopyBtn"[\s\S]*?<\/button>/)[0].replace(' hidden','');
+    const treeButton=html.match(/<button[^>]*id="travelRingTreeBtn"[\s\S]*?<\/button>/)[0];
+    const wallButton=html.match(/<button id="lifePhotoWallBtn"[\s\S]*?<\/button>/)[0];
+    const canopyHost=['embedded.js','host.js'].map(name=>'<script src="'+pathToFileURL(path.resolve(__dirname,'../assets/umbrella-canopy/'+name)).href+'"></script>').join('');
+    const treeHost=['embedded.js','host.js'].map(name=>'<script src="'+pathToFileURL(path.resolve(__dirname,'../assets/travel-ring-tree/'+name)).href+'"></script>').join('');
     const tactileScript='<script src="'+pathToFileURL(path.resolve(__dirname,'../assets/tactile-button.js')).href+'"></script>';
-    fs.writeFileSync(file,'<meta charset="utf-8">'+button+html.slice(begin,end)+scripts+tactileScript);
+    fs.writeFileSync(file,'<meta charset="utf-8"><style>button{position:relative}button canvas{position:absolute;inset:0;pointer-events:none;width:100%;height:100%}</style>'+button+wallButton+canopyButton+treeButton+'<div id="journeyArchiveOverlay"></div>'+html.slice(begin,end)+scripts+tactileScript+canopyHost+treeHost);
     const page=await browser.newPage({viewport:{width:1280,height:900}}),errors=[];
     page.on('pageerror',e=>errors.push(e.message));await page.goto(pathToFileURL(file).href);
     await page.emulateMedia({reducedMotion:'reduce'});
@@ -43,6 +48,7 @@ test('Edge 双击兼容图谱：真实适配路径、年份、搜索、看图、
     const settingsStart=html.indexOf('  async function idbGetSetting('),settingsStop=html.indexOf('  function fsEnsureDir(',settingsStart);
     await page.addScriptTag({content:`
       const $=id=>document.getElementById(id),SETTINGS_STORE='settings';
+      const journeyArchiveOverlayEl=$('journeyArchiveOverlay');
       const withTimeout=p=>p;
       let dbPromise;
       function openDB(){return dbPromise||(dbPromise=new Promise((resolve,reject)=>{const r=indexedDB.open('TravelAtlasFixture',1);r.onupgradeneeded=()=>r.result.createObjectStore('settings',{keyPath:'key'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)}))}
@@ -59,6 +65,13 @@ test('Edge 双击兼容图谱：真实适配路径、年份、搜索、看图、
     let atlas=page.frameLocator('#imageAtlasHost iframe');
     await atlas.locator('.image-card').first().waitFor({state:'attached',timeout:5000}).catch(async error=>{throw new Error(error.message+'\n'+JSON.stringify({errors,host:await page.locator('#imageAtlasHost').textContent(),frames:await page.evaluate(()=>document.querySelector('iframe')?.contentDocument?.body?.innerText)}))});assert.equal(await atlas.locator('.image-card').count(),2);
     assert.equal(await atlas.locator('.journey-visit').count(),3,'主页真实时间轴记录同步进入年轮，重复到访不合并');
+    await page.locator('#imageAtlasClose').click();await page.locator('#lifeCanopyBtn').click();
+    const canopy=page.frameLocator('#canopyHost iframe');
+    await canopy.locator('.index-item').first().waitFor({state:'attached'});
+    const canopyRecords=await canopy.locator('body').evaluate(()=>({count:window.canopy.state.photos.length,cities:window.canopy.state.stories.length}));
+    assert.equal(canopyRecords.count,2,'伞幕使用真实城市相册读取路径：跨次到访不重复，视频排除');assert.equal(canopyRecords.cities,2);
+    await page.locator('#canopyClose').click();assert.equal(await page.locator('#canopyHost iframe').count(),0);
+    await page.locator('#lifeImageAtlasBtn').click();await atlas.locator('.image-card').first().waitFor({state:'attached'});
     assert.match(await atlas.locator('#archive-count').textContent(),/2 张旅行照片/);
     await atlas.locator('#timeline button[data-year="2024"]').click();
     assert.equal(await atlas.locator('.image-card:not([hidden])').count(),1);

@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>伞幕照片</title>
+  <meta name="description" content="Photo stories hung like crystals beneath a canopy of white paper umbrellas.">
+  <meta name="theme-color" content="#0a0a0c">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 32 32%22%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%2214%22 fill=%22%23f3eee6%22/%3E%3Ccircle cx=%2216%22 cy=%2216%22 r=%222%22 fill=%22%23333%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="style.css?v=quiet-canopy-2">
+  <script type="importmap">
+    { "imports": { "three": "./vendor/three.module.min.js" } }
+  </script>
+</head>
+<body>
+  <canvas id="scene" aria-label="A canopy of white paper umbrellas. Each photograph hangs beneath it on a thread like a crystal. Use the story buttons or the index to browse."></canvas>
+
+  <span id="subtitle" hidden></span>
+
+  <div class="top-actions">
+    <button id="btn-rotate" class="pill rotate-control" type="button" aria-pressed="false">自动旋转</button>
+    <button id="btn-direction" class="pill rotate-control" type="button">顺时针</button>
+    <button id="btn-speed" class="pill rotate-control" type="button">速度 1×</button>
+    <button id="btn-index" class="pill" type="button" aria-haspopup="dialog" aria-label="城市照片目录" title="城市照片目录"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="1"/><circle cx="12" cy="6" r="1"/><circle cx="18" cy="6" r="1"/><circle cx="6" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="18" cy="12" r="1"/><circle cx="6" cy="18" r="1"/><circle cx="12" cy="18" r="1"/><circle cx="18" cy="18" r="1"/></svg></button>
+    <button id="btn-whole" class="pill" type="button" title="查看完整伞幕" aria-label="查看完整伞幕"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9a7 7 0 1 1 0 6M5 4v5h5"/></svg></button>
+  </div>
+
+  <section id="story-card" class="story-card" hidden aria-live="polite">
+    <div class="story-card-head">
+      <span class="dot"></span>
+      <div>
+        <h2 id="story-title"></h2>
+        <p id="story-intro"></p>
+      </div>
+    </div>
+    <div id="story-strip" class="strip" role="list"></div>
+  </section>
+
+  <nav id="chips" class="chips" aria-label="Stories"></nav>
+
+  <span id="hint" hidden></span>
+
+  <div id="tooltip" class="tooltip" role="status" hidden>
+    <span class="tt-story"><span class="dot"></span><span class="tt-story-name"></span></span>
+    <strong class="tt-title"></strong>
+    <span class="tt-meta"></span>
+  </div>
+
+  <aside id="detail" class="detail" aria-hidden="true" aria-labelledby="d-title" tabindex="-1">
+    <button class="icon-btn close" id="d-close" type="button" aria-label="Close photo">&times;</button>
+    <figure class="d-figure">
+      <img id="d-img" alt="">
+    </figure>
+    <div class="d-body">
+      <p class="d-story"><span class="dot"></span><span id="d-story"></span><span id="d-count" class="d-count"></span></p>
+      <h2 id="d-title"></h2>
+      <p id="d-meta" class="d-meta"></p>
+      <p class="d-links"><a id="d-source" target="_blank" rel="noopener">View original on Unsplash &#8599;</a></p>
+      <div class="d-nav">
+        <button id="d-prev" class="pill" type="button" aria-label="上一张照片">&larr; 上一张</button>
+        <button id="d-next" class="pill" type="button" aria-label="下一张照片">下一张 &rarr;</button>
+      </div>
+      <div class="d-more">
+        <p class="d-more-label">更多来自 <span id="d-more-story"></span></p>
+        <div id="d-strip" class="strip" role="list"></div>
+      </div>
+      <p class="d-keys">方向键切换照片 · Esc 返回 · 拖动旋转，滚轮缩放</p>
+    </div>
+  </aside>
+
+  <div id="index" class="index" role="dialog" aria-modal="true" aria-labelledby="index-title" hidden>
+    <div class="index-inner">
+      <div class="index-head">
+        <h2 id="index-title">城市照片目录</h2>
+        <button class="icon-btn" id="index-close" type="button" aria-label="Close index">&times;</button>
+      </div>
+      <div id="index-list"></div>
+    </div>
+  </div>
+
+  <div id="loader" class="loader" aria-live="polite">
+    <div class="loader-inner">
+      <div class="loader-umbrella" aria-hidden="true"></div>
+      <p id="loader-text">正在悬挂城市照片&hellip;</p>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js?v=quiet-canopy-2"></script>
+</body>
+</html>
+

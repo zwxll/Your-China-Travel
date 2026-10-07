@@ -3,6 +3,49 @@ const {chromium}=require('C:/Users/86177/.cache/codex-runtimes/codex-primary-run
 const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
 const styles=[...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]).join('\n');
 const markup=html.match(/<button id="lifeImageAtlasBtn"[\s\S]*?<\/button>/)[0];
+test('年轮、照片墙和伞幕三个入口共用液体光效与交互样式',async()=>{
+  const browser=await chromium.launch({channel:'msedge',headless:true});
+  try{
+    const page=await browser.newPage({reducedMotion:'reduce'}),ids=['lifeImageAtlasBtn','lifePhotoWallBtn','lifeCanopyBtn'];
+    const archiveStart=html.indexOf('  <div id="journeyArchiveOverlay"'),archiveEnd=html.indexOf('  <div id="imageAtlasOverlay"',archiveStart);
+    await page.setContent('<style>'+styles+'</style>'+html.slice(archiveStart,archiveEnd));
+    await page.evaluate(ids=>{
+      document.getElementById('journeyArchiveOverlay').classList.add('show','life-mode');
+      document.getElementById('journeyArchiveBody').innerHTML='<section class="life-photo-dome"><div class="life-photo-dome-head"><div><b>旅途影像</b><span>按时间轴城市顺序汇集</span></div><div class="life-photo-dome-actions"><em>164 张照片 · 拖动浏览</em></div></div></section>';
+      const actions=document.querySelector('.life-photo-dome-actions');
+      ids.forEach(id=>actions.append(document.getElementById(id)));
+    },ids);
+    for(const width of [1280,390]){
+      await page.setViewportSize({width,height:844});
+      await page.evaluate(ids=>ids.forEach(id=>document.getElementById(id).hidden=false),ids);
+      for(const id of ids){const box=await page.locator('#'+id).boundingBox();assert.ok(box.x+box.width<=width,'三个一致按钮在手机与桌面不溢出');}
+    }
+    await page.setViewportSize({width:1280,height:844});
+    await page.evaluate(ids=>ids.forEach(id=>document.getElementById(id).hidden=false),ids);
+    for(const id of ids){
+      assert.equal(await page.locator('#'+id+' canvas').count(),1,id+'必须拥有相同液体画布');
+      assert.equal(await page.locator('#'+id+' svg').count(),1,id+'使用相同尺寸图标');
+    }
+    await page.addScriptTag({path:path.join(__dirname,'../assets/tactile-button.js')});
+    const start=html.indexOf('  const lifeAtlasEffect='),end=html.indexOf('  let imageAtlasFrame=',start);
+    await page.evaluate(`const lifeImageAtlasBtnEl=document.getElementById('lifeImageAtlasBtn'),lifePhotoWallBtnEl=document.getElementById('lifePhotoWallBtn'),lifeCanopyBtnEl=document.getElementById('lifeCanopyBtn');${html.slice(start,end)}`);
+    await page.waitForFunction(()=>[...document.querySelectorAll('button canvas')].every(c=>{const gl=c.getContext('webgl');return gl.getParameter(gl.CURRENT_PROGRAM)&&c.width===c.parentElement.clientWidth*devicePixelRatio;}));
+    for(const state of ['normal','hover','pressed']){
+      const values=[];
+      for(const id of ids){
+        const button=page.locator('#'+id);
+        await page.mouse.move(1,200);
+        if(state!=='normal')await button.hover();
+        if(state==='pressed')await page.mouse.down();
+        await page.waitForTimeout(230);
+        values.push(await button.evaluate(el=>{const c=getComputedStyle(el),gl=el.querySelector('canvas').getContext('webgl'),p=gl.getParameter(gl.CURRENT_PROGRAM);return {background:c.background,border:c.border,radius:c.borderRadius,color:c.color,font:c.font,padding:c.padding,shadow:c.boxShadow,transform:c.transform,height:el.offsetHeight,icon:getComputedStyle(el.querySelector('svg')).width,level:gl.getUniform(p,gl.getUniformLocation(p,'u_level'))};}));
+        if(state==='pressed')await page.mouse.up();
+      }
+      assert.deepEqual(values[1],values[0],'照片墙'+state+'复用年轮效果');
+      assert.deepEqual(values[2],values[0],'伞幕'+state+'复用年轮效果');
+    }
+  }finally{await browser.close();}
+});
 async function setup(page,noGL=false){
   await page.setContent('<style>'+styles+'</style><div id="holder">'+markup+'</div>');
   await page.evaluate(noGL=>{
