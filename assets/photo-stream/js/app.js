@@ -12,6 +12,7 @@
 // final tone-mapping pass.
 
 import { StoryView } from './story.js';
+import { LIGHTFALL_FS } from './lightfall.js';
 import { clamp, smooth, damp, mulberry } from './math.js';
 import { createGLHelpers } from './gl.js';
 import { loadCatalog } from './catalog.js';
@@ -56,6 +57,7 @@ const pluck = { line: -1, age: 99, amp: 0 };
 const idle = Array.from({ length: IDLE }, () => ({ line: -1, age: 99 }));
 let idleNext = 2.5;
 let flow = 1, paused = false, time = 0, intro = 0, lastInput = 0;
+let lightfallTime = 0, lightfallDrawn = false;
 let sleeping = false, last = performance.now(), zoomUntil = 0;
 let drag = null, pinch = null;
 const touches = new Map();
@@ -178,6 +180,8 @@ function showMeter() { zoomUntil = performance.now() + 1100; }
 function zoomBy(delta, sx, sy) {
   const p = unproject(sx, sy);
   anchor = { wx: p.x, wy: p.y, sx, sy };
+  // Zoom owns the camera; do not resume inertia from an earlier drag afterwards.
+  cam.vx = cam.vy = 0;
   cam.lsT = clamp(cam.lsT + delta, LS_MIN(), LS_MAX());
   showMeter();
 }
@@ -256,7 +260,7 @@ addEventListener('keydown', e => {
   } else if (k === '+' || k === '=') zoomBy(0.7, W / 2, H / 2);
   else if (k === '-' || k === '_') zoomBy(-0.7, W / 2, H / 2);
   else if (k === 'Escape') { anchor = null; cam.lsT = LS_MIN(); kbLine = -1; showMeter(); }
-  else if (k === ' ') { e.preventDefault(); paused = !paused; }
+  else if (k === ' ') { e.preventDefault(); if (!e.repeat) paused = !paused; }
 });
 
 function resize() {
@@ -265,9 +269,12 @@ function resize() {
   DPR = Math.min(devicePixelRatio || 1, 1.25, Math.sqrt(1500000 / (W * H)));
   PW = Math.round(W * DPR); PH = Math.round(H * DPR);
   canvas.width = PW; canvas.height = PH;
-  if (RT) { freeTarget(RT.scene); RT.refl.forEach(freeTarget); RT.bloom.forEach(freeTarget); }
+  if (RT) { freeTarget(RT.scene); freeTarget(RT.lightfall); RT.refl.forEach(freeTarget); RT.bloom.forEach(freeTarget); }
+  const backgroundScale = Math.min(.5, Math.sqrt(180000 / (PW * PH)));
+  lightfallDrawn = false;
   RT = {
     scene: target(PW, PH),
+    lightfall: target(PW * backgroundScale, PH * backgroundScale),
     refl: [target(PW / 4, PH / 4), target(PW / 4, PH / 4)],
     bloom: Array.from({ length: 6 }, (_, i) => target(PW / 2 ** (i + 1), PH / 2 ** (i + 1))),
   };
@@ -304,8 +311,10 @@ function step(dt, now) {
   const rate = 55 * Math.pow(0.4, zt) / scale * flow;
 
   // What is under the hand.
+  // A stationary cursor crosses threads while zooming: it must not pluck them.
+  const zooming = now < zoomUntil || (anchor && !anchor.drag);
   let line = -1;
-  if (!view.isOpen) {
+  if (!view.isOpen && !zooming) {
     if (kbLine >= 0) line = kbLine;
     else if (pointer.inside && !drag?.moved && !pinch) line = pickLine(pointer.x, pointer.y);
   }
@@ -319,7 +328,7 @@ function step(dt, now) {
   pointer.speed = damp(pointer.speed, Math.abs(moved) / Math.max(dt, 1e-3), 10, dt);
   const wp = pointer.x >= 0 ? unproject(pointer.x, pointer.y) : { x: 0, y: -99 };
   pointer.wvx = damp(pointer.wvx, moved / Math.max(dt, 1e-3) / scale, 12, dt);
-  const active = (pointer.inside || kbLine >= 0) && !pinch && !view.isOpen && (kbLine >= 0 || (wp.y > -0.5 && wp.y < CH + 0.3));
+  const active = !zooming && zt > 0.02 && (pointer.inside || kbLine >= 0) && !pinch && !view.isOpen && (kbLine >= 0 || (wp.y > -0.5 && wp.y < CH + 0.3));
   pointer.reach = damp(pointer.reach, active ? (line >= 0 ? 0.2 : 0.08) + Math.min(pointer.speed / 900, 0.6) : 0, 4, dt);
   const cx = line >= 0 ? fib.x0[line] : wp.x, cy = kbLine >= 0 ? CH * 0.55 : wp.y;
   const R = 46 / scale, R2 = R * 1.8;
@@ -414,6 +423,14 @@ function post(prog, dst, setup) {
 
 function render() {
   const zt = zoomT();
+  if (!lightfallDrawn || (!paused && !REDUCED)) {
+    gl.disable(gl.BLEND);
+    post(P.lightfall, RT.lightfall, u => {
+      gl.uniform1f(u.uLightfallTime, lightfallTime);
+      gl.uniform2f(u.uLightfallRes, RT.lightfall.w, RT.lightfall.h);
+    });
+    lightfallDrawn = true;
+  }
   gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, T.fibS.t);
   gl.activeTexture(gl.TEXTURE1); updateTexture(T.fibD);
 
@@ -451,6 +468,7 @@ function render() {
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, RT.scene.tex); gl.uniform1i(u.uScene, 0);
     gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, RT.bloom[0].tex); gl.uniform1i(u.uBloom, 1);
     gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, RT.refl[1].tex); gl.uniform1i(u.uRefl, 2);
+    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, RT.lightfall.tex); gl.uniform1i(u.uLightfall, 3);
     gl.uniform1f(u.uBloomK, 0.16 - 0.12 * smooth(0.15, 0.6, zt));
     gl.uniform1f(u.uReflK, 1);
     gl.uniform1f(u.uHasRefl, hasRefl ? 1 : 0);
@@ -464,6 +482,7 @@ function frame(now) {
   requestAnimationFrame(frame);
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   if (sleeping || document.hidden) return;
+  if (!paused && !REDUCED && !view.isOpen) lightfallTime += dt;
   step(dt, now);
   render();
   const cursor = `translate3d(${pointer.x}px,${pointer.y}px,0)`;
@@ -474,9 +493,9 @@ function frame(now) {
   const labelSpacing = SPACING * Math.exp(cam.ls);
   cityLabels.forEach((label, i) => {
     const pos = project(fib.x0[i], CH);
-    const vertical = labelSpacing < stories[i].title.length * 13 + 12;
+    const vertical = labelSpacing < stories[i].title.length * 16 + 12;
     if (label.classList.contains('vertical') !== vertical) label.classList.toggle('vertical', vertical);
-    const y = Math.max(vertical ? 70 + stories[i].title.length * 13 : 76, pos.y);
+    const y = Math.max(vertical ? 70 + stories[i].title.length * 16 : 76, pos.y);
     label.style.transform = `translate3d(${pos.x}px,${y}px,0) translate(-50%,-100%)`;
   });
 }
@@ -493,6 +512,7 @@ async function boot() {
   P.up = program(POST_VS, UP_FS);
   P.blur = program(POST_VS, BLUR_FS);
   P.composite = program(POST_VS, COMPOSITE_FS);
+  P.lightfall = program(POST_VS, LIGHTFALL_FS);
 
   const strip = new Float32Array((SEG + 1) * 4);
   for (let k = 0; k <= SEG; k++) {

@@ -1,0 +1,52 @@
+const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
+const {chromium}=require('C:/Users/86177/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright');
+
+test('顶部按钮统一折叠左右侧栏和图例，独立开关同步且刷新保留状态',async()=>{
+  const source=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+  const start=source.indexOf('  /* ===== 左右信息面板收起/展开 ===== */'),end=source.indexOf('  /* ===== 【滚轮事件隔离】',start);
+  const mottoStart=source.indexOf('  /* ===== 人生寄语折叠按钮：'),mottoEnd=source.indexOf('  /* ===== 昵称编辑 ===== */',mottoStart);
+  const html=source.replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi,'');
+  const browser=await chromium.launch({channel:'chrome',headless:true});
+  try{
+    const page=await browser.newPage({viewport:{width:1920,height:1080}}),errors=[];
+    page.on('pageerror',e=>errors.push(e.message));
+    await page.route('**/*',route=>route.request().url()==='http://panels.test/'?route.fulfill({contentType:'text/html',body:html}):route.abort());
+    const load=async(withMotto=false)=>{await page.goto('http://panels.test/');await page.evaluate(withMotto=>{['launch-screen','mapLoader'].forEach(id=>document.getElementById(id).remove());if(withMotto){document.getElementById('mottoToggleBtn').hidden=false;document.getElementById('mottoPanel').textContent='我命由我，不由天';}},withMotto);await page.evaluate('const $=id=>document.getElementById(id);\n'+source.slice(mottoStart,mottoEnd));await page.evaluate('const myChart=null;function requestProvinceFocusLayout(){}\n'+source.slice(start,end));};
+    await load();
+    const all=page.locator('#panelsToggle'),ids=['leftPanelToggle','rightPanelToggle','legendToggle'];
+    assert.equal(await all.count(),1,'顶部应有统一收起按钮');
+    const expanded=()=>page.evaluate(ids=>ids.map(id=>document.getElementById(id).getAttribute('aria-expanded')),ids);
+    assert.deepEqual(await expanded(),['true','true','true']);
+    await all.click();assert.deepEqual(await expanded(),['false','false','false']);
+    assert.equal(await all.getAttribute('aria-expanded'),'false');
+    assert.equal(await page.locator('#legendContent').isVisible(),false);
+    assert.deepEqual(await page.evaluate(()=>['travel-left-panel-collapsed','travel-right-panel-collapsed','travel-legend-collapsed'].map(key=>localStorage.getItem(key))),['1','1','1']);
+    await load();assert.deepEqual(await expanded(),['false','false','false']);
+    assert.equal(await all.getAttribute('aria-label'),'展开边栏');
+    await all.click();assert.deepEqual(await expanded(),['true','true','true']);
+    assert.equal(await page.locator('#mottoPanel').isVisible(),false,'未设置寄语时不展开空区域');
+    await page.locator('#leftPanelToggle').click();assert.deepEqual(await expanded(),['false','true','true']);
+    assert.equal(await all.getAttribute('aria-label'),'收起边栏','部分展开时仍提供全部收起');
+    await all.click();assert.deepEqual(await expanded(),['false','false','false']);
+    await page.locator('#legendToggle').click();assert.equal(await all.getAttribute('aria-label'),'收起边栏');
+    await all.click();assert.deepEqual(await expanded(),['false','false','false']);
+    await page.setViewportSize({width:390,height:844});await all.click();assert.deepEqual(await expanded(),['true','true','true']);
+    await all.click();assert.deepEqual(await expanded(),['false','false','false']);
+    assert.equal(await all.isVisible(),true);
+    await page.setViewportSize({width:1920,height:1080});await load(true);
+    await page.locator('#mottoToggleBtn').click();
+    assert.equal(await page.locator('#mottoPanel').isVisible(),true);
+    assert.equal(await all.getAttribute('aria-label'),'收起边栏','寄语单独展开后统一按钮同步');
+    await all.click();
+    assert.equal(await page.locator('#mottoPanel').isVisible(),false,'统一收起也收起寄语');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('travelMottoExpanded')),'0');
+    await all.click();
+    assert.equal(await page.locator('#mottoPanel').isVisible(),true,'统一展开也展开已设置寄语');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('travelMottoExpanded')),'1');
+    await load(true);assert.equal(await page.locator('#mottoPanel').isVisible(),true,'刷新保留寄语展开状态');
+    await all.click();await load(true);
+    assert.equal(await page.locator('#mottoPanel').isVisible(),false,'刷新保留统一收起状态');
+    assert.equal(await all.getAttribute('aria-label'),'展开边栏');
+    assert.deepEqual(errors,[]);
+  }finally{await browser.close();}
+});

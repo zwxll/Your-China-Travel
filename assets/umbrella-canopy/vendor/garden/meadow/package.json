@@ -1,0 +1,45 @@
+{
+  "name": "three-stylized",
+  "version": "0.0.0",
+  "private": true,
+  "description": "A deterministic Three.js meadow renderer with procedural terrain, instanced grass, animated wind, stylized lighting, wildflowers, and runtime configuration updates.",
+  "keywords": [
+    "grass",
+    "instanced-mesh",
+    "meadow",
+    "procedural",
+    "procedural-terrain",
+    "stylized-rendering",
+    "three.js",
+    "threejs",
+    "webgl",
+    "wildflowers"
+  ],
+  "license": "MIT",
+  "author": "Steve245270533",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "lint": "oxlint",
+    "lint:fix": "oxlint --fix",
+    "fmt": "oxfmt",
+    "fmt:check": "oxfmt --check",
+    "check": "pnpm lint && pnpm fmt:check && pnpm test -- --run && pnpm build"
+  },
+  "dependencies": {
+    "@types/three": "^0.185.1",
+    "lil-gui": "^0.21.0",
+    "three": "^0.185.1"
+  },
+  "devDependencies": {
+    "oxfmt": "0.60.0",
+    "oxlint": "1.75.0",
+    "tsdown": "^0.22.12",
+    "typescript": "~6.0.2",
+    "vite": "^8.1.1",
+    "vitest": "^4.1.10"
+  }
+}

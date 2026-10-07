@@ -1,0 +1,34 @@
+{
+  "repo": "boona13/threejs-grass-water-shaders",
+  "tree": "97fb7ea3135362dbb1ba80cdfa8fb27ec8d0b159",
+  "files": [
+    {
+      "path": "LICENSE",
+      "sha": "7c145243ce8591cfb7296c1ea48cd6a8f9fae659"
+    },
+    {
+      "path": "package.json",
+      "sha": "6b4679fb82553df0c7ba77a1df2c073d0804675e"
+    },
+    {
+      "path": "src/water/WaterMask.ts",
+      "sha": "a2e8ea4b51f92f3386d31127e3a34de16dfcfdd5"
+    },
+    {
+      "path": "src/water/WaterNoiseLUT.ts",
+      "sha": "a4eb8718abbe2bc3495712a652e205da23936e33"
+    },
+    {
+      "path": "src/water/WaterPlane.ts",
+      "sha": "e99bd812358885c20152b3fdb3b21a076632de26"
+    },
+    {
+      "path": "src/water/index.ts",
+      "sha": "70b34ac0c2fc528ee4861b751a5d3282384da316"
+    },
+    {
+      "path": "src/water/waterShader.glsl.ts",
+      "sha": "b9a67d471a2d7b76bdc08ffc47926929fc32f4c8"
+    }
+  ]
+}

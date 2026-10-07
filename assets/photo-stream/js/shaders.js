@@ -228,7 +228,7 @@ void main(){
 
 export const COMPOSITE_FS = `#version 300 es
 precision highp float;
-uniform sampler2D uScene, uBloom, uRefl;
+uniform sampler2D uScene, uBloom, uRefl, uLightfall;
 uniform float uBloomK, uReflK, uFloorV, uTime, uHasRefl;
 uniform vec2 uRes;
 in vec2 vUv; out vec4 o;
@@ -246,8 +246,12 @@ void main(){
   }
   c+=texture(uBloom,uv).rgb*uBloomK;
   c=tone(c);
+  // Keep bright photos and glow intact; make the backdrop quieter behind the curtain.
+  float foreground=max(c.r,max(c.g,c.b));
+  float backgroundMask=(1.-smoothstep(.04,.25,foreground))*mix(.45,1.,smoothstep(.15,.48,abs(uv.x-.5)));
   vec2 d=(uv-.5)*vec2(uRes.x/uRes.y,1.);
   c*=mix(1.,smoothstep(1.3,.3,length(d)),.55);
+  c+=texture(uLightfall,uv).rgb*.576*backgroundMask;
   float g=hash(gl_FragCoord.xy+fract(uTime*7.13)*113.)-.5;
   c+=g*.03;
   o=vec4(max(c,0.),1.);

@@ -1,0 +1,18 @@
+{
+  "name": "album-3d-src",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Build script that bundles three + quick_flipbook into assets/vendor/album-3d.js for the city photo album 3D reader. The built artifact is committed; this folder only needs npm install when rebuilding.",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "quick_flipbook": "1.1.3",
+    "three": "0.185.1",
+    "three.modifiers": "2.5.7"
+  },
+  "devDependencies": {
+    "esbuild": "0.25.10"
+  }
+}

@@ -1,0 +1,74 @@
+{
+  "repo": "Steve245270533/three-stylized",
+  "tree": "8eb0dde5a8e7eae985d69f923b627b0cf253bed5",
+  "files": [
+    {
+      "path": "LICENSE",
+      "sha": "e406b76a96e53f10ebb65de02ebc573f7f56e9f6"
+    },
+    {
+      "path": "package.json",
+      "sha": "02edd18ddb5d7b055c4b0348e1b8c07dcb51d889"
+    },
+    {
+      "path": "src/grass/Grass.ts",
+      "sha": "4f9e2e3c7a03997a074f997d8149af121622386a"
+    },
+    {
+      "path": "src/grass/GrassLayer.ts",
+      "sha": "6a1230c4729fb60375c8704bb4ea661af1f0279f"
+    },
+    {
+      "path": "src/grass/Terrain.ts",
+      "sha": "4f4c1819174c937c927756533dc118ec1740911e"
+    },
+    {
+      "path": "src/grass/Wildflowers.ts",
+      "sha": "863181f6317747176e27015caac21b2b9be9e182"
+    },
+    {
+      "path": "src/grass/bladeWidth.ts",
+      "sha": "e34a1f4af11517fb3f2cfad51c97138aec3feab4"
+    },
+    {
+      "path": "src/grass/coverage.ts",
+      "sha": "444065f959fd21d4fb225f3871cf6e3e93bafce0"
+    },
+    {
+      "path": "src/grass/defaults.ts",
+      "sha": "25de03f67ffaaed7e44648dd2106b22abf0edbdd"
+    },
+    {
+      "path": "src/grass/density.ts",
+      "sha": "d8519943ff9b4635770507422279a871c6b8a950"
+    },
+    {
+      "path": "src/grass/flowerShapes.ts",
+      "sha": "418f1917dbd62fd6d5edc17cc7a4b97dae7ec94a"
+    },
+    {
+      "path": "src/grass/index.ts",
+      "sha": "7a83d9028d28c155eca7a66f1dc00d7a0230648e"
+    },
+    {
+      "path": "src/grass/seedStreams.ts",
+      "sha": "af2e483d33cc995902ab695c725c0f2701a2a5a5"
+    },
+    {
+      "path": "src/grass/shaders.ts",
+      "sha": "b43a30bbc3dd993a3bb575b866c4e9b73bc14815"
+    },
+    {
+      "path": "src/grass/surfaceSampler.ts",
+      "sha": "b6b772547d74897c2abee65aa5d8430773c9a691"
+    },
+    {
+      "path": "src/grass/types.ts",
+      "sha": "2021d8c63b3b033d34a5808c7e4429e42093b46b"
+    },
+    {
+      "path": "src/grass/utils.ts",
+      "sha": "e6fb384047b55d2c6a6e741f690cbaa9c087d833"
+    }
+  ]
+}
